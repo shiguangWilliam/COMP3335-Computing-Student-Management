@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api, LoginPayload } from "@/lib/api";
+import { loginSecure } from "@/lib/secureApi";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -29,7 +30,10 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      const res = await api.login(form);
+      // 优先使用安全加密登录；失败时自动回退原接口
+      const res = await loginSecure(form).catch(async () => {
+        return await api.login(form);
+      });
       const role = (res as any)?.user?.role as string | undefined;
       setMessage("Logged in");
       // 根据服务端返回的角色自动跳转；如无返回则根据 cookie 再取一次
