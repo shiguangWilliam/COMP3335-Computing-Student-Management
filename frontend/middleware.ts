@@ -15,7 +15,7 @@ function getUser(req: NextRequest): { role: string; email: string } | null {
 
 function isPublic(path: string) {
   if (path.startsWith("/_next") || path.startsWith("/public") || path.startsWith("/favicon.ico")) return true;
-  if (path.startsWith("/API/function")) return true; // allow API routes
+  if (path.startsWith("/API/")) return true; // allow API routes
   return ["/", "/login", "/register"].includes(path);
 }
 

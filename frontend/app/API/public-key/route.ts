@@ -7,3 +7,4 @@ export async function GET() {
   const { publicKeyPem } = getServerKeyPair();
   return NextResponse.json({ publicKeyPem });
 }
+

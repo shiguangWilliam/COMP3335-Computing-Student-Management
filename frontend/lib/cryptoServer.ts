@@ -33,6 +33,7 @@ export type HybridEncryptedPayload = {
   ivBase64: string; // AES-GCM 12 字节 IV
   ciphertextBase64: string; // 密文（不含 tag）
   tagBase64: string; // AES-GCM 16 字节鉴别标签
+  sigBase64?: string; // 额外的 HMAC-SHA256 签名（可选，但建议提供）
 };
 
 export function decryptHybridJson(payload: HybridEncryptedPayload): Record<string, unknown> {
@@ -55,5 +56,12 @@ export function decryptHybridJson(payload: HybridEncryptedPayload): Record<strin
   decipher.setAuthTag(tag);
   const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
   const jsonStr = decrypted.toString("utf8");
+  // 额外完整性校验：若提供了 sigBase64，使用 AES 密钥作为 HMAC key 对明文进行校验
+  if (payload.sigBase64) {
+    const expectedSig = crypto.createHmac("sha256", aesKey).update(jsonStr, "utf8").digest("base64");
+    if (expectedSig !== payload.sigBase64) {
+      throw new Error("Invalid HMAC signature");
+    }
+  }
   return JSON.parse(jsonStr) as Record<string, unknown>;
 }

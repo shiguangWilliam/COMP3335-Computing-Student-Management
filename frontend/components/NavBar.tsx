@@ -31,7 +31,7 @@ export default function NavBar() {
 
   const logout = async () => {
     try {
-      await fetch("/API/function/logout", { method: "POST", credentials: "include" });
+      await api.logout();
       setUser(null);
       router.push("/login");
     } catch {}

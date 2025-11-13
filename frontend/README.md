@@ -20,6 +20,99 @@
 ## 环境要求
 - 安装 `Node.js >= 18` 与 `npm`（或 `yarn/pnpm/bun`）。
 
+## 在 Linux 下安装 Node.js 并初始化项目前端（傻瓜式教程）
+
+下面步骤尽量面向零基础，复制粘贴即可运行。如使用 Ubuntu/Debian、CentOS/RHEL/AlmaLinux 等主流发行版均可。
+
+1) 安装基础工具（根据你的发行版选择一条）
+- Ubuntu/Debian：
+  - `sudo apt update && sudo apt install -y curl build-essential`
+- CentOS/RHEL/AlmaLinux：
+  - `sudo yum install -y curl gcc-c++ make`
+- Fedora：
+  - `sudo dnf install -y curl gcc-c++ make`
+
+2) 安装 nvm（Node 版本管理器）
+- `curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash`
+- 让当前终端生效（任选其一，若第一个失败就执行第二个）：
+  - `source ~/.bashrc`
+  - `source ~/.profile`
+- 验证：
+  - `command -v nvm`（能输出 `nvm` 表示安装成功）
+
+3) 安装 Node.js 18（项目要求）
+- `nvm install 18`
+- `nvm use 18`
+- `nvm alias default 18`
+- 验证版本：
+  - `node -v`（期望 >= 18.x）
+  - `npm -v`
+
+4) 获取并进入项目目录
+- 若你已把项目放到服务器上：
+  - `cd /path/to/COMP3335-Computing-Student-Management/frontend`
+- 若需要从仓库拉取（替换为你的仓库地址）：
+  - `git clone <你的仓库地址>`
+  - `cd COMP3335-Computing-Student-Management/frontend`
+
+5) 初始化依赖并启动开发模式
+- 安装依赖：
+  - `npm install`
+- 可选：创建环境变量文件（本地开发用，不提交到 Git）：
+  - ```
+    cat > .env.local << 'EOF'
+    NEXT_PUBLIC_API_URL=http://127.0.0.1:3335
+    # 开发可选：启用本地测试账号
+    AUTH_DEBUG=1
+    # 非 HTTPS 环境下关闭 Secure，避免浏览器拒收 Cookie（生产请开启）
+    COOKIE_SECURE=0
+    EOF
+    ```
+- 启动开发服务：
+  - `npm run dev`
+- 在浏览器访问：
+  - `http://<你的服务器IP或域名>:3000`
+
+6) 生产模式（简单托管）
+- 构建与启动：
+  - `npm ci`（或 `npm install`）
+  - `npm run build`
+  - `npm run start -- -p 3000`
+- 建议放在 Nginx/Apache 反向代理后面并启用 HTTPS 与 HSTS；确保后端 `Set-Cookie` 的 `domain` 与前端域匹配，否则浏览器可能拒收 Cookie。
+
+7) 可选：使用 systemd 托管前端服务（开机自启）
+- 创建文件 `/etc/systemd/system/next-frontend.service`（需要 root 权限），内容示例：
+  - ```
+    [Unit]
+    Description=Next.js Frontend Service
+    After=network.target
+
+    [Service]
+    Type=simple
+    WorkingDirectory=/path/to/COMP3335-Computing-Student-Management/frontend
+    ExecStart=/usr/bin/npm run start -- -p 3000
+    Restart=always
+    Environment=NEXT_PUBLIC_API_URL=http://127.0.0.1:3335
+    # 生产环境可注入 RSA 密钥（PEM），否则前端会生成临时密钥对：
+    # Environment=SERVER_RSA_PUBLIC_PEM=-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----
+    # Environment=SERVER_RSA_PRIVATE_PEM=-----BEGIN PRIVATE KEY-----...-----END PRIVATE KEY-----
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+- 生效并启动：
+  - `sudo systemctl daemon-reload`
+  - `sudo systemctl enable --now next-frontend`
+- 查看状态与日志：
+  - `systemctl status next-frontend`
+  - `journalctl -u next-frontend -f`
+
+8) 常见问题（快速自检）
+- 端口占用：使用 `npm run dev -- -p 3001` 或 `npm run start -- -p 3002` 更换端口。
+- Node 未找到：重新执行 `source ~/.bashrc` 或 `source ~/.profile` 后再试；确保 `nvm use 18` 生效。
+- 浏览器无法登录：在非 HTTPS 场景下将 `.env.local` 中 `COOKIE_SECURE=0`；生产务必开启 HTTPS 并设置合适的 `domain`。
+- 后端不通或报 `NOT_IMPLEMENTED`：检查 `NEXT_PUBLIC_API_URL` 是否正确，或确认后端已实现 `/API/function/*` 接口。
+
 ## 安装依赖
 - 在 `frontend/` 目录下执行：
   - `npm install`
