@@ -5,7 +5,7 @@ import java.sql.*;
 
 public class DBConnect {
     private Connection conn = null;
-    public final static DBConnect dbConnector = new DBConnect("jdbc:mysql://localhost:3306/COMP3335?user=******&password=********");
+    public final static DBConnect dbConnector = new DBConnect("jdbc:mysql://localhost:3306/COMP3335?user=root&password=!testCOMP3335");
     private DBConnect(String url) {
         try {
             conn = DriverManager.getConnection(url);
