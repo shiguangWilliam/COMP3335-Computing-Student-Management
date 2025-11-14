@@ -29,9 +29,12 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
+      // 使用统一的加密传输单层端点进行登录
       const res = await api.login(form);
       const role = (res as any)?.user?.role as string | undefined;
       setMessage("Logged in");
+      // 刷新导航与页面，使后续请求稳定携带新 Cookie
+      router.refresh();
       // 根据服务端返回的角色自动跳转；如无返回则根据 cookie 再取一次
       const mapDest = (r?: string) => (r === "ARO" ? "/grades" : r === "DRO" ? "/reports" : "/profile");
       if (role) {
