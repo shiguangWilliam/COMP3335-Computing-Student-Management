@@ -42,7 +42,7 @@ export function decryptHybridJson(payload: HybridEncryptedPayload): Record<strin
   const iv = Buffer.from(payload.ivBase64, "base64");
   const ciphertext = Buffer.from(payload.ciphertextBase64, "base64");
   const tag = Buffer.from(payload.tagBase64, "base64");
-
+// RSA解密获取AES密钥
   const aesKey = crypto.privateDecrypt(
     { key: privateKeyPem, padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, oaepHash: OAEP_HASH },
     encryptedKey
@@ -51,7 +51,7 @@ export function decryptHybridJson(payload: HybridEncryptedPayload): Record<strin
   if (aesKey.length !== 32) {
     throw new Error("Invalid AES key length");
   }
-
+//创建AES解密器
   const decipher = crypto.createDecipheriv("aes-256-gcm", aesKey, iv);
   decipher.setAuthTag(tag);
   const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);

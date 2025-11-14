@@ -135,6 +135,47 @@
 - 登录本地调试（可选）：在 `.env.local` 设置 `AUTH_DEBUG=1`，即可使用 `frontend/test_acount` 中的本地账号文件；也可通过在登录接口 URL 上添加 `?debug=1` 开启调试。
 - Cookie 配置见 `lib/config.ts`：生产环境建议开启 `secure: true`，并按需设置 `domain`。
 
+## 本地开发 .env.local 模板（推荐）
+- 文件路径：`frontend/.env.local`（不会提交到 Git）。
+- 复制以下模板并按需调整：
+  ```
+  # 本地开发推荐模板（复制到 frontend/.env.local）
+
+  # 启用本地调试账号（读取 frontend/test_acount）
+  AUTH_DEBUG=1
+
+  # 在非 HTTPS 的本地开发环境关闭 Secure；生产请开启或保留默认
+  COOKIE_SECURE=0
+
+  # 可选：强制使用外部后端（本地开发建议注释掉，避免跨域 Cookie 问题）
+  # NEXT_PUBLIC_USE_TEST_API=1
+  # NEXT_PUBLIC_API_URL=http://127.0.0.1:3335
+
+  # 可选：Cookie 跨子域设置（默认不设置）
+  # COOKIE_DOMAIN=example.com
+
+  # 可选：提供服务器 RSA 密钥对（PEM）。不设置时使用内置/临时密钥
+  # SERVER_RSA_PUBLIC_PEM=-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----
+  # SERVER_RSA_PRIVATE_PEM=-----BEGIN PRIVATE KEY-----...-----END PRIVATE KEY-----
+  ```
+- 变量说明：
+  - `AUTH_DEBUG`：开启本地调试账号；也可在接口上加 `?debug=1`。
+  - `COOKIE_SECURE`：本地 HTTP 环境下设为 `0`，生产需开启（或留默认）。
+  - `NEXT_PUBLIC_USE_TEST_API`/`NEXT_PUBLIC_API_URL`：连接外部后端。若设置为外部域，`Set-Cookie` 可能写到外域导致会话失效；本地建议注释掉，让中继回落到当前站点。
+  - `COOKIE_DOMAIN`：生产跨子域场景使用；本地通常不要设置。
+  - `SERVER_RSA_PUBLIC_PEM`/`SERVER_RSA_PRIVATE_PEM`：可注入固定密钥，便于生产部署与密钥轮换。
+
+### 本地测试账号文件格式（配合 AUTH_DEBUG）
+- 文件：`frontend/test_acount`
+- 每行：`email,password,role,name`
+- 示例：
+  ```
+  student@example.com,pass123,student,Alice
+  aro@example.com,pass123,ARO,Bob
+  guardian@example.com,pass123,guardian,Grace
+  dro@example.com,pass123,DRO,David
+  ```
+
 ## 页面与模块
 - `/login` 登录：邮箱校验、眼睛图标切换密码显示。
 - `/register` 注册：实时校验与红框高亮，密码默认明文显示，可复选框切换。

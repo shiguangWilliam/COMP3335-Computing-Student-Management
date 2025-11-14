@@ -15,13 +15,18 @@ export async function relaySecure(req: NextRequest, targetTail: string): Promise
     const dec = decryptHybridJson(enc) as RelayPayload;
 
     const qs = dec.query ? new URLSearchParams(dec.query).toString() : "";
-    const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3335";
+    // 若未配置外部后端地址，则回落到当前站点 origin，使用内部 /API/function/* 路由
+    const base = process.env.NEXT_PUBLIC_API_URL || req.nextUrl.origin;
     const url = `${base}/API/function${targetTail}${qs ? `?${qs}` : ""}`;
 
     const method = (dec.method || "POST").toUpperCase();
+    const cookieHeader = req.headers.get("cookie") || undefined;
     const init: RequestInit = {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(cookieHeader ? { cookie: cookieHeader } : {}),
+      },
       credentials: "include",
     };
     if (method !== "GET" && dec.body) {
