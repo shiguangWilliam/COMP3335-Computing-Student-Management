@@ -111,7 +111,7 @@
 - 端口占用：使用 `npm run dev -- -p 3001` 或 `npm run start -- -p 3002` 更换端口。
 - Node 未找到：重新执行 `source ~/.bashrc` 或 `source ~/.profile` 后再试；确保 `nvm use 18` 生效。
 - 浏览器无法登录：在非 HTTPS 场景下将 `.env.local` 中 `COOKIE_SECURE=0`；生产务必开启 HTTPS 并设置合适的 `domain`。
-- 后端不通或报 `NOT_IMPLEMENTED`：检查 `NEXT_PUBLIC_API_URL` 是否正确，或确认后端已实现 `/API/function/*` 接口。
+- 后端不通或报 `NOT_IMPLEMENTED`：检查 `NEXT_PUBLIC_API_URL` 是否正确，或确认后端已实现 `/API/*` 接口。
 
 ## 安装依赖
 - 在 `frontend/` 目录下执行：
@@ -128,7 +128,7 @@
 - 自定义端口示例：`npm run start -- -p 3002`
 
 ## 后端 API 配置
-- 默认使用内部 API 路由前缀：`/API/function/*`。
+- 默认使用内部 API 路由前缀：`/API/*`。
 - 若需接入外部后端，请在 `frontend/.env.local` 设置：
   - `NEXT_PUBLIC_USE_TEST_API=1`
   - `NEXT_PUBLIC_API_URL=http://localhost:3335`（替换为你的后端地址）
@@ -157,6 +157,9 @@
   # 可选：提供服务器 RSA 密钥对（PEM）。不设置时使用内置/临时密钥
   # SERVER_RSA_PUBLIC_PEM=-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----
   # SERVER_RSA_PRIVATE_PEM=-----BEGIN PRIVATE KEY-----...-----END PRIVATE KEY-----
+  
+  # 网关到后端的 HMAC 共享密钥（必填，前端转发时用于签名）
+  # GATEWAY_SHARED_SECRET=please-change-this-secret
   ```
 - 变量说明：
   - `AUTH_DEBUG`：开启本地调试账号；也可在接口上加 `?debug=1`。
@@ -164,6 +167,7 @@
   - `NEXT_PUBLIC_USE_TEST_API`/`NEXT_PUBLIC_API_URL`：连接外部后端。若设置为外部域，`Set-Cookie` 可能写到外域导致会话失效；本地建议注释掉，让中继回落到当前站点。
   - `COOKIE_DOMAIN`：生产跨子域场景使用；本地通常不要设置。
   - `SERVER_RSA_PUBLIC_PEM`/`SERVER_RSA_PRIVATE_PEM`：可注入固定密钥，便于生产部署与密钥轮换。
+  - `GATEWAY_SHARED_SECRET`：网关 HMAC 共享密钥；前端在转发到后端时会按 `method|path|body|timestamp|nonce` 计算 `HMAC-SHA256` 并加到请求头中，后端需用同一密钥进行校验。
 
 ### 本地测试账号文件格式（配合 AUTH_DEBUG）
 - 文件：`frontend/test_acount`

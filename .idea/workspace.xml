@@ -5,8 +5,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="Add database structure">
+      <change afterPath="$PROJECT_DIR$/src/main/java/app/ApiAuthInterceptor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/app/CachingRequestBodyFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/app/GateWayConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/app/HmacAuthFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/app/HmacValidationException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/app/WebConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/COMP3335-Computing-Student-Management.iml" beforeDir="false" afterPath="$PROJECT_DIR$/COMP3335-Computing-Student-Management.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/api.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/api.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/function/login/[role]/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/function/login/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/function/logout/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/function/profile/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/function/students/route.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/login/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/login/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/profile/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/profile/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/secure/login/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/secure/login/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/students/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/students/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/secureApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/secureApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/secureProxy.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/secureProxy.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/middleware.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/service/DBConnect.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users/ARO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users/DRO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users/Guardian.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users/Student.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users/User.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/Attributes.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/SecurityUtils.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,43 +81,44 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Application.Main.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/Classes/COMP3335/COMP3335-Computing-Student-Management/lib",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "onboarding.tips.debug.path": "D:/Classes/COMP3335/COMP3335-Computing-Student-Management/src/Main.java",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.comp3335 [-N...].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.comp3335 [wrapper,-Dmaven=3.9.7].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/温思齐/Downloads/Banquet-Management-System-main/Banquet-Management-System-main&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;onboarding.tips.debug.path&quot;: &quot;D:/Classes/COMP3335/COMP3335-Computing-Student-Management/src/Main.java&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;项目&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\Classes\COMP3335\COMP3335-Computing-Student-Management\lib" />
     </key>
   </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.27397.103" />
-      </set>
-    </attachedChunks>
+  <component name="RunAnythingCache">
+    <option name="myCommands">
+      <command value="mvn wrapper -Dmaven=3.9.7" />
+      <command value="mvn -N org.apache.maven.plugins:maven-wrapper-plugin:3.2.0:wrapper -Dmaven=3.9.7" />
+    </option>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="" />
