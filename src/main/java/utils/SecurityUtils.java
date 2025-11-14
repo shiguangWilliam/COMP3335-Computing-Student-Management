@@ -16,4 +16,16 @@ public class SecurityUtils {
             throw new RuntimeException("Error hashing password", e);
         }
     }
+    private static final String[] encryptedAtt = {
+            "email", "phone", "password_hash", "guardian_id", "guardian_relation", "gender",
+            "identification_number", "address", "grade", "comments", "description"
+    };
+    public static boolean isEncrypted(String str){
+        for(String att : encryptedAtt){
+            if(att.equals(str)){
+                return true;
+            }
+        }
+        return false;
+    }
 }

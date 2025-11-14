@@ -53,6 +53,7 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PUSH_AUTO_UPDATE" value="true" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -132,7 +133,9 @@
       <workItem from="1763030137158" duration="166000" />
       <workItem from="1763030324478" duration="593000" />
       <workItem from="1763030950671" duration="83000" />
-      <workItem from="1763031047214" duration="44000" />
+      <workItem from="1763031047214" duration="85000" />
+      <workItem from="1763031221926" duration="33000" />
+      <workItem from="1763113755683" duration="4474000" />
     </task>
     <task id="LOCAL-00001" summary="Add lib file.">
       <option name="closed" value="true" />
@@ -182,17 +185,45 @@
       <option name="project" value="LOCAL" />
       <updated>1763030901013</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Add database structure">
+      <option name="closed" value="true" />
+      <created>1763031120792</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1763031120792</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Update User functions">
+      <option name="closed" value="true" />
+      <created>1763119129329</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1763119129329</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Add lib file." />
     <MESSAGE value="Add DBConnect and User update query functions." />
     <MESSAGE value="Add database structure" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add database structure" />
+    <MESSAGE value="Update User functions" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update User functions" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>
