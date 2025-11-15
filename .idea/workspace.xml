@@ -4,22 +4,41 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="Add database structure">
+    <list default="true" id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="Update User functions">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/api.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/api.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/app/profile/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/profile/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/components/NavBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/NavBar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/HmacAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/app/HmacAuthFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/RoleAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/app/RoleAuthFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/SessionFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/app/SessionFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/URIRouteTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/app/URIRouteTable.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/http/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/http/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/http/ProfileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/http/ProfileController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/users/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/users/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tables/Courses.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tables/Disciplinary.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tables/Grades.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/http/RegisterController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/RegisterController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/ApiAuthInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/ApiAuthInterceptor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/Application.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/CachedBodyHttpServletRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/CachedBodyHttpServletRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/CachingRequestBodyFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/CachingRequestBodyFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/GateWayConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/GateWayConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/HmacAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/HmacAuthFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/HmacValidationException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/HmacValidationException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/RoleAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/RoleAuthFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/Session.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/Session.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/SessionFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/SessionFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/SessionStore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/SessionStore.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/URIRouteTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/URIRouteTable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/WebConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/http/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/http/LogoutController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/LogoutController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/http/ProfileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/ProfileController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/http/PublicKeyController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/PublicKeyController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/http/RegisterController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/service/DBConnect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/service/DBConnect.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/users/ARO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/ARO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/users/DRO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/DRO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/users/Guardian.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/Guardian.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/users/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/Student.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/users/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/utils/Attributes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/Attributes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/utils/AuditUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/AuditUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/utils/ParamValid.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/utils/SecurityUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/SecurityUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/ParamValid.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/ParamValid.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,34 +83,81 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Classes/COMP3335/COMP3335-Computing-Student-Management/lib&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;onboarding.tips.debug.path&quot;: &quot;D:/Classes/COMP3335/COMP3335-Computing-Student-Management/src/Main.java&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Application.Main.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "正在合并 main",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/Classes/COMP3335/COMP3335-Computing-Student-Management/lib",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "onboarding.tips.debug.path": "D:/Classes/COMP3335/COMP3335-Computing-Student-Management/src/Main.java",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\Classes\COMP3335\COMP3335-Computing-Student-Management\lib" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="COMP3335-Computing-Student-Management" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="COMP3335-Computing-Student-Management" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="COMP3335-Computing-Student-Management" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="COMP3335-Computing-Student-Management" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -117,7 +183,8 @@
       <workItem from="1763031047214" duration="85000" />
       <workItem from="1763031221926" duration="33000" />
       <workItem from="1763113755683" duration="4495000" />
-      <workItem from="1763176187162" duration="7422000" />
+      <workItem from="1763176187162" duration="7438000" />
+      <workItem from="1763209298022" duration="22000" />
     </task>
     <task id="LOCAL-00001" summary="Add lib file.">
       <option name="closed" value="true" />
@@ -207,7 +274,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763189661778</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Update User functions">
+      <option name="closed" value="true" />
+      <created>1763189825120</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1763189825120</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
