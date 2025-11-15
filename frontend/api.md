@@ -129,11 +129,14 @@ const claims = verifyJwt(jwt, jwtKey);
 - 仅 HTTP 的开发环境无法保护 `Set-Cookie` 免受窃听，应尽快为前端启用 HTTPS/TLS。
 
 ## 单层端点与后端映射表
+
  - `POST /API/register` → 后端 `POST /API/register`
  - `POST /API/login` → 后端 `POST /API/login` √
  - `POST /API/logout` → 后端 `POST /API/logout`√
+
  - `GET /API/profile` → 后端 `GET /API/profile`√
  - `PUT /API/profile` → 后端 `PUT /API/profile`
+ - 
  - `GET /API/students` → 后端 `GET /API/students`
  - `POST /API/students` → 后端 `POST /API/students`
  - `PUT /API/students` → 后端 `PUT /API/students`（`id` 随 body 提交）

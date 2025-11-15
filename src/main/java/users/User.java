@@ -76,16 +76,16 @@ public abstract class User {
         }
         return map;
     }
-    public static User checkLogin(String ID, String passwdHash, String userType) throws SQLException {
+    public static boolean checkLogin(String ID, String passwdHash, String userType) throws SQLException {
         String sql = "SELECT COUNT(*) AS count FROM %s_encrypted WHERE id = ? AND passwd_hash = ?".formatted(userType);
         String[] params = {ID, passwdHash};
         try (ResultSet rs = DBConnect.dbConnector.executeQuery(sql, params)) {
             if (rs.next() && rs.getInt("count") > 0) {
                 switch (userType) {
                     case "Student":
-                        return new Student(ID);
+                        return true;
                     case "Guardian":
-                        return new Guardian(ID);
+                        return true;
                     case "Staff":
                         String staffTypeSql = "SELECT role FROM staffs WHERE id = ?";
                         String[] staffTypeParams = {ID};
@@ -94,17 +94,17 @@ public abstract class User {
                                 String staffType = staffRs.getString("staff_type");
                                 switch (staffType) {
                                     case "ARO":
-                                        return new ARO(ID);
+                                        return true;
                                     case "DRO":
-                                        return new DRO(ID);
+                                        return true;
                                 }
                             }
                         }
                     default:
-                        return null;
+                        return false;
                 }
             } else {
-                return null;
+                return false;
             }
         } catch (SQLException e) {
             System.out.println("Failed to execute SQL query: " + e.getMessage());

@@ -73,7 +73,6 @@ export default function NavBar() {
             </>
           ) : (
             <>
-              <Link href="/register" className="hover:underline text-blue-700">Register</Link>
               <Link href="/login" className="hover:underline text-blue-700">Login</Link>
             </>
           )}

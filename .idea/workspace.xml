@@ -7,10 +7,19 @@
     <list default="true" id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="Add database structure">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/api.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/api.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/profile/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/profile/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/NavBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/NavBar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/proxy.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/proxy.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/HmacAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/app/HmacAuthFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/RoleAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/app/RoleAuthFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/SessionFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/app/SessionFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/app/URIRouteTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/app/URIRouteTable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/http/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/http/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/SecurityUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/utils/SecurityUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/http/ProfileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/http/ProfileController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/users/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/users/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tables/Courses.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tables/Disciplinary.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tables/Grades.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

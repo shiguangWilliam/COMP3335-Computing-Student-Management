@@ -29,6 +29,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE+1)
+//HMAC校验器，校验HMAC签名，请求头时效性
 public class HmacAuthFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(HmacAuthFilter.class);
 

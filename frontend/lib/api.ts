@@ -196,8 +196,12 @@ export async function getProfile(): Promise<Json> {
   return request<Json>("/API/profile", { method: "GET" });
 }
 
-export async function updateProfile(data: Partial<{ firstName: string; lastName: string; email: string; mobile?: string }>): Promise<Json> {
+export async function updateProfile(data: Partial<{ firstName: string; lastName: string; email: string; mobile?: string; gender?: string; address?: string; department?: string; password: string }>): Promise<Json> {
   return request<Json>("/API/profile", { method: "PUT", body: JSON.stringify(data) });
+}
+
+export async function updatePassword(data: { oldPassword: string; newPassword: string }): Promise<Json> {
+  return request<Json>("/API/modified_Passowrd", { method: "PUT", body: JSON.stringify(data) });
 }
 
 // Reports (placeholder)
@@ -247,6 +251,7 @@ export const api = {
   // profile
   getProfile,
   updateProfile,
+  updatePassword,
   // reports
   generateReport,
   // admin

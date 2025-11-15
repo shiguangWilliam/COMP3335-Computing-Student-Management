@@ -4,6 +4,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import app.Session;
+import app.URIRouteTable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -15,7 +16,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-//Cookie合法校验后，映射Cookie信息到角色
+//Cookie合法校验后，映射Cookie信息到角色，进行非法路由约束
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE+3)
 public class RoleAuthFilter implements Filter {
@@ -28,6 +29,13 @@ public class RoleAuthFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
+        String method = request.getMethod();
+        String uri = request.getRequestURI();
+
+        if (URIRouteTable.isPublic(method, uri)) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         Session session = (Session) request.getAttribute("session");
         if (session == null) {
@@ -52,7 +60,7 @@ public class RoleAuthFilter implements Filter {
             response.getWriter().write("{\"error\":\"unauthorized: session expired\"}");
             return;
         }
-
+        //是否是合法身份
         String role = session.getRole();
         Set<String> allowed = new HashSet<>(Arrays.asList("student", "guardian", "ARO", "DRO"));
         if (role == null || !allowed.contains(role)) {
@@ -61,21 +69,20 @@ public class RoleAuthFilter implements Filter {
             response.getWriter().write("{\"error\":\"forbidden: invalid role\"}");
             return;
         }
-        
-        request.setAttribute("role", role);
-        request.setAttribute("userId", session.getUserId());
-        chain.doFilter(request, response);
-    }
-    private void rolePrivilegeCheck(HttpServletRequest request, HttpServletResponse response, String role, String[] requiredRoles) throws IOException {
-        String uri = request.getRequestURI();
-        
-        if (!Arrays.asList(requiredRoles).contains(role)) {
+        //是否是合法路由
+        String[] requiredRoles = URIRouteTable.rolesFor(method, uri);
+        if (requiredRoles == null || !Arrays.asList(requiredRoles).contains(role)) {
             response.setStatus(403);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"forbidden: insufficient privileges\"}");
             return;
         }
+        
+        request.setAttribute("role", role);
+        request.setAttribute("userId", session.getUserId());
+        chain.doFilter(request, response);
     }
+    
 
 
 }

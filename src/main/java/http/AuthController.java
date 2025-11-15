@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import service.DBConnect;
 import utils.SecurityUtils;
 import utils.AuditUtils;
+import utils.ParamValid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -37,13 +38,23 @@ public class AuthController {
 
         String email = body.get("email").toString();
         String password = body.get("password").toString();
+        
         String requestId = request.getHeader("X-Request-ID");
         if (requestId == null || requestId.isBlank()) {
             requestId = UUID.randomUUID().toString();
         }
-
-        Map<String, Object> claims = queryLogIn(email, password, requestId);
+        
         Map<String, Object> resp = new HashMap<>();
+        //参数格式校验
+        if(!ParamValid.isValidEmail(email)){
+            log.warn("audit={}", AuditUtils.pack("requestId", requestId, "emailMasked", SecurityUtils.maskEmail(email), "message", "invalid email"));
+            resp.put("ok",false);
+            resp.put("message","invalid email");
+            response.setStatus(400);
+            return resp;
+        }
+        
+        Map<String, Object> claims = queryLogIn(email, password, requestId);
         if(claims == null){
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "emailMasked", SecurityUtils.maskEmail(email), "message", "invalid credentials"));
             resp.put("ok",false);

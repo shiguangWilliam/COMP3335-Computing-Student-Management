@@ -21,16 +21,13 @@ import java.util.Set;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE+2)
+//会话校验器，检验是否过期，是否在会话缓存中
 public class SessionFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(SessionFilter.class);
 
     private final SessionStore sessionStore;
 
-    private static final Set<String> PUBLIC_PATHS = new HashSet<>(Arrays.asList(
-            "/API/public-key",
-            "/API/login",
-            "/API/logout"
-    ));
+    private static final Set<String> PUBLIC_PATHS = new HashSet<>();
 
     public SessionFilter(SessionStore sessionStore) {
         this.sessionStore = sessionStore;
@@ -42,9 +39,10 @@ public class SessionFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         String uri = request.getRequestURI();
+        String method = request.getMethod();
 
         // 公共接口允许匿名访问
-        if (PUBLIC_PATHS.contains(uri)) {
+        if (URIRouteTable.isPublic(method, uri)) {
             filterChain.doFilter(request, response);
             return;
         }
