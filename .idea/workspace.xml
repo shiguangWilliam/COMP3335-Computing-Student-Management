@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="Update User functions" />
+    <list default="true" id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="Update User functions">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -101,7 +104,7 @@
       <workItem from="1763031047214" duration="85000" />
       <workItem from="1763031221926" duration="33000" />
       <workItem from="1763113755683" duration="4495000" />
-      <workItem from="1763176187162" duration="7259000" />
+      <workItem from="1763176187162" duration="7422000" />
     </task>
     <task id="LOCAL-00001" summary="Add lib file.">
       <option name="closed" value="true" />
@@ -183,7 +186,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763189605136</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Update User functions">
+      <option name="closed" value="true" />
+      <created>1763189661778</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1763189661778</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
