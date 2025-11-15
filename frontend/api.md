@@ -130,9 +130,9 @@ const claims = verifyJwt(jwt, jwtKey);
 
 ## 单层端点与后端映射表
  - `POST /API/register` → 后端 `POST /API/register`
- - `POST /API/login` → 后端 `POST /API/login`
- - `POST /API/logout` → 后端 `POST /API/logout`
- - `GET /API/profile` → 后端 `GET /API/profile`
+ - `POST /API/login` → 后端 `POST /API/login` √
+ - `POST /API/logout` → 后端 `POST /API/logout`√
+ - `GET /API/profile` → 后端 `GET /API/profile`√
  - `PUT /API/profile` → 后端 `PUT /API/profile`
  - `GET /API/students` → 后端 `GET /API/students`
  - `POST /API/students` → 后端 `POST /API/students`
@@ -149,11 +149,30 @@ const claims = verifyJwt(jwt, jwtKey);
  - `POST /API/grades` → 后端 `POST /API/grades`
  - `POST /API/reports` → 后端 `POST /API/reports`
  - `GET /API/admin-summary` → 后端 `GET /API/admin/summary`
+ - `GET /API/disciplinary-records` → 后端 `GET /API/disciplinary-records`
+ - `POST /API/disciplinary-records` → 后端 `POST /API/disciplinary-records`
+ - `PUT /API/disciplinary-records` → 后端 `PUT /API/disciplinary-records`（`id` 随 body 提交）
+ - `DELETE /API/disciplinary-records?id=...` → 后端 `DELETE /API/disciplinary-records?id=...`
 
 ## 前端封装参考
 - 所有内部调用均通过 `frontend/lib/api.ts`，它会把 `path` 以加密方式投递到对应的单层端点。
 - 统一入口 `secureRequest(path, { method, body })` 会组装加密信封并在服务端解密、转发。
 - 公钥获取：`GET /API/public-key`（由前端路由提供；也可以改为从后端自有接口获取，再注入到前端）。
+
+## API 角色许可与使用细则
+- `POST /API/login`：公开；所有角色可登录
+- `POST /API/logout`：公开；所有角色可调用；仅清理会话
+- `GET /API/public-key`：公开；仅用于加密协作
+- `GET /API/profile`：已登录用户可读；返回自身信息（只读）
+- `PUT /API/profile`：已登录用户可读可改；仅能修改自身信息
+- `GET/POST/PUT/DELETE /API/students`：`ARO`、`DRO` 可读可改；学生管理
+- `GET/POST/PUT/DELETE /API/courses`：`ARO`、`DRO` 可读可改；课程管理
+- `GET/POST/DELETE /API/enrollments`：`ARO`、`DRO` 可读可改；选课管理
+- `GET /API/grades`：`student`、`guardian`、`ARO` 可读；成绩查询
+- `POST /API/grades`：`ARO` 可读可改；成绩录入
+- `POST /API/reports`：所有角色可读；生成报表（只读接口）
+- `GET /API/admin-summary`：`ARO`、`DRO` 可读；管理摘要（只读）
+- `GET/POST/PUT/DELETE /API/disciplinary-records`：`DRO` 可读可改；纪律记录管理
 
 ## 变更历史（与旧版差异）
 - 路由前缀从旧版的 catch-all `/API/secure/*` 与 `/API/function/*` 改为单层 `/API/*`（接收加密）；后端同步采用 `/API/*` 前缀。

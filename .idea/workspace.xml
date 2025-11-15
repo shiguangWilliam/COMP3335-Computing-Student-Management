@@ -5,39 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="Add database structure">
-      <change afterPath="$PROJECT_DIR$/src/main/java/app/ApiAuthInterceptor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/app/CachingRequestBodyFilter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/app/GateWayConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/app/HmacAuthFilter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/app/HmacValidationException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/app/WebConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/api.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/api.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/app/API/function/login/[role]/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/app/API/function/login/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/app/API/function/logout/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/app/API/function/profile/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/app/API/function/students/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/app/API/login/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/login/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/app/API/profile/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/profile/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/app/API/secure/login/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/secure/login/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/app/students/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/students/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/secureApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/secureApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/lib/secureProxy.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/secureProxy.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/middleware.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/next.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/service/DBConnect.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/users/ARO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/users/DRO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/users/Guardian.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/users/Student.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/users/User.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/Attributes.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/SecurityUtils.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/proxy.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/proxy.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/http/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/http/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/utils/SecurityUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/utils/SecurityUtils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

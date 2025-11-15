@@ -170,6 +170,27 @@ export async function assignGrade(data: { studentId: string; courseId: string; g
   return request<GradeRecord>("/API/grades", { method: "POST", body: JSON.stringify(data) });
 }
 
+// Disciplinary records
+export type DisciplinaryRecord = { id: string; studentId: string; date: string; staffId: string; description?: string };
+
+export async function listDisciplinaryRecords(params?: { studentId?: string; staffId?: string; date?: string }): Promise<DisciplinaryRecord[]> {
+  const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
+  return request<DisciplinaryRecord[]>(`/API/disciplinary-records${qs}`);
+}
+
+export async function createDisciplinaryRecord(data: { studentId: string; date: string; staffId: string; description?: string }): Promise<DisciplinaryRecord> {
+  return request<DisciplinaryRecord>("/API/disciplinary-records", { method: "POST", body: JSON.stringify(data) });
+}
+
+export async function updateDisciplinaryRecord(id: string, data: Partial<{ studentId: string; date: string; staffId: string; description?: string }>): Promise<DisciplinaryRecord> {
+  return request<DisciplinaryRecord>("/API/disciplinary-records", { method: "PUT", body: JSON.stringify({ id, ...data }) });
+}
+
+export async function deleteDisciplinaryRecord(id: string): Promise<Json> {
+  const qs = `?${new URLSearchParams({ id }).toString()}`;
+  return request<Json>(`/API/disciplinary-records${qs}`, { method: "DELETE" });
+}
+
 // Profile (placeholder)
 export async function getProfile(): Promise<Json> {
   return request<Json>("/API/profile", { method: "GET" });
@@ -218,6 +239,11 @@ export const api = {
   // grades
   listGrades,
   assignGrade,
+  // disciplinary records
+  listDisciplinaryRecords,
+  createDisciplinaryRecord,
+  updateDisciplinaryRecord,
+  deleteDisciplinaryRecord,
   // profile
   getProfile,
   updateProfile,
