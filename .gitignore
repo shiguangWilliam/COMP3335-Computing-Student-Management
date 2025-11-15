@@ -36,4 +36,4 @@ release.properties
 dependency-reduced-pom.xml
 
 # Spring Boot local profile config (keep example committed)
-src/main/resources/application-local.yml
+src/resources/application-local.yml
