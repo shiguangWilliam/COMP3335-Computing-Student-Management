@@ -59,8 +59,6 @@
   &quot;keyToString&quot;: {
     &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;Application.Main.executor&quot;: &quot;Run&quot;,
-    &quot;Maven.comp3335 [-N...].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.comp3335 [wrapper,-Dmaven=3.9.7].executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
@@ -68,14 +66,14 @@
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/温思齐/Downloads/Banquet-Management-System-main/Banquet-Management-System-main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Classes/COMP3335/COMP3335-Computing-Student-Management/lib&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;onboarding.tips.debug.path&quot;: &quot;D:/Classes/COMP3335/COMP3335-Computing-Student-Management/src/Main.java&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;项目&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
@@ -86,13 +84,14 @@
       <recent name="D:\Classes\COMP3335\COMP3335-Computing-Student-Management\lib" />
     </key>
   </component>
-  <component name="RunAnythingCache">
-    <option name="myCommands">
-      <command value="mvn wrapper -Dmaven=3.9.7" />
-      <command value="mvn -N org.apache.maven.plugins:maven-wrapper-plugin:3.2.0:wrapper -Dmaven=3.9.7" />
-    </option>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.27397.103" />
+      </set>
+    </attachedChunks>
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="" />
@@ -108,7 +107,8 @@
       <workItem from="1763030950671" duration="83000" />
       <workItem from="1763031047214" duration="85000" />
       <workItem from="1763031221926" duration="33000" />
-      <workItem from="1763113755683" duration="4474000" />
+      <workItem from="1763113755683" duration="4495000" />
+      <workItem from="1763176187162" duration="7422000" />
     </task>
     <task id="LOCAL-00001" summary="Add lib file.">
       <option name="closed" value="true" />
@@ -174,7 +174,31 @@
       <option name="project" value="LOCAL" />
       <updated>1763119129329</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Update User functions">
+      <option name="closed" value="true" />
+      <created>1763119296897</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1763119296897</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Update User functions">
+      <option name="closed" value="true" />
+      <created>1763189605136</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1763189605136</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Update User functions">
+      <option name="closed" value="true" />
+      <created>1763189661778</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1763189661778</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
