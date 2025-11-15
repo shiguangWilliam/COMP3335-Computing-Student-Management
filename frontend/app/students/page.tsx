@@ -143,7 +143,7 @@ export default function StudentsPage() {
         <h1 className="mb-2 text-2xl font-semibold">Students</h1>
         <p className="text-sm text-zinc-600">该模块的后端接口暂未实现。</p>
         <div className="mt-4">
-          <NotImplemented endpoint="/API/function/students" />
+          <NotImplemented endpoint="/API/students" />
         </div>
       </div>
     );

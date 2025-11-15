@@ -1,8 +1,75 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { relaySecure } from "@/lib/secureProxy";
+import crypto from "crypto";
+import { ensureSameSite } from "@/lib/cookieHeader";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  return relaySecure(req, "/login");
+  try {
+    // 使用 clone() 读取请求体以进行格式判定，避免消耗原始流
+    const body = await req.clone().json();
+    const isEnvelope = !!(
+      body && typeof body === "object" &&
+      typeof (body as Record<string, unknown>)["encryptedKeyBase64"] === "string" &&
+      typeof (body as Record<string, unknown>)["ivBase64"] === "string" &&
+      typeof (body as Record<string, unknown>)["ciphertextBase64"] === "string" &&
+      typeof (body as Record<string, unknown>)["tagBase64"] === "string"
+    );
+    if (isEnvelope) {
+      return relaySecure(req, "/login");
+    }
+
+    // Plain JSON fallback: forward to backend /API/login with HMAC
+    const { email, password, role } = body as { email: string; password: string; role?: "student" | "ARO" | "guardian" | "DRO" };
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+    }
+    const base = process.env.NEXT_PUBLIC_API_URL || req.nextUrl.origin;
+    const url = `${base}/API/login`;
+    const secret = process.env.GATEWAY_SHARED_SECRET;
+    if (!secret) {
+      return NextResponse.json({ message: "Missing GATEWAY_SHARED_SECRET for gateway HMAC" }, { status: 500 });
+    }
+    const method = "POST";
+    const timestamp = Date.now();
+    const nonce = crypto.randomBytes(12).toString("hex");
+    const bodyStr = JSON.stringify({ email, password, role });
+    const canonical = [method, "/API/login", bodyStr, String(timestamp), nonce].join("|");
+    console.log("[Debug] HMACAuth canonical:", canonical);
+    
+    
+    const signature = crypto.createHmac("sha256", secret).update(canonical, "utf8").digest("base64");
+
+    const cookieHeader = req.headers.get("cookie") || undefined;
+    // Debug: 输出当前请求携带的 Cookie 头（服务端终端可见）
+    console.log("[Debug] Cookie header:", cookieHeader);
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(cookieHeader ? { cookie: cookieHeader } : {}),
+        "X-Gateway-Signature": signature,
+        "X-Gateway-Signature-Alg": "HMAC-SHA256",
+        "X-Gateway-Timestamp": String(timestamp),
+        "X-Gateway-Nonce": nonce,
+      },
+      body: bodyStr,
+      credentials: "include",
+    });
+
+    const ct = res.headers.get("content-type") || "";
+    const isJson = ct.includes("application/json");
+    const payload = isJson ? await res.json() : await res.text();
+
+    const n = new NextResponse(isJson ? JSON.stringify(payload) : (payload as string), {
+      status: res.status,
+      headers: { "content-type": isJson ? "application/json" : "text/plain" },
+    });
+    const setCookie = res.headers.get("set-cookie");
+    if (setCookie) n.headers.set("set-cookie", ensureSameSite(setCookie, "Lax"));
+    return n;
+  } catch (err) {
+    return NextResponse.json({ message: (err as Error).message }, { status: 400 });
+  }
 }

@@ -1,0 +1,39 @@
+# Backend/Java Maven build outputs
+target/
+**/target/
+
+# IntelliJ IDEA
+*.iml
+.idea/
+out/
+
+# VS Code
+.vscode/
+
+# Java class files
+**/*.class
+
+# Logs
+*.log
+logs/
+log/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+
+# Local libs/binaries (use Maven dependencies instead)
+lib/*.jar
+**/lib/*.jar
+
+# Maven backup files
+pom.xml.versionsBackup
+release.properties
+dependency-reduced-pom.xml
+
+# Spring Boot local profile config (keep example committed)
+src/main/resources/application-local.yml
