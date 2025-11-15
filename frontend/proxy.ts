@@ -1,36 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COOKIE_NAME_AUTH } from "@/lib/config";
 
-function base64UrlDecode(input: string): string {
-  const pad = input.length % 4 === 0 ? "" : "=".repeat(4 - (input.length % 4));
-  const b64 = input.replace(/-/g, "+").replace(/_/g, "/") + pad;
-  return Buffer.from(b64, "base64").toString("utf8");
-}
-
-function getUser(req: NextRequest): { role: string; email: string } | null {
-  const raw = req.cookies.get(COOKIE_NAME_AUTH)?.value;
-  if (!raw) return null;
-  // 支持两种格式：旧版 JSON Cookie 与 JWT（三段式）
-  // JWT 校验由后端负责；此处仅用于 UI 导航与基本角色判定
-  if (raw.includes(".")) {
-    const parts = raw.split(".");
-    if (parts.length !== 3) return null;
-    try {
-      const payloadStr = base64UrlDecode(parts[1]);
-      const payload = JSON.parse(payloadStr) as { role?: string; email?: string; exp?: number };
-      // exp 通常为秒；做兼容处理
-      const expMs = payload.exp ? (payload.exp > 1e12 ? payload.exp : payload.exp * 1000) : undefined;
-      if (!payload.role || !payload.email || (expMs && Date.now() > expMs)) return null;
-      return { role: payload.role, email: payload.email };
-    } catch {
-      return null;
-    }
-  }
-  // 兼容旧版 JSON Cookie（迁移期）
+async function getUser(req: NextRequest): Promise<{ role: string; email: string } | null> {
   try {
-    const payload = JSON.parse(decodeURIComponent(raw));
-    if (!payload || !payload.role || !payload.email || !payload.exp || Date.now() > payload.exp) return null;
-    return { role: payload.role, email: payload.email };
+    const url = new URL("/API/profile", req.url);
+    const cookieHeader = req.headers.get("cookie") || "";
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      headers: cookieHeader ? { cookie: cookieHeader } : {},
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const role = (data?.role ?? data?.user?.role) as string | undefined;
+    const email = (data?.email ?? data?.user?.email) as string | undefined;
+    if (!role || !email) return null;
+    return { role, email };
   } catch {
     return null;
   }
@@ -60,12 +43,12 @@ function allowedRoles(path: string): string[] | null {
   return null; // no special restriction (public or default)
 }
 
-export function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (isPublic(pathname)) return NextResponse.next();
 
-  const user = getUser(req);
+  const user = await getUser(req);
   if (!user) {
     const url = new URL("/login", req.url);
     return NextResponse.redirect(url);

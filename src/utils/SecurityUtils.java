@@ -28,4 +28,14 @@ public class SecurityUtils {
         }
         return false;
     }
+    public static String maskEmail(String email){
+        int atIndex = email.indexOf("@");
+        if(atIndex > 0){
+            return email.substring(0, atIndex).replaceAll(".", "*") + email.substring(atIndex);
+        }
+        else{
+            return email;
+        }
+
+    }
 }

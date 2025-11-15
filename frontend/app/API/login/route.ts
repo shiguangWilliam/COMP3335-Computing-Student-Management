@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { relaySecure } from "@/lib/secureProxy";
 import crypto from "crypto";
 import { ensureSameSite } from "@/lib/cookieHeader";
+import { envAuthDebug, validateLocalLogin } from "@/lib/authDebug";
+import { decryptHybridJson, HybridEncryptedPayload } from "@/lib/cryptoServer";
+import { cookieOptionsAuth } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +19,47 @@ export async function POST(req: NextRequest) {
       typeof (body as Record<string, unknown>)["ciphertextBase64"] === "string" &&
       typeof (body as Record<string, unknown>)["tagBase64"] === "string"
     );
+    const isDebug = envAuthDebug() && !process.env.NEXT_PUBLIC_API_URL;
+    if (isDebug) {
+      if (isEnvelope) {
+        const dec = decryptHybridJson(body as HybridEncryptedPayload) as Record<string, unknown>;
+        const decBody = (dec["body"] as Record<string, unknown> | undefined) || undefined;
+        const email = (dec["email"] as string | undefined) ?? (decBody?.["email"] as string | undefined);
+        const password = (dec["password"] as string | undefined) ?? (decBody?.["password"] as string | undefined);
+        if (!email || !password) {
+          return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+        }
+        const acc = await validateLocalLogin(email, password);
+        if (!acc) {
+          return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+        }
+        const payload = { email: acc.email, role: acc.role, name: acc.name || acc.email };
+        const cookieVal = Buffer.from(JSON.stringify(payload)).toString("base64");
+        const secure = cookieOptionsAuth.secure ? "; Secure" : "";
+        const domain = cookieOptionsAuth.domain ? `; Domain=${cookieOptionsAuth.domain}` : "";
+        const setCookie = `auth=${cookieVal}; Path=${cookieOptionsAuth.path}; HttpOnly; SameSite=${cookieOptionsAuth.sameSite}; Max-Age=${cookieOptionsAuth.maxAge}${secure}${domain}`;
+        const n = new NextResponse(JSON.stringify({ user: payload }), { status: 200, headers: { "content-type": "application/json" } });
+        n.headers.set("set-cookie", setCookie);
+        return n;
+      } else {
+        const { email, password } = body as { email: string; password: string };
+        if (!email || !password) {
+          return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+        }
+        const acc = await validateLocalLogin(email, password);
+        if (!acc) {
+          return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+        }
+        const payload = { email: acc.email, role: acc.role, name: acc.name || acc.email };
+        const cookieVal = Buffer.from(JSON.stringify(payload)).toString("base64");
+        const secure = cookieOptionsAuth.secure ? "; Secure" : "";
+        const domain = cookieOptionsAuth.domain ? `; Domain=${cookieOptionsAuth.domain}` : "";
+        const setCookie = `auth=${cookieVal}; Path=${cookieOptionsAuth.path}; HttpOnly; SameSite=${cookieOptionsAuth.sameSite}; Max-Age=${cookieOptionsAuth.maxAge}${secure}${domain}`;
+        const n = new NextResponse(JSON.stringify({ user: payload }), { status: 200, headers: { "content-type": "application/json" } });
+        n.headers.set("set-cookie", setCookie);
+        return n;
+      }
+    }
     if (isEnvelope) {
       return relaySecure(req, "/login");
     }

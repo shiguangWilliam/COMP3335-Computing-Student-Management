@@ -33,6 +33,7 @@ export default function NavBar() {
     try {
       await api.logout();
       setUser(null);
+      router.refresh();
       router.push("/login");
     } catch {}
   };
@@ -48,6 +49,7 @@ export default function NavBar() {
     if (path === "/grades") return role === "student" || role === "guardian" || role === "ARO";
     // Reports: allow all roles to access relevant reports
     if (path === "/reports") return ["student", "guardian", "ARO", "DRO"].includes(role);
+    if (path === "/disciplinary") return role === "DRO";
     return false;
   };
 
@@ -61,6 +63,7 @@ export default function NavBar() {
           {canSee("/enrollments") && <Link href="/enrollments" className="hover:underline">Enrollments</Link>}
           {canSee("/grades") && <Link href="/grades" className="hover:underline">Grades</Link>}
           {canSee("/reports") && <Link href="/reports" className="hover:underline">Reports</Link>}
+          {canSee("/disciplinary") && <Link href="/disciplinary" className="hover:underline">Disciplinary</Link>}
           <span className="mx-2 h-4 w-px bg-zinc-300" aria-hidden="true" />
           {user ? (
             <>
