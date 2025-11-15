@@ -5,40 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="Update User functions">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/http/RegisterController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/RegisterController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/ApiAuthInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/ApiAuthInterceptor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/Application.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/CachedBodyHttpServletRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/CachedBodyHttpServletRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/CachingRequestBodyFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/CachingRequestBodyFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/GateWayConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/GateWayConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/HmacAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/HmacAuthFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/HmacValidationException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/HmacValidationException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/RoleAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/RoleAuthFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/Session.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/Session.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/SessionFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/SessionFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/SessionStore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/SessionStore.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/URIRouteTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/URIRouteTable.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/app/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/WebConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/http/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/http/LogoutController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/LogoutController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/http/ProfileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/ProfileController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/http/PublicKeyController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/PublicKeyController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/http/RegisterController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/service/DBConnect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/service/DBConnect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/users/ARO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/ARO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/users/DRO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/DRO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/users/Guardian.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/Guardian.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/users/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/Student.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/users/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/Attributes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/Attributes.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/AuditUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/AuditUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/ParamValid.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/utils/SecurityUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/SecurityUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/ParamValid.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/ParamValid.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tables/Courses.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tables/Disciplinary.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/tables/Grades.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,7 +61,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "正在合并 main",
+    "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/Classes/COMP3335/COMP3335-Computing-Student-Management/lib",
