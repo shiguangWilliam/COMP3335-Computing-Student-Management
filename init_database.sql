@@ -75,6 +75,6 @@ CREATE TABLE disciplinary_records(
 );
 CREATE TABLE disciplinary_records_encrypted(
     id VARCHAR(20) PRIMARY KEY,
-    description VARCHAR(1000) NOT NULL,
+    descriptions VARCHAR(1000) NOT NULL,
     FOREIGN KEY (id) REFERENCES disciplinary_records(id)
 ) ENCRYPTION='Y';

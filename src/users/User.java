@@ -14,32 +14,34 @@ public abstract class User {
     public User(String ID) {
         this.ID = ID;
     }
-    public void update(HashMap<String,String> map) throws SQLException {
-        ArrayList<String> attList = new ArrayList<>();
-        ArrayList<String> valList = new ArrayList<>();
+    public void updateInfo(HashMap<String,String> map) throws SQLException {
+        ArrayList<String> attNormal = new ArrayList<>();
+        ArrayList<String> attEnc = new ArrayList<>();
         ArrayList<String> valNormal = new ArrayList<>();
         ArrayList<String> valEnc = new ArrayList<>();
         for(String key : map.keySet()){
-            attList.add(key);
-            valList.add(map.get(key));
+            if(utils.SecurityUtils.isEncrypted(key)){
+                attEnc.add(key);
+                valEnc.add(map.get(key));
+            } else {
+                attNormal.add(key);
+                valNormal.add(map.get(key));
+            }
         }
-        String[] att = attList.toArray(new String[0]);
-        String[] val = valList.toArray(new String[0]);
         StringBuilder sql = new StringBuilder("UPDATE %s SET ".formatted(this.type));
         StringBuilder sqlEnc = new StringBuilder("UPDATE %s_encrypted SET ".formatted(this.type));
-        for(int i=0;i<att.length;i++) {
-            if (utils.SecurityUtils.isEncrypted(att[i])) {
-                sqlEnc.append(i == att.length - 1 ? "%s = ? WHERE id = ?".formatted(att[i]) : "%s = ?, ".formatted(att[i]));
-                valEnc.add(val[i]);
-            } else {
-                sql.append(i == att.length - 1 ? "%s = ? WHERE id = ?".formatted(att[i]) : "%s = ?, ".formatted(att[i]));
-                valNormal.add(val[i]);
-            }
+        for(int i=0;i<attNormal.size();i++){
+            sql.append(i == attNormal.size() - 1 ? "%s = ? WHERE id = ?".formatted(attNormal.get(i)) : "%s = ?, ".formatted(attNormal.get(i)));
+        }
+        for(int i=0;i<attEnc.size();i++){
+            sqlEnc.append(i == attEnc.size() - 1 ? "%s = ? WHERE id = ?".formatted(attEnc.get(i)) : "%s = ?, ".formatted(attEnc.get(i)));
         }
         valNormal.add(this.ID);
         valEnc.add(this.ID);
-        DBConnect.dbConnector.executeUpdate(sql.toString(), valNormal.toArray(new String[0]));
-        DBConnect.dbConnector.executeUpdate(sqlEnc.toString(), valEnc.toArray(new String[0]));
+        if(valNormal.size() > 1)
+            DBConnect.dbConnector.executeUpdate(sql.toString(), valNormal.toArray(new String[0]));
+        if(valEnc.size() > 1)
+            DBConnect.dbConnector.executeUpdate(sqlEnc.toString(), valEnc.toArray(new String[0]));
     }
     public HashMap<String,String> queryInfo() throws SQLException {
         HashMap<String,String> map = new HashMap<>();
