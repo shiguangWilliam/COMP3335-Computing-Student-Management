@@ -77,39 +77,42 @@ public abstract class User {
         return map;
     }
     public static boolean checkLogin(String ID, String passwdHash, String userType) throws SQLException {
-        String sql = "SELECT COUNT(*) AS count FROM %s_encrypted WHERE id = ? AND passwd_hash = ?".formatted(userType);
+        String t = userType == null ? "" : userType;
+        String lower = t.toLowerCase();
+        String table;
+        boolean staffRoleCheck = false;
+        String expectStaffRole = null;
+        if ("student".equals(lower) || "Student".equals(t)) {
+            table = "students";
+        } else if ("guardian".equals(lower) || "Guardian".equals(t)) {
+            table = "guardians";
+        } else if ("aro".equals(lower) || "dro".equals(lower) || "staff".equals(lower) || "Staff".equals(t)) {
+            table = "staffs";
+            staffRoleCheck = "aro".equals(lower) || "dro".equals(lower);
+            expectStaffRole = "aro".equals(lower) ? "ARO" : ("dro".equals(lower) ? "DRO" : null);
+        } else {
+            return false;
+        }
+        String sql = "SELECT COUNT(*) AS count FROM %s_encrypted WHERE id = ? AND password_hash = ?".formatted(table);
         String[] params = {ID, passwdHash};
         try (ResultSet rs = DBConnect.dbConnector.executeQuery(sql, params)) {
-            if (rs.next() && rs.getInt("count") > 0) {
-                switch (userType) {
-                    case "Student":
-                        return true;
-                    case "Guardian":
-                        return true;
-                    case "Staff":
-                        String staffTypeSql = "SELECT role FROM staffs WHERE id = ?";
-                        String[] staffTypeParams = {ID};
-                        try(ResultSet staffRs = DBConnect.dbConnector.executeQuery(staffTypeSql, staffTypeParams)){
-                            if (staffRs.next()) {
-                                String staffType = staffRs.getString("staff_type");
-                                switch (staffType) {
-                                    case "ARO":
-                                        return true;
-                                    case "DRO":
-                                        return true;
-                                }
-                            }
-                        }
-                    default:
-                        return false;
-                }
-            } else {
+            if (!rs.next() || rs.getInt("count") <= 0) {
                 return false;
             }
-        } catch (SQLException e) {
-            System.out.println("Failed to execute SQL query: " + e.getMessage());
-            throw e;
         }
+        if ("staffs".equals(table) && staffRoleCheck && expectStaffRole != null) {
+            String staffTypeSql = "SELECT role FROM staffs WHERE id = ?";//从staff表中检查身份是否正确
+            String[] staffTypeParams = {ID};
+            try (ResultSet staffRs = DBConnect.dbConnector.executeQuery(staffTypeSql, staffTypeParams)) {
+                if (staffRs.next()) {
+                    String staffRole = staffRs.getString("role");
+                    return expectStaffRole.equals(staffRole);
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     public static void newUser(String userType, HashMap<String,String> map) throws SQLException {
         StringBuilder sql = new StringBuilder("INSERT INTO %s (".formatted(userType));

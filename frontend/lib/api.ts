@@ -1,6 +1,4 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3335";
-const USE_TEST_API = (process.env.NEXT_PUBLIC_USE_TEST_API || "").toLowerCase();
-const forceExternal = USE_TEST_API === "1" || USE_TEST_API === "true";
 
 type Json = Record<string, unknown>;
 
@@ -62,10 +60,9 @@ export type RegisterPayload = {
 };
 
 export async function register(payload: RegisterPayload): Promise<Json> {
-  return request<Json>("/API/register", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  // Registration is disabled in the final design:
+  // sample users are created directly in the database.
+  throw new Error("NOT_IMPLEMENTED: register disabled; use pre-configured accounts");
 }
 
 export type LoginPayload = { email: string; password: string };
@@ -100,6 +97,10 @@ export type Student = {
   lastName: string;
   email: string;
   mobile?: string;
+  gender?: "M" | "F";
+  identificationNumber?: string;
+  address?: string;
+  enrollmentYear?: number;
 };
 
 export async function listStudents(params?: { q?: string; email?: string; id?: string }): Promise<Student[]> {
@@ -107,55 +108,71 @@ export async function listStudents(params?: { q?: string; email?: string; id?: s
   return request<Student[]>(`/API/students${qs}`);
 }
 
-export async function createStudent(data: Partial<Student>): Promise<Student> {
-  return request<Student>("/API/students", { method: "POST", body: JSON.stringify(data) });
+export async function createStudent(data: Partial<Student> & { password?: string }): Promise<Student> {
+  throw new Error("NOT_IMPLEMENTED: students write disabled");
 }
 
 export async function updateStudent(id: string, data: Partial<Student>): Promise<Student> {
-  return request<Student>(`/API/students`, { method: "PUT", body: JSON.stringify({ id, ...data }) });
+  throw new Error("NOT_IMPLEMENTED: students write disabled");
 }
 
 export async function deleteStudent(id: string): Promise<Json> {
-  const qs = `?${new URLSearchParams({ id }).toString()}`;
-  return request<Json>(`/API/students${qs}`, { method: "DELETE" });
+  throw new Error("NOT_IMPLEMENTED: students write disabled");
+}
+
+// Guardians
+export type Guardian = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobile?: string;
+};
+
+export async function createGuardian(data: { firstName: string; lastName: string; email: string; password: string; mobile?: string; studentId?: string; relation?: "father" | "mother" | "other" }): Promise<Guardian> {
+  throw new Error("NOT_IMPLEMENTED: guardians write disabled");
+}
+
+export async function dbaCreateStudent(data: Partial<Student> & { password?: string }): Promise<Student> {
+  return request<Student>("/API/dba/students", { method: "POST", body: JSON.stringify(data) });
+}
+
+export async function dbaCreateGuardian(data: { firstName: string; lastName: string; email: string; password: string; mobile?: string; studentId?: string; relation?: "father" | "mother" | "other" }): Promise<Guardian> {
+  return request<Guardian>("/API/dba/guardians", { method: "POST", body: JSON.stringify(data) });
 }
 
 // Courses
 export type Course = { id: string; code: string; name: string; credits?: number };
 
 export async function listCourses(params?: { q?: string; code?: string }): Promise<Course[]> {
-  const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
-  return request<Course[]>(`/API/courses${qs}`);
+  throw new Error("NOT_IMPLEMENTED: courses API removed from final design");
 }
 
 export async function createCourse(data: Partial<Course>): Promise<Course> {
-  return request<Course>("/API/courses", { method: "POST", body: JSON.stringify(data) });
+  throw new Error("NOT_IMPLEMENTED: courses API removed from final design");
 }
 
 export async function updateCourse(id: string, data: Partial<Course>): Promise<Course> {
-  return request<Course>(`/API/courses`, { method: "PUT", body: JSON.stringify({ id, ...data }) });
+  throw new Error("NOT_IMPLEMENTED: courses API removed from final design");
 }
 
 export async function deleteCourse(id: string): Promise<Json> {
-  const qs = `?${new URLSearchParams({ id }).toString()}`;
-  return request<Json>(`/API/courses${qs}`, { method: "DELETE" });
+  throw new Error("NOT_IMPLEMENTED: courses API removed from final design");
 }
 
 // Enrollments
 export type Enrollment = { id: string; studentId: string; courseId: string; term?: string };
 
 export async function listEnrollments(params?: { studentId?: string; courseId?: string }): Promise<Enrollment[]> {
-  const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
-  return request<Enrollment[]>(`/API/enrollments${qs}`);
+  throw new Error("NOT_IMPLEMENTED: enrollments API removed from final design");
 }
 
 export async function enrollStudent(data: { studentId: string; courseId: string; term?: string }): Promise<Enrollment> {
-  return request<Enrollment>("/API/enrollments", { method: "POST", body: JSON.stringify(data) });
+  throw new Error("NOT_IMPLEMENTED: enrollments API removed from final design");
 }
 
 export async function unenrollStudent(id: string): Promise<Json> {
-  const qs = `?${new URLSearchParams({ id }).toString()}`;
-  return request<Json>(`/API/enrollments${qs}`, { method: "DELETE" });
+  throw new Error("NOT_IMPLEMENTED: enrollments API removed from final design");
 }
 
 // Grades
@@ -193,7 +210,15 @@ export async function deleteDisciplinaryRecord(id: string): Promise<Json> {
 
 // Profile (placeholder)
 export async function getProfile(): Promise<Json> {
-  return request<Json>("/API/profile", { method: "GET" });
+  const res = await fetch("/API/profile", { method: "GET", credentials: "include" });
+  const ct = res.headers.get("content-type") || "";
+  const isJson = ct.includes("application/json");
+  const payload = isJson ? await res.json() : await res.text();
+  if (!res.ok) {
+    const msg = isJson ? (payload as Record<string, unknown>)?.message || `HTTP ${res.status}` : `HTTP ${res.status}`;
+    throw new Error(msg as string);
+  }
+  return (isJson ? (payload as Json) : ({} as Json));
 }
 
 export async function updateProfile(data: Partial<{ firstName: string; lastName: string; email: string; mobile?: string; gender?: string; address?: string; department?: string; password: string }>): Promise<Json> {
@@ -206,11 +231,11 @@ export async function updatePassword(data: { oldPassword: string; newPassword: s
 
 // Reports (placeholder)
 export async function generateReport(data: { kind: string; filters?: Record<string, unknown> }): Promise<Json> {
-  return request<Json>("/API/reports", { method: "POST", body: JSON.stringify(data) });
+  return request<Json>("/API/reports", { method: "GET" });
 }
 
 export async function getAdminSummary(): Promise<Json> {
-  return request<Json>("/API/admin-summary", { method: "GET" });
+  throw new Error("NOT_IMPLEMENTED: admin summary API removed from final design");
 }
 
 export async function logout(): Promise<Json> {
@@ -231,6 +256,10 @@ export const api = {
   createStudent,
   updateStudent,
   deleteStudent,
+  dbaCreateStudent,
+  // guardians
+  createGuardian,
+  dbaCreateGuardian,
   // courses
   listCourses,
   createCourse,

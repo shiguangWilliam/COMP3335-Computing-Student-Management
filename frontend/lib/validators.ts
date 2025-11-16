@@ -30,6 +30,35 @@ export function validateMobile(mobile: string): string | null {
   return null;
 }
 
+export function validateGender(gender: string): string | null {
+  if (!gender?.trim()) return "Required";
+  if (!/^([Mm]|[Ff])$/.test(gender)) return "Use M or F";
+  return null;
+}
+
+export function validateAddress(address: string): string | null {
+  if (!address?.trim()) return "Required";
+  if (address.length > 255) return "Max 255 characters";
+  if (!/^[A-Za-z0-9_\s]+$/.test(address)) return "Use letters, numbers, underscore, space";
+  return null;
+}
+
+export function validateIdentificationNumber(idn: string): string | null {
+  if (!idn?.trim()) return "Required";
+  const s = idn.trim().toUpperCase();
+  const re = /^[A-Z]\d{6}\([0-9A]\)$/;
+  if (!re.test(s)) return "HKID format: 1 letter + 6 digits + (check)";
+  return null;
+}
+
+export function validateEnrollmentYear(y: string): string | null {
+  if (!y?.trim()) return "Required";
+  const n = Number(y);
+  if (!Number.isInteger(n)) return "Must be integer";
+  if (n < 1990 || n > 2100) return "1990–2100";
+  return null;
+}
+
 // Additional whitelist validators (optional usage)
 export function validateCourseCode(code: string): string | null {
   if (!code?.trim()) return "Required";
@@ -67,4 +96,12 @@ export function sanitizeMobile(input: string): string {
   const sign = s.startsWith("+") ? "+" : "";
   const digits = s.replace(/\+/g, "").replace(/[^0-9]/g, "").slice(0, 11);
   return sign + digits;
+}
+
+export function sanitizeAddress(input: string): string {
+  return (input || "").replace(/[^A-Za-z0-9_\s]/g, "");
+}
+
+export function sanitizeIdentificationNumber(input: string): string {
+  return (input || "").replace(/[^A-Za-z0-9()]/g, "").toUpperCase().slice(0, 10);
 }

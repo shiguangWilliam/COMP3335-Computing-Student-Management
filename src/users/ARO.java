@@ -68,4 +68,17 @@ public class ARO extends User{
             throw e;
         }
     }
+
+    public void queryAllGrade() throws SQLException {
+        try {
+            String sql = "SELECT * FROM ";
+            String[] params = {ID};
+            DBConnect.dbConnector.executeUpdate(sql, params);
+            String sqlEnc = "DELETE FROM grade_encrypted WHERE id = ?";
+            DBConnect.dbConnector.executeUpdate(sqlEnc, params);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            throw e;
+        }
+    }
 }

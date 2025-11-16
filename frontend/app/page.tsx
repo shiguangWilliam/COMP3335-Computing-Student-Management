@@ -24,7 +24,6 @@ export default function Home() {
   }, []);
 
   const modules = [
-    { href: "/students", title: "Students", desc: "Manage student profiles" },
     { href: "/courses", title: "Courses", desc: "Course catalog and details" },
     { href: "/enrollments", title: "Enrollments", desc: "Enroll/unenroll students" },
     { href: "/grades", title: "Grades", desc: "Assign and view grades" },

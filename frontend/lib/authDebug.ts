@@ -3,7 +3,7 @@ import path from "path";
 
 export type Account = {
   email: string;
-  role: "student" | "ARO" | "guardian" | "DRO";
+  role: "student" | "ARO" | "guardian" | "DRO" | "DBA";
   password: string;
   name?: string;
 };

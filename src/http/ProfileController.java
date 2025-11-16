@@ -23,10 +23,14 @@ import java.util.UUID;
 import java.util.Set;
 import service.DBConnect;
 import utils.ParamValid;
+import org.springframework.beans.factory.annotation.Autowired;
+import app.SessionStore;
 
 @RestController
 public class ProfileController {
     private static final Logger log = LoggerFactory.getLogger(ProfileController.class.getName());
+    @Autowired
+    private SessionStore sessionStore;
     @GetMapping(value = "/API/profile", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> profile(HttpServletRequest request, HttpServletResponse response) {
         String requestId = request.getHeader("X-Request-ID");
@@ -342,10 +346,15 @@ public class ProfileController {
                 return resp;
             }
             String newPassHash = SecurityUtils.getPasswdHash(newPassword);
-            Map<String,String> update = new HashMap<>();
-            update.put("password",newPassHash);
-            
-            // user.updateInfo(update);
+            HashMap<String,String> update = new HashMap<>();
+            update.put("password_hash",newPassHash);
+            user.updateInfo(update);
+            sessionStore.invalidate(session.getSid());
+            response.addHeader("Set-Cookie", "sid=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0");
+            resp.put("ok",true);
+            resp.put("message","Password updated");
+            log.info("audit={}", AuditUtils.pack("requestId", requestId, "userId", session.getUserId(), "role", role, "emailMasked", SecurityUtils.maskEmail(session.getEmail()), "message", "Password updated"));
+            return resp;
         }
         catch(SQLException e){
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "userId", session.getUserId(), "role", role, "emailMasked", SecurityUtils.maskEmail(session.getEmail()), "error", "SQL_EXCEPTION"));
@@ -354,7 +363,5 @@ public class ProfileController {
             response.setStatus(500);
             return resp;
         }
-        return resp;
-        
     }
 }

@@ -50,4 +50,16 @@ public class DBConnect {
             throw e;
         }
     }
+
+    public ResultSet executeQuery(String sql) throws SQLException {
+        try(PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            CachedRowSet crs = RowSetProvider.newFactory().createCachedRowSet();
+            crs.populate(pstmt.executeQuery());
+            return crs;
+        } catch (SQLException e) {
+            System.out.println("Failed to execute SQL query: " + e.getMessage());
+            throw e;
+        }
+    }
 }

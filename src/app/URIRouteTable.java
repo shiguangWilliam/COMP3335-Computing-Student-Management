@@ -16,12 +16,13 @@ public class URIRouteTable {
         // profile
         routeTable.put(key("GET", "/API/profile"), new String[]{"student","guardian","ARO","DRO"});
         routeTable.put(key("PUT", "/API/profile"), new String[]{"student","guardian","ARO","DRO"});
+        routeTable.put(key("PUT", "/API/modified_Passowrd"), new String[]{"student","guardian","ARO","DRO"});
 
         // students
         routeTable.put(key("GET", "/API/students"), new String[]{"ARO", "DRO"});
-        routeTable.put(key("POST", "/API/students"), new String[]{"ARO", "DRO"});
-        routeTable.put(key("PUT", "/API/students"), new String[]{"ARO", "DRO"});
-        routeTable.put(key("DELETE", "/API/students"), new String[]{"ARO", "DRO"});
+
+        // guardians
+        routeTable.put(key("GET", "/API/guardians"), new String[]{"ARO", "DRO"});
 
         // courses
         routeTable.put(key("GET", "/API/courses"), new String[]{"ARO", "DRO"});
@@ -40,6 +41,7 @@ public class URIRouteTable {
 
         // reports
         routeTable.put(key("POST", "/API/reports"), new String[]{"student", "guardian", "ARO", "DRO"});
+        routeTable.put(key("GET", "/API/reports"), new String[]{"student", "guardian", "ARO", "DRO"});
 
         // admin summary
         routeTable.put(key("GET", "/API/admin-summary"), new String[]{"ARO", "DRO"});

@@ -19,7 +19,7 @@ export async function relaySecure(req: NextRequest, targetTail: string): Promise
 
     const qs = dec.query ? new URLSearchParams(dec.query).toString() : "";
     // 若未配置外部后端地址，则回落到当前站点 origin，使用单层 /API/* 路由
-    const base = process.env.NEXT_PUBLIC_API_URL || req.nextUrl.origin;
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3335";
     const url = `${base}/API${targetTail}${qs ? `?${qs}` : ""}`;
 
     const method = (dec.method || "POST").toUpperCase();

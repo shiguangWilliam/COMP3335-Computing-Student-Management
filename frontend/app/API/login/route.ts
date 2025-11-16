@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
-    const base = process.env.NEXT_PUBLIC_API_URL || req.nextUrl.origin;
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3335";
     const url = `${base}/API/login`;
     const secret = process.env.GATEWAY_SHARED_SECRET;
     if (!secret) {

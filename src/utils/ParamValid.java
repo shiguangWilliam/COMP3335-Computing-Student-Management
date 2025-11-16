@@ -77,4 +77,37 @@ public class ParamValid {
         String regex = "^[A-Za-z0-9_\\s]+$"; //额外允许空白字符
         return address.matches(regex);
     }
+
+    public static boolean isValidGender(String gender){
+        if(gender == null || gender.isBlank()){
+            return false;
+        }
+        if(gender.length() > 1){
+            return false;
+        }
+        String regex = "^[MFmf]$";
+        return gender.matches(regex);
+    }
+
+    public static boolean isValidEnrollmentYear(String year){
+        if(year == null || year.isBlank()){
+            return false;
+        }
+        if(year.length() != 4){
+            return false;
+        }
+        String regex = "^[0-9]+$";
+        return year.matches(regex);
+    }
+
+    public static boolean isValidIdentityNum(String identityNum){
+        if(identityNum == null || identityNum.isBlank()){
+            return false;
+        }
+        if(identityNum.length() != 10){
+            return false;
+        }
+        String regex1 = "^[A-Z][0-9]{6}\\([0-9A]\\)$";//香港身份证
+        return identityNum.matches(regex1);
+    }
 }

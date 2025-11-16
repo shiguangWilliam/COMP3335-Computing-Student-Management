@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
   }
-  const base = process.env.NEXT_PUBLIC_API_URL || req.nextUrl.origin;
+  const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3335";
   const url = `${base}/API/profile`;
   const secret = process.env.GATEWAY_SHARED_SECRET;
   if (!secret) {

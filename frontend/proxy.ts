@@ -28,15 +28,13 @@ function isPublic(path: string) {
 function allowedRoles(path: string): string[] | null {
   // Define simple role-based restrictions; adjust as needed
   if (path.startsWith("/admin")) return ["ARO", "DRO"]; // staff-only
-  // Grades: student & guardian can access their grades; ARO manages grades
-  if (path.startsWith("/grades")) return ["student", "guardian", "ARO"];
+  if (path.startsWith("/grades")) return ["ARO"];
   // Disciplinary records: DRO manages; include both possible paths for future pages
   if (path.startsWith("/disciplinary") || path.startsWith("/disciplinaries")) return ["DRO"];
   // Other academic management sections remain staff-only
   if (path.startsWith("/enrollments")) return ["ARO", "DRO"];
   if (path.startsWith("/courses")) return ["ARO", "DRO"];
-  // Reports: allow all roles to access relevant reports
-  if (path.startsWith("/reports")) return ["student", "guardian", "ARO", "DRO"];
+  if (path.startsWith("/reports")) return ["student", "guardian"];
   if (path.startsWith("/students")) return ["ARO", "DRO"]; // limit student management to staff roles
   // Profile: all roles can maintain personal information
   if (path.startsWith("/profile")) return ["student", "ARO", "guardian", "DRO"]; // any logged-in user
@@ -44,7 +42,7 @@ function allowedRoles(path: string): string[] | null {
 }
 
 export async function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const { pathname, hostname } = req.nextUrl;
 
   if (isPublic(pathname)) return NextResponse.next();
 
@@ -59,6 +57,15 @@ export async function proxy(req: NextRequest) {
     // redirect unauthorized users to home
     const url = new URL("/", req.url);
     return NextResponse.redirect(url);
+  }
+
+  // Additional host restriction: /dba only from localhost
+  if (pathname.startsWith("/dba")) {
+    const h = hostname.toLowerCase();
+    if (!(h === "localhost" || h === "127.0.0.1") || user.role !== "DBA") {
+      const url = new URL("/", req.url);
+      return NextResponse.redirect(url);
+    }
   }
 
   // Prevent logged-in users from visiting login/register
