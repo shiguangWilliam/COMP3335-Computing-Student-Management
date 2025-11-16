@@ -104,6 +104,25 @@
   - 400: `{ "ok": false, "message": "invalid fields" }`
   - 403: `{ "ok": false, "message": "forbidden" }`
 
+### DELETE /API/grades
+- Roles: `ARO`
+- Content-Type: `application/json`
+- Request body:
+```json
+{
+  "gradeId": "<grade-record-id>"
+}
+```
+-- Behavior:
+  - ARO 根据传入的 `gradeId` 删除对应的成绩记录。
+  - 删除前先在 `grades` 表中检查该记录是否存在，仅在存在时执行删除。
+  - 删除时需同步删除 `grades_encrypted` 中同一 `id` 的加密记录。
+- Responses 示例:
+  - 200: `{ "ok": true, "message": "Grade Record Deleted Successfully" }`
+  - 404: `{ "ok": false, "message": "Grade Record Not Found" }`
+  - 403: `{ "ok": false, "message": "forbidden" }`
+
+
 ---
 
 ## 3. 纪律记录 /API/disciplinary-records（DRO）
@@ -241,4 +260,3 @@
 - 本项目最终设计中注册入口关闭。
 - Responses:
   - 501: `{ "code": "NOT_IMPLEMENTED", "message": "register not available" }`
-

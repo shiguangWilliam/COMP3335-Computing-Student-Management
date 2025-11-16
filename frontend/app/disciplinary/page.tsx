@@ -12,7 +12,11 @@ export default function DisciplinaryPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const [form, setForm] = useState<{ id?: string; studentId: string; date: string; staffId: string; description?: string }>({ studentId: "", date: "", staffId: "", description: "" });
+  const [form, setForm] = useState<{ id?: string; studentId: string; date: string; description?: string }>({
+    studentId: "",
+    date: "",
+    description: "",
+  });
 
   useEffect(() => {
     api
@@ -49,12 +53,12 @@ export default function DisciplinaryPage() {
     try {
       if (role !== "DRO") throw new Error("Read-only");
       if (form.id) {
-        await api.updateDisciplinaryRecord(form.id, { studentId: form.studentId, date: form.date, staffId: form.staffId, description: form.description });
+        await api.updateDisciplinaryRecord(form.id, { date: form.date, description: form.description });
       } else {
-        await api.createDisciplinaryRecord({ studentId: form.studentId, date: form.date, staffId: form.staffId, description: form.description });
+        await api.createDisciplinaryRecord({ studentId: form.studentId, date: form.date, description: form.description });
       }
       setMsg("Saved");
-      setForm({ studentId: "", date: "", staffId: "", description: "" });
+      setForm({ studentId: "", date: "", description: "" });
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
@@ -65,7 +69,7 @@ export default function DisciplinaryPage() {
 
   const pick = (r: Rec) => {
     if (role !== "DRO") return;
-    setForm({ id: r.id, studentId: r.studentId, date: r.date, staffId: r.staffId, description: r.description });
+    setForm({ id: r.id, studentId: r.studentId, date: r.date, description: r.description });
   };
 
   return (
@@ -76,12 +80,45 @@ export default function DisciplinaryPage() {
         {role === "DRO" && (
           <div className="rounded border p-4">
             <h2 className="mb-2 font-medium">Create / Edit</h2>
+            <div className="mb-1 text-xs text-zinc-500">
+              {form.id ? `Editing record ${form.id}` : "Creating new record"}
+            </div>
             <div className="grid gap-2">
-              <input className="rounded border px-3 py-2" placeholder="Student ID" value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })} />
-              <input className="rounded border px-3 py-2" placeholder="Date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-              <input className="rounded border px-3 py-2" placeholder="Staff ID" value={form.staffId} onChange={(e) => setForm({ ...form, staffId: e.target.value })} />
-              <input className="rounded border px-3 py-2" placeholder="Description" value={form.description || ""} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-              <button className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60" disabled={loading} onClick={save}>Save</button>
+              <input
+                className="rounded border px-3 py-2"
+                placeholder="Student ID"
+                value={form.studentId}
+                onChange={(e) => setForm({ ...form, studentId: e.target.value })}
+              />
+              <input
+                className="rounded border px-3 py-2"
+                placeholder="Date"
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+              />
+              <input
+                className="rounded border px-3 py-2"
+                placeholder="Description"
+                value={form.description || ""}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              />
+              <div className="flex gap-2">
+                <button
+                  className="flex-1 rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
+                  disabled={loading}
+                  onClick={save}
+                >
+                  {form.id ? "Update" : "Create"}
+                </button>
+                <button
+                  type="button"
+                  className="rounded border px-3 py-2 text-sm"
+                  disabled={loading}
+                  onClick={() => setForm({ studentId: "", date: "", description: "" })}
+                >
+                  New
+                </button>
+              </div>
             </div>
           </div>
         )}

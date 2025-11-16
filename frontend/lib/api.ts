@@ -176,14 +176,21 @@ export async function unenrollStudent(id: string): Promise<Json> {
 }
 
 // Grades
-export type GradeRecord = { id: string; studentId: string; courseId: string; grade: string };
+export type GradeRecord = {
+  id: string;
+  studentId: string;
+  courseId: string;
+  grade: string;
+  term?: string;
+  comments?: string;
+};
 
 export async function listGrades(params?: { studentId?: string; courseId?: string }): Promise<GradeRecord[]> {
   const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
   return request<GradeRecord[]>(`/API/grades${qs}`);
 }
 
-export async function assignGrade(data: { studentId: string; courseId: string; grade: string }): Promise<GradeRecord> {
+export async function assignGrade(data: { studentId: string; courseId: string; grade: string; term?: string; comments?: string }): Promise<GradeRecord> {
   return request<GradeRecord>("/API/grades", { method: "POST", body: JSON.stringify(data) });
 }
 
@@ -195,11 +202,15 @@ export async function listDisciplinaryRecords(params?: { studentId?: string; sta
   return request<DisciplinaryRecord[]>(`/API/disciplinary-records${qs}`);
 }
 
-export async function createDisciplinaryRecord(data: { studentId: string; date: string; staffId: string; description?: string }): Promise<DisciplinaryRecord> {
+export async function createDisciplinaryRecord(data: { studentId: string; date: string; description?: string }): Promise<DisciplinaryRecord> {
+  // staffId is derived from current DRO session on the backend
   return request<DisciplinaryRecord>("/API/disciplinary-records", { method: "POST", body: JSON.stringify(data) });
 }
 
-export async function updateDisciplinaryRecord(id: string, data: Partial<{ studentId: string; date: string; staffId: string; description?: string }>): Promise<DisciplinaryRecord> {
+export async function updateDisciplinaryRecord(
+  id: string,
+  data: Partial<{ date: string; description?: string }>
+): Promise<DisciplinaryRecord> {
   return request<DisciplinaryRecord>("/API/disciplinary-records", { method: "PUT", body: JSON.stringify({ id, ...data }) });
 }
 

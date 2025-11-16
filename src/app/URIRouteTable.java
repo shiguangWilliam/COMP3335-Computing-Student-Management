@@ -18,39 +18,40 @@ public class URIRouteTable {
         routeTable.put(key("PUT", "/API/profile"), new String[]{"student","guardian","ARO","DRO"});
         routeTable.put(key("PUT", "/API/modified_Passowrd"), new String[]{"student","guardian","ARO","DRO"});
 
-        // students
+        // students（DBA，搁置）
         routeTable.put(key("GET", "/API/students"), new String[]{"ARO", "DRO"});
 
-        // guardians
+        // guardians（DBA，搁置）
         routeTable.put(key("GET", "/API/guardians"), new String[]{"ARO", "DRO"});
 
-        // courses
-        routeTable.put(key("GET", "/API/courses"), new String[]{"ARO", "DRO"});
-        routeTable.put(key("POST", "/API/courses"), new String[]{"ARO", "DRO"});
-        routeTable.put(key("PUT", "/API/courses"), new String[]{"ARO", "DRO"});
-        routeTable.put(key("DELETE", "/API/courses"), new String[]{"ARO", "DRO"});
+        // courses（额外实现）
+        // routeTable.put(key("GET", "/API/courses"), new String[]{"ARO", "DRO"});
+        // routeTable.put(key("POST", "/API/courses"), new String[]{"ARO", "DRO"});
+        // routeTable.put(key("PUT", "/API/courses"), new String[]{"ARO", "DRO"});
+        // routeTable.put(key("DELETE", "/API/courses"), new String[]{"ARO", "DRO"});
 
-        // enrollments
-        routeTable.put(key("GET", "/API/enrollments"), new String[]{"ARO", "DRO"});
-        routeTable.put(key("POST", "/API/enrollments"), new String[]{"ARO", "DRO"});
-        routeTable.put(key("DELETE", "/API/enrollments"), new String[]{"ARO", "DRO"});
+        // enrollments（额外实现）
+        // routeTable.put(key("GET", "/API/enrollments"), new String[]{"ARO", "DRO"});
+        // routeTable.put(key("POST", "/API/enrollments"), new String[]{"ARO", "DRO"});
+        // routeTable.put(key("DELETE", "/API/enrollments"), new String[]{"ARO", "DRO"});
 
         // grades
-        routeTable.put(key("GET", "/API/grades"), new String[]{"student", "guardian", "ARO"});
+        routeTable.put(key("GET", "/API/grades"), new String[]{"ARO"});
         routeTable.put(key("POST", "/API/grades"), new String[]{"ARO"});
+        routeTable.put(key("DELETE", "/API/grades"), new String[]{"ARO"});
 
         // reports
         routeTable.put(key("POST", "/API/reports"), new String[]{"student", "guardian", "ARO", "DRO"});
         routeTable.put(key("GET", "/API/reports"), new String[]{"student", "guardian", "ARO", "DRO"});
 
-        // admin summary
-        routeTable.put(key("GET", "/API/admin-summary"), new String[]{"ARO", "DRO"});
+        // admin summary（额外实现）
+        // routeTable.put(key("GET", "/API/admin-summary"), new String[]{"ARO", "DRO"});
 
         // disciplinary records
         routeTable.put(key("GET", "/API/disciplinary-records"), new String[]{"DRO"});
         routeTable.put(key("POST", "/API/disciplinary-records"), new String[]{"DRO"});
+        
         routeTable.put(key("PUT", "/API/disciplinary-records"), new String[]{"DRO"});
-        routeTable.put(key("DELETE", "/API/disciplinary-records"), new String[]{"DRO"});
     }
 
     private static final Set<String> publicRoutes = new HashSet<>();
