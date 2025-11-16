@@ -67,7 +67,7 @@ public class HmacAuthFilter implements Filter {
         catch(HmacValidationException exception){
             log.warn("HMAC validation failed: {}", exception.getMessage());
             response.setStatus(exception.getStatusCode());
-            response.getWriter().write("{\"error\":\"unAuthorized\"}");
+            response.getWriter().write(String.format("{\"error\":\"unAuthorized: %s\"}", exception.getMessage()));
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
         }
