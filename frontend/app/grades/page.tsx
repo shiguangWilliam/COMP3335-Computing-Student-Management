@@ -30,9 +30,9 @@ export default function GradesPage() {
     setError(null);
     setMsg(null);
     try {
-      if (role !== "ARO") throw new Error("Only ARO can view/manage grades");
+      if (role !== "ARO") throw new Error("Only ARO staff can view/manage grades.");
       if (!filters.studentId || !filters.courseId) {
-        throw new Error("Student ID and Course ID are required");
+        throw new Error("Student ID and Course ID are required.");
       }
       const list = await api.listGrades({ studentId: filters.studentId, courseId: filters.courseId });
       setItems(list || []);
@@ -55,9 +55,12 @@ export default function GradesPage() {
     setError(null);
     setMsg(null);
     try {
-      if (role !== "ARO") throw new Error("Only ARO can assign grades");
+      if (role !== "ARO") throw new Error("Only ARO staff can assign grades.");
       if (!assign.studentId || !assign.courseId || !assign.term || !assign.grade) {
         throw new Error("Student ID, Course ID, Term and Grade are required");
+      }
+      if (!assign.comments.trim()) {
+        throw new Error("Comments are required");
       }
       await api.assignGrade({
         studentId: assign.studentId,
@@ -79,7 +82,7 @@ export default function GradesPage() {
   return (
     <div>
       <h1 className="mb-4 text-2xl font-semibold">Grades</h1>
-      <p className="text-sm text-zinc-600">Only ARO can access this page.</p>
+      <p className="text-sm text-zinc-600">Only ARO staff can access this page.</p>
       <div className="mt-6 grid gap-6 sm:grid-cols-2">
         {role === "ARO" && (
           <div className="rounded border p-4">
@@ -111,7 +114,7 @@ export default function GradesPage() {
               />
               <textarea
                 className="rounded border px-3 py-2"
-                placeholder="Comments"
+                placeholder="Comments (required)"
                 value={assign.comments}
                 onChange={(e) => setAssign({ ...assign, comments: e.target.value })}
               />
@@ -162,7 +165,9 @@ export default function GradesPage() {
               <div key={it.id} className="rounded border p-2">
                 <div className="text-sm">
                   {it.studentId} · {it.courseId}
-                  {it.term ? ` · ${it.term}` : ""} · {it.grade}
+                  {it.term ? ` · ${it.term}` : ""}
+                  {" · "}
+                  {it.grade}
                 </div>
                 {it.comments && <div className="text-xs text-zinc-600">Comments: {it.comments}</div>}
               </div>
