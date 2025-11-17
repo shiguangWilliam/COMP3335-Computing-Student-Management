@@ -8,11 +8,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ARO extends User{
-    static String[] normalAttributes = new String[]{"id","last_name","first_name", "department", "role"};
-    static String[] encryptedAttributes = new String[]{"gender","email","phone","address","identification_number"};
+    private static final String[] NORMAL_ATTRIBUTES = new String[]{"id","last_name","first_name", "department", "role"};
+    private static final String[] ENCRYPTED_ATTRIBUTES = new String[]{"gender","email","phone","address","identification_number"};
     public ARO(String ID) {
         super(ID);
-        this.type = "ARO";
+        this.type = "staffs";
+    }
+    @Override
+    protected String[] getNormalAttributes() {
+        return NORMAL_ATTRIBUTES;
+    }
+    @Override
+    protected String[] getEncryptedAttributes() {
+        return ENCRYPTED_ATTRIBUTES;
     }
     public void addGrade(String ID, String studentID, String courseID, String term, String grade, String comments) throws SQLException {
         try {

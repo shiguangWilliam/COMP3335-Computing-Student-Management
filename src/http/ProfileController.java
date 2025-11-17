@@ -97,7 +97,7 @@ public class ProfileController {
             return resp;
         }
         catch (SQLException e){
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "userId", session.getUserId(), "role", role, "emailMasked", SecurityUtils.maskEmail(session.getEmail()), "error", "SQL_EXCEPTION"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "userId", session.getUserId(), "role", role, "emailMasked", SecurityUtils.maskEmail(session.getEmail()), "error", "SQL_EXCEPTION","errorMessage",e.getMessage()));
             resp.put("ok",false);
             resp.put("message","fetch failed");
             response.setStatus(500);
