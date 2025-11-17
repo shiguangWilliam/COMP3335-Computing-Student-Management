@@ -18,7 +18,7 @@
 - 避免提交敏感文件：`*.env*`（含 `.env.local`）已在 `.gitignore` 中忽略
 
 ## 环境要求
-- 安装 `Node.js >= 18` 与 `npm`（或 `yarn/pnpm/bun`）。
+- 安装 `Node.js >= 20` 与 `npm`（或 `yarn/pnpm/bun`）。
 
 ## 在 Linux 下安装 Node.js 并初始化项目前端（傻瓜式教程）
 
