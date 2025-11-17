@@ -30,7 +30,9 @@ public class GradeController {
     private Logger log = LoggerFactory.getLogger(GradeController.class);
 
     @GetMapping(value = "/API/grades", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> getGradeList(@RequestParam("studentId") String studentid, @RequestParam("courseId") String courseID,HttpServletRequest request, HttpServletResponse response){
+    public Map<String, Object> getGradeList(@RequestParam(value = "studentId", required = false) String studentid,
+                                            @RequestParam(value = "courseId", required = false) String courseID,
+                                            HttpServletRequest request, HttpServletResponse response){
         //基础信息（RequestID，session获取校验）
         String requestId = request.getHeader("X-Request-ID");
         if (requestId == null || requestId.isBlank()) {
@@ -60,23 +62,20 @@ public class GradeController {
             return err;
         }
         //确认用户身份
-        if(studentid==null || studentid.isBlank() || courseID==null || courseID.isBlank()){
-            err.put("code",400);
-            err.put("message","Bad Request: Missing Parameters");
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Parameters"));
-            return err;
+        ArrayList<String> params = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT g.id, g.student_id, g.course_id, g.term, ge.grade, ge.comments " +
+                "FROM grades g JOIN grades_encrypted ge ON g.id = ge.id WHERE 1=1");
+        if(studentid != null && !studentid.isBlank()){
+            sql.append(" AND g.student_id = ?");
+            params.add(studentid);
         }
-        String sql = "SELECT * FROM grades g JOIN grades_encrypted ge ON g.id = ge.id WHERE g.student_id = ? AND g.course_id = ?";
-        String[] param = {studentid, courseID};
-        try(ResultSet rs = DBConnect.dbConnector.executeQuery(sql, param)){
+        if(courseID != null && !courseID.isBlank()){
+            sql.append(" AND g.course_id = ?");
+            params.add(courseID);
+        }
+        try(ResultSet rs = DBConnect.dbConnector.executeQuery(sql.toString(), params.toArray(new String[0]))){
             ArrayList<Map<String, Object>> gradeList = new ArrayList<>();
-            if(!rs.next()){
-                err.put("code",404);
-                err.put("message","Grades Not Found");
-                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grades Not Found"));
-                return err;
-            }
-            do{
+            while(rs.next()){
                 Map<String, Object> grade = new HashMap<>();
                 grade.put("id", rs.getString("id"));
                 grade.put("student_id", rs.getString("student_id"));
@@ -85,7 +84,7 @@ public class GradeController {
                 grade.put("comments", rs.getString("comments"));
                 grade.put("term", rs.getString("term"));
                 gradeList.add(grade);
-            }while(rs.next());
+            }
             resp.put("data", gradeList);
             resp.put("ok", true);
             log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grades Retrieved Successfully"));

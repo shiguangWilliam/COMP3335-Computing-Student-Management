@@ -31,10 +31,7 @@ export default function GradesPage() {
     setMsg(null);
     try {
       if (role !== "ARO") throw new Error("Only ARO staff can view/manage grades.");
-      if (!filters.studentId || !filters.courseId) {
-        throw new Error("Student ID and Course ID are required.");
-      }
-      const list = await api.listGrades({ studentId: filters.studentId, courseId: filters.courseId });
+      const list = await api.listGrades(filters);
       setItems(list || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed");
@@ -133,13 +130,13 @@ export default function GradesPage() {
           <div className="grid gap-2">
             <input
               className="rounded border px-3 py-2"
-              placeholder="Student ID"
+              placeholder="Student ID (optional)"
               value={filters.studentId || ""}
               onChange={(e) => setFilters({ ...filters, studentId: e.target.value || undefined })}
             />
             <input
               className="rounded border px-3 py-2"
-              placeholder="Course ID"
+              placeholder="Course ID (optional)"
               value={filters.courseId || ""}
               onChange={(e) => setFilters({ ...filters, courseId: e.target.value || undefined })}
             />
