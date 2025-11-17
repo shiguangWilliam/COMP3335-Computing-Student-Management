@@ -4,11 +4,116 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="Update db initializer">
+    <list default="true" id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="Update User functions">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.agent.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copilot.data.migration.agent.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copilot.data.migration.ask.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask2agent.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copilot.data.migration.ask2agent.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.edit.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copilot.data.migration.edit.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/lib.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/lib.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/API.md" beforeDir="false" afterPath="$PROJECT_DIR$/API.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/COMP3335-Computing-Student-Management.iml" beforeDir="false" afterPath="$PROJECT_DIR$/COMP3335-Computing-Student-Management.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/api.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/api.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/dba/guardians/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/dba/guardians/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/dba/students/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/dba/students/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/disciplinary-records/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/disciplinary-records/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/grades/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/grades/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/login/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/login/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/logout/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/logout/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/modified_Passowrd/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/modified_Passowrd/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/profile/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/profile/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/public-key/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/public-key/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/reports/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/reports/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/API/students/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/API/students/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/admin/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/admin/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/admin/reports/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/admin/reports/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/courses/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/courses/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/dba/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/dba/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/disciplinary/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/disciplinary/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/enrollments/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/enrollments/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/grades/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/grades/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/login/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/login/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/profile/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/profile/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/register/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/register/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/reports/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/reports/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/student-info/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/student-info/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/students/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/students/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/NavBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/NavBar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/Button.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/ui/Button.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/Card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/ui/Card.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/Input.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/ui/Input.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/NotImplemented.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/ui/NotImplemented.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/eslint.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/eslint.config.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/authDebug.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/authDebug.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/cookieHeader.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/cookieHeader.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/cookies.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/cookies.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/cryptoServer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/cryptoServer.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/secureApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/secureApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/secureProxy.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/secureProxy.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/validators.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/validators.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/postcss.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/postcss.config.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/proxy.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/proxy.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/test_acount" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/test_acount" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/init_database.sql" beforeDir="false" afterPath="$PROJECT_DIR$/init_database.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" afterPath="$PROJECT_DIR$/mvnw" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" afterPath="$PROJECT_DIR$/mvnw.cmd" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/setup-percona.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/setup-percona.ps1" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/ApiAuthInterceptor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/ApiAuthInterceptor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/Application.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/Application.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/CachedBodyHttpServletRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/CachedBodyHttpServletRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/CachingRequestBodyFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/CachingRequestBodyFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/GateWayConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/GateWayConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/HmacAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/HmacAuthFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/HmacValidationException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/HmacValidationException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/RoleAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/RoleAuthFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/Session.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/Session.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/SessionFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/SessionFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/SessionStore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/SessionStore.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/URIRouteTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/URIRouteTable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/WebConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/http/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/http/DisciplinaryController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/DisciplinaryController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/http/GradeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/GradeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/http/GuardianController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/GuardianController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/http/LogoutController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/LogoutController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/http/ProfileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/ProfileController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/http/PublicKeyController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/PublicKeyController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/http/RegisterController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/RegisterController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/http/ReportController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/ReportController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/http/StudentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/http/StudentController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/scripts/TestAccountSeeder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/scripts/TestAccountSeeder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/service/DBConnect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/service/DBConnect.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tables/Courses.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/tables/Courses.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tables/Disciplinary.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/tables/Disciplinary.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tables/Grades.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/tables/Grades.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users/ARO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/ARO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users/DRO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/DRO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users/Guardian.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/Guardian.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/Student.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/users/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/users/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/Attributes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/Attributes.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/AuditUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/AuditUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/ParamValid.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/ParamValid.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/SecurityUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/SecurityUtils.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,15 +138,12 @@
     &quot;assignee&quot;: &quot;zyzakioi&quot;
   }
 }</component>
-  <component name="GithubDefaultAccount">
-    <option name="defaultAccountId" value="47671571-8dd9-4838-9e31-86e1cafe78d8" />
-  </component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/shiguangWilliam/COMP3335-Computing-Student-Management.git",
-    "accountId": "47671571-8dd9-4838-9e31-86e1cafe78d8"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/shiguangWilliam/COMP3335-Computing-Student-Management.git&quot;,
+    &quot;accountId&quot;: &quot;2f179f7b-4aac-4f41-967b-18dac8c525f7&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
 }</component>
@@ -60,12 +162,15 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RequestMappingsPanelOrder0": "0",
     "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
+    "RequestMappingsPanelWidth0": "1220",
+    "RequestMappingsPanelWidth1": "1219",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.Application.executor": "Run",
+    "Spring Boot.TestAccountSeeder.executor": "Run",
     "git-widget-placeholder": "main",
+    "ignore.preview.features.used": "true",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/Classes/COMP3335/COMP3335-Computing-Student-Management/lib",
@@ -75,53 +180,53 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "onboarding.tips.debug.path": "D:/Classes/COMP3335/COMP3335-Computing-Student-Management/src/Main.java",
-    "project.structure.last.edited": "Modules",
+    "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
+    "settings.editor.selected.configurable": "MavenSettings",
+    "ts.external.directory.path": "/home/ubuntu/COMP3335-Computing-Student-Management/frontend/node_modules/typescript/lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RdControllerToolWindowsLayoutState" isNewUi="true">
+    <layout>
+      <window_info id="Bookmarks" side_tool="true" />
+      <window_info id="Merge Requests" />
+      <window_info id="Backup and Sync History" />
+      <window_info id="Commit_Guest" show_stripe_button="false" />
+      <window_info id="Pull Requests" />
+      <window_info id="Learn" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.3298828" />
+      <window_info id="Commit" order="1" weight="0.3298828" />
+      <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Database Changes" />
+      <window_info anchor="bottom" id="TypeScript" />
+      <window_info anchor="bottom" id="Profiler" />
+      <window_info anchor="bottom" id="TODO" />
+      <window_info anchor="bottom" id="File Transfer" />
+      <window_info anchor="bottom" id="Version Control" order="0" />
+      <window_info anchor="bottom" id="Problems" order="1" />
+      <window_info anchor="bottom" id="Problems View" order="2" />
+      <window_info anchor="bottom" id="Terminal" order="3" weight="0.32989368" />
+      <window_info anchor="bottom" id="Services" order="4" />
+      <window_info anchor="bottom" id="Build" order="5" weight="0.32989368" />
+      <window_info anchor="bottom" id="Run" order="6" weight="0.32989368" />
+      <window_info anchor="right" id="Endpoints" />
+      <window_info anchor="right" id="Coverage" side_tool="true" />
+      <window_info anchor="right" id="Beans" />
+      <window_info anchor="right" content_ui="combo" id="Notifications" order="0" weight="0.25" />
+      <window_info anchor="right" id="AIAssistant" order="1" weight="0.25" />
+      <window_info anchor="right" id="Database" order="2" weight="0.25" />
+      <window_info anchor="right" id="Gradle" order="3" weight="0.25" />
+      <window_info anchor="right" id="Maven" order="4" weight="0.25" />
+    </layout>
+  </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\Classes\COMP3335\COMP3335-Computing-Student-Management\lib" />
     </key>
   </component>
   <component name="RunManager">
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="COMP3335-Computing-Student-Management" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="COMP3335-Computing-Student-Management" />
-      <option name="filePath" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
-      <module name="COMP3335-Computing-Student-Management" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="Application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="comp3335" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="app.Application" />
@@ -129,29 +234,15 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="Tox" factoryName="Tox">
-      <module name="COMP3335-Computing-Student-Management" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <method v="2" />
-    </configuration>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-b114ca120d71-intellij.indexing.shared.core-IU-242.21829.142" />
-        <option value="bundled-js-predefined-d6986cc7102b-7c0b70fcd90d-JavaScript-IU-242.21829.142" />
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.27397.103" />
       </set>
     </attachedChunks>
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="4b9a4c85-074e-4430-88b0-4ea1f84dd119" name="Changes" comment="" />
@@ -170,7 +261,8 @@
       <workItem from="1763113755683" duration="4495000" />
       <workItem from="1763176187162" duration="7438000" />
       <workItem from="1763209298022" duration="22000" />
-      <workItem from="1763365214941" duration="19000" />
+      <workItem from="1763370734453" duration="104000" />
+      <workItem from="1763370857127" duration="1533000" />
     </task>
     <task id="LOCAL-00001" summary="Add lib file.">
       <option name="closed" value="true" />
@@ -268,15 +360,7 @@
       <option name="project" value="LOCAL" />
       <updated>1763189825120</updated>
     </task>
-    <task id="LOCAL-00013" summary="Update db initializer">
-      <option name="closed" value="true" />
-      <created>1763363818047</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1763363818047</updated>
-    </task>
-    <option name="localTasksCounter" value="14" />
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -298,8 +382,11 @@
     <MESSAGE value="Add DBConnect and User update query functions." />
     <MESSAGE value="Add database structure" />
     <MESSAGE value="Update User functions" />
-    <MESSAGE value="Update db initializer" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update db initializer" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update User functions" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>
