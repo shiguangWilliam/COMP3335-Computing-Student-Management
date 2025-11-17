@@ -154,7 +154,7 @@ public class TestAccountSeeder {
 
     private static void seedGrades(String studentId, Map<String, String> courseIds) throws SQLException {
         if (studentId == null || courseIds.isEmpty()) return;
-        record GradeData(String courseId, String term, double grade, String comments) {}
+        record GradeData(String courseId, String term, String grade, String comments) {}
         GradeData[] grades = {
                 new GradeData("CS101", "2024Sem1", "A+", "Excellent performance"),
                 new GradeData("MATH201", "2024Sem1", "A-", "Solid understanding"),
