@@ -17,6 +17,7 @@ import tables.Grades;
 import users.ARO;
 import users.User;
 import utils.AuditUtils;
+import tables.Courses;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -131,14 +132,30 @@ public class GradeController {
         String studentID = body.get("studentId")==null?null:body.get("studentId").toString();
         String courseID = body.get("courseId")==null?null:body.get("courseId").toString();
         String grade = body.get("grade")==null?null:body.get("grade").toString();
-        
+
         if(studentID==null || studentID.isBlank() || courseID==null || courseID.isBlank() || grade==null){
             err.put("code",400);
             err.put("message","Bad Request: Missing Parameters");
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Parameters"));
             return err;
         }
-
+        try{
+            if(Courses.getName(courseID)==null){
+                err.put("code",400);
+                err.put("message","Bad Request: Invalid Course ID");
+                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Course ID"));
+                return err;
+            }
+        }
+        catch (Exception e){
+            err.put("code",500);
+            err.put("message","Internal Server Error");
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Exception: " + e.getMessage()));
+            return err;
+        }
+        try{
+            
+        }
         String querySql = "SELECT id, encrypted_id FROM grades WHERE student_id = ? AND course_id = ?";
         String[] queryParam = {studentID, courseID};
         String comment = body.get("comments")==null? "": body.get("comments").toString();
