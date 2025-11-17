@@ -38,9 +38,13 @@ dependency-reduced-pom.xml
 # Spring Boot local profile config (keep example committed)
 src/resources/application-local.yml
 
+# Docker / container artifacts
+docker/
+docker-compose.yaml
+Dockerfile.Backend
+.dockerignore
+
 # Dockerized MySQL data/tmp
 docker/data/
 docker/keyring/
 docker/my.cnf
-.idea/workspace.xml
-.idea/workspace.xml

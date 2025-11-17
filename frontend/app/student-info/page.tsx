@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 
@@ -17,6 +17,14 @@ type Student = {
 };
 
 export default function StudentInfoPage() {
+  return (
+    <Suspense fallback={<div className="p-4 text-sm text-zinc-600">Loading student info...</div>}>
+      <StudentInfoContent />
+    </Suspense>
+  );
+}
+
+function StudentInfoContent() {
   const params = useSearchParams();
   const [role, setRole] = useState<Role | null>(null);
   const [query, setQuery] = useState<{ id?: string; email?: string }>({

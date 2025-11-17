@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
 type Role = "student" | "ARO" | "guardian" | "DRO";
-type Rec = { id: string; studentId: string; date: string; staffId: string; description?: string };
+type Rec = { id: string; student_id: string; date: string; staff_id: string; descriptions?: string };
 
 export default function DisciplinaryPage() {
   const [role, setRole] = useState<Role | null>(null);
@@ -73,7 +73,7 @@ export default function DisciplinaryPage() {
 
   const pick = (r: Rec) => {
     if (role !== "DRO") return;
-    setForm({ id: r.id, studentId: r.studentId, date: r.date, description: r.description });
+    setForm({ id: r.id, studentId: r.student_id, date: r.date, description: r.descriptions });
   };
 
   return (
@@ -145,8 +145,8 @@ export default function DisciplinaryPage() {
           ) : (
             items.map((it) => (
               <button key={it.id} className="rounded border p-2 text-left" onClick={() => pick(it)}>
-                <div className="text-sm">{it.studentId} · {it.date} · {it.staffId}</div>
-                {it.description && <div className="text-xs text-zinc-700">{it.description}</div>}
+                <div className="text-sm">{it.student_id} · {it.date} · {it.staff_id}</div>
+                {it.descriptions && <div className="text-xs text-zinc-700">{it.descriptions}</div>}
               </button>
             ))
           )}

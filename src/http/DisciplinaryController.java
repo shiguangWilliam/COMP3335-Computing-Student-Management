@@ -76,6 +76,7 @@ public class DisciplinaryController {
                 log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "not found", "userID", session.getUserId(), "studentID", studentId));
                 return err;
             }else{
+                Map<String, Object> data = new HashMap<>();
                 resp.put("data", disciplinaryRecords);
                 resp.put("ok", true);
                 log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "disciplinary records retrieved", "userID", session.getUserId(), "studentID", studentId));
@@ -119,7 +120,7 @@ public class DisciplinaryController {
         DRO user = new DRO(session.getUserId());
 
         String staffId = session.getUserId();
-        String studentId = body.get("studentid");
+        String studentId = body.get("studentId");
         String date = body.get("date");
         String description = body.get("description");
         //参数校验
@@ -143,7 +144,9 @@ public class DisciplinaryController {
         }
 
         try{
-            user.addDisciplinary(requestId, studentId, date, staffId, description);
+            String gid = UUID.randomUUID().toString();
+            gid.replace("-","");
+            user.addDisciplinary(gid, studentId, date, staffId, description);
             resp.put("ok", true);
             log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "disciplinary record added", "userID", session.getUserId(), "studentID", studentId));
             return resp;

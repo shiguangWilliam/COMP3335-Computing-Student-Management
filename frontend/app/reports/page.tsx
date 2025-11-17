@@ -85,9 +85,9 @@ export default function ReportsPage() {
                         {bundle.disciplinary.map((d) => (
                           <li key={d.id} className="rounded border px-3 py-2">
                             <div>
-                              {d.date} · Staff: {d.staffId}
+                              {d.date} · Staff: {d.staff_id}
                             </div>
-                            {d.description && <div className="text-xs text-zinc-500">{d.description}</div>}
+                            {d.descriptions && <div className="text-xs text-zinc-500">{d.descriptions}</div>}
                           </li>
                         ))}
                       </ul>
