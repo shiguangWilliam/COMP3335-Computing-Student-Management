@@ -9,6 +9,8 @@ import utils.SecurityUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -16,6 +18,7 @@ import java.util.UUID;
  * - Guardian（guardian@test.local）
  * - Student（student@test.local，关联 guardian）
  * - ARO / DRO / DBA 员工账号
+ * - 样例课程 / 成绩 / 纪律记录
  *
  * 使用方法（项目根目录）：
  *   mvnw --% -q compile exec:java -Dexec.mainClass=scripts.TestAccountSeeder
@@ -32,20 +35,23 @@ public class TestAccountSeeder {
         try {
             System.out.println("==> 开始写入默认账号");
             String guardianId = seedGuardian(new Account("guardian@test.local", "Guardian@12345", "guardian", "Guardian", "User"));
-            seedStudent(new Account("student@test.local", "Test@12345", "student", "Student", "Test"), guardianId);
-            seedStaff(new Account("aro@test.local", "Aro@12345", "ARO", "ARO", "Admin"), "Academic Registry");
-            seedStaff(new Account("dro@test.local", "Dro@12345", "DRO", "DRO", "Officer"), "Discipline Office");
+            String studentId = seedStudent(new Account("student@test.local", "Test@12345", "student", "Student", "Test"), guardianId);
+            String aroId = seedStaff(new Account("aro@test.local", "Aro@12345", "ARO", "ARO", "Admin"), "Academic Registry");
+            String droId = seedStaff(new Account("dro@test.local", "Dro@12345", "DRO", "DRO", "Officer"), "Discipline Office");
             seedStaff(new Account("dba@test.local", "Dba@12345", "DBA", "DBA", "Admin"), "IT Services");
+            Map<String, String> courseIds = seedCourses();
+            seedGrades(studentId, courseIds);
+            seedDisciplinary(studentId, droId != null ? droId : aroId);
             System.out.println("==> 完成");
         } finally {
             context.close();
         }
     }
 
-    private static void seedStudent(Account account, String guardianId) throws SQLException {
+    private static String seedStudent(Account account, String guardianId) throws SQLException {
         if (exists("students_encrypted", account.email)) {
             System.out.println("student 已存在，跳过：" + account.email);
-            return;
+            return lookupId("students_encrypted", account.email);
         }
         if (guardianId == null) {
             throw new IllegalStateException("缺少 guardian 账号，无法创建 student");
@@ -71,6 +77,7 @@ public class TestAccountSeeder {
                         SecurityUtils.getPasswdHash(account.password)
                 }
         );
+        return id;
     }
 
     private static String seedGuardian(Account account) throws SQLException {
@@ -96,10 +103,10 @@ public class TestAccountSeeder {
         return id;
     }
 
-    private static void seedStaff(Account account, String department) throws SQLException {
+    private static String seedStaff(Account account, String department) throws SQLException {
         if (exists("staffs_encrypted", account.email)) {
             System.out.println(account.role + " 已存在，跳过：" + account.email);
-            return;
+            return lookupId("staffs_encrypted", account.email);
         }
         String id = randomId();
         System.out.println("  - 创建员工 " + account.role + " " + account.email);
@@ -119,12 +126,109 @@ public class TestAccountSeeder {
                         SecurityUtils.getPasswdHash(account.password)
                 }
         );
+        return id;
+    }
+
+    private static Map<String, String> seedCourses() throws SQLException {
+        record Course(String id, String name) {}
+        Course[] courses = {
+                new Course("CS101", "Introduction to Programming"),
+                new Course("MATH201", "Discrete Mathematics"),
+                new Course("SEC301", "Cybersecurity Fundamentals")
+        };
+        Map<String, String> map = new HashMap<>();
+        for (Course course : courses) {
+            if (existsById("courses", course.id())) {
+                System.out.println("course 已存在，跳过：" + course.id());
+            } else {
+                DBConnect.dbConnector.executeUpdate(
+                        "INSERT INTO courses (id, name) VALUES (?, ?)",
+                        new String[]{course.id(), course.name()}
+                );
+                System.out.println("  - 创建课程 " + course.id() + " / " + course.name());
+            }
+            map.put(course.id(), course.name());
+        }
+        return map;
+    }
+
+    private static void seedGrades(String studentId, Map<String, String> courseIds) throws SQLException {
+        if (studentId == null || courseIds.isEmpty()) return;
+        record GradeData(String courseId, String term, double grade, String comments) {}
+        GradeData[] grades = {
+                new GradeData("CS101", "2024Sem1", 92.5, "Excellent performance"),
+                new GradeData("MATH201", "2024Sem1", 85.0, "Solid understanding"),
+                new GradeData("SEC301", "2024Sem1", 88.0, "Great progress")
+        };
+        for (GradeData g : grades) {
+            if (!courseIds.containsKey(g.courseId())) continue;
+            ResultSet rs = DBConnect.dbConnector.executeQuery(
+                    "SELECT id FROM grades WHERE student_id = ? AND course_id = ? AND term = ?",
+                    new String[]{studentId, g.courseId(), g.term()}
+            );
+            if (rs.next()) {
+                String gid = rs.getString("id");
+                DBConnect.dbConnector.executeUpdate(
+                        "UPDATE grades_encrypted SET grade = ?, comments = ? WHERE id = ?",
+                        new String[]{String.valueOf(g.grade()), g.comments(), gid}
+                );
+                System.out.println("  - 更新成绩 " + g.courseId());
+            } else {
+                String gid = randomId();
+                DBConnect.dbConnector.executeUpdate(
+                        "INSERT INTO grades (id, student_id, course_id, term) VALUES (?, ?, ?, ?)",
+                        new String[]{gid, studentId, g.courseId(), g.term()}
+                );
+                DBConnect.dbConnector.executeUpdate(
+                        "INSERT INTO grades_encrypted (id, grade, comments) VALUES (?, ?, ?)",
+                        new String[]{gid, String.valueOf(g.grade()), g.comments()}
+                );
+                System.out.println("  - 创建成绩 " + g.courseId());
+            }
+        }
+    }
+
+    private static void seedDisciplinary(String studentId, String staffId) throws SQLException {
+        if (studentId == null || staffId == null) return;
+        record Disciplinary(String date, String description) {}
+        Disciplinary[] records = {
+                new Disciplinary("2024-03-10", "Late submission warning"),
+                new Disciplinary("2024-04-18", "Missed mandatory workshop")
+        };
+        for (Disciplinary rec : records) {
+            ResultSet rs = DBConnect.dbConnector.executeQuery(
+                    "SELECT id FROM disciplinary_records WHERE student_id = ? AND date = ?",
+                    new String[]{studentId, rec.date()}
+            );
+            if (rs.next()) {
+                System.out.println("  - 纪律记录已存在：" + rec.date());
+                continue;
+            }
+            String rid = randomId();
+            DBConnect.dbConnector.executeUpdate(
+                    "INSERT INTO disciplinary_records (id, student_id, date, staff_id) VALUES (?, ?, ?, ?)",
+                    new String[]{rid, studentId, rec.date(), staffId}
+            );
+            DBConnect.dbConnector.executeUpdate(
+                    "INSERT INTO disciplinary_records_encrypted (id, descriptions) VALUES (?, ?)",
+                    new String[]{rid, rec.description()}
+            );
+            System.out.println("  - 创建纪律记录 " + rec.date());
+        }
     }
 
     private static boolean exists(String table, String email) throws SQLException {
         ResultSet rs = DBConnect.dbConnector.executeQuery(
                 "SELECT COUNT(*) AS cnt FROM " + table + " WHERE email = ?",
                 new String[]{email}
+        );
+        return rs.next() && rs.getInt("cnt") > 0;
+    }
+
+    private static boolean existsById(String table, String id) throws SQLException {
+        ResultSet rs = DBConnect.dbConnector.executeQuery(
+                "SELECT COUNT(*) AS cnt FROM " + table + " WHERE id = ?",
+                new String[]{id}
         );
         return rs.next() && rs.getInt("cnt") > 0;
     }

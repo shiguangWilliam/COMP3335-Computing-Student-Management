@@ -139,4 +139,5 @@ mvnw --% -q compile exec:java -Dexec.mainClass=scripts.TestAccountSeeder
 
 - 多次运行会跳过已存在的邮箱
 - Guardian 账号会自动与 student 账号建立监护关系
+ - 会一并创建示例课程（CS101/MATH201/SEC301）及对应成绩、纪律记录
 - 如需彻底重置，可配合 `scripts/setup-percona.ps1 -ResetData`
