@@ -64,8 +64,8 @@ public class GradeController {
         }
         //确认用户身份
         ArrayList<String> params = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT g.id, g.student_id, g.course_id, g.term, ge.grade, ge.comments " +
-                "FROM grades g JOIN grades_encrypted ge ON g.id = ge.id WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT g.id, g.encrypted_id, g.student_id, g.course_id, g.term, ge.grade, ge.comments " +
+                "FROM grades g JOIN grades_encrypted ge ON g.encrypted_id = ge.id WHERE 1=1");
         if(studentid != null && !studentid.isBlank()){
             sql.append(" AND g.student_id = ?");
             params.add(studentid);
@@ -271,29 +271,29 @@ public class GradeController {
             return err;
         }
 
-        String querySql = "SELECT COUNT(*) AS count FROM grades WHERE id = ?";
+        String querySql = "SELECT encrypted_id FROM grades WHERE id = ?";
         String[] queryParam = {gradeID};
         try(ResultSet rs = DBConnect.dbConnector.executeQuery(querySql, queryParam)){
-            if(rs.next() && rs.getInt("count")>0){//有对应成绩记录，删除
+            if(rs.next()){
+                String encId = rs.getString("encrypted_id");
+                String deleteGradeSql = "DELETE FROM grades WHERE id = ?";
                 String deleteEncSql = "DELETE FROM grades_encrypted WHERE id = ?";
-                String deleteSql = "DELETE FROM grades WHERE id = ?";
-                String[] deleteParam = {gradeID};
-                try{//删除
-                    DBConnect.dbConnector.executeUpdate(deleteEncSql, deleteParam);
-                    DBConnect.dbConnector.executeUpdate(deleteSql, deleteParam);
+                try{
+                    DBConnect.dbConnector.executeUpdate(deleteGradeSql, new String[]{gradeID});
+                    if(encId != null && !encId.isBlank()){
+                        DBConnect.dbConnector.executeUpdate(deleteEncSql, new String[]{encId});
+                    }
                     resp.put("ok", true);
                     resp.put("message", "Grade Record Deleted Successfully");
                     log.warn("audit={}", AuditUtils.pack("requestId", requestId,"User",session.getUserId(), "message", "Grade Record Deleted Successfully"));//敏感操作
                     return resp;
-                }
-                catch (SQLException e){
+                } catch (SQLException e){
                     err.put("code",500);
                     err.put("message","Internal Server Error");
                     log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
                     return err;
                 }
-            }
-            else{//无记录
+            } else {
                 err.put("code",404);
                 err.put("message","Grade Record Not Found");
                 log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grade Record Not Found"));
