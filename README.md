@@ -75,3 +75,56 @@ mvnw dependency:tree`
 ## 说明
 - 项目已配置 Spring Boot 主类为 `Application`，`spring-boot-maven-plugin` 会在打包时自动生成可运行的 Jar。
 - 首次开发阶段如果还未配置数据库，已临时禁用了数据源自动配置，等你补齐数据库配置后删掉对应行即可。
+
+## 数据库部署（Windows + Docker）
+
+下面步骤可直接在 PowerShell 中复制粘贴，最终会启动一个启用 Keyring 的 Percona Server 并自动执行 `init_database.sql`。
+
+1. **准备工具**
+   - 安装 [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+   - 打开 PowerShell，切换到项目根目录：`cd D:\Homework\COMP3335\Project`
+2. **创建持久化目录与配置**
+   ```powershell
+   if(!(Test-Path docker)){New-Item -ItemType Directory docker | Out-Null}
+   if(!(Test-Path docker\data)){New-Item -ItemType Directory docker\data | Out-Null}
+   if(!(Test-Path docker\keyring)){New-Item -ItemType Directory docker\keyring | Out-Null}
+   if(!(Test-Path docker\my.cnf)){
+@"
+[mysqld]
+early-plugin-load=keyring_file.so
+keyring_file_data=/keyring/keyring
+"@ | Set-Content -Encoding UTF8 docker\my.cnf
+   }
+   ```
+   > 如果 `docker\my.cnf` 已存在，请确认内容同上
+3. **启动容器（第一次会自动初始化数据库）**
+   ```powershell
+   docker run `
+     --name comp3335-db `
+     -p 3306:3306 `
+     -p 33060:33060 `
+     -e MYSQL_ROOT_PASSWORD=!testCOMP3335 `
+     -e MYSQL_DATABASE=COMP3335 `
+     -v ${PWD}\docker\data:/var/lib/mysql `
+     -v ${PWD}\docker\keyring:/keyring `
+     -v ${PWD}\init_database.sql:/docker-entrypoint-initdb.d/init_database.sql `
+     percona/percona-server:latest `
+     --early-plugin-load=keyring_file.so `
+     --keyring_file_data=/keyring/keyring
+   ```
+   - 初次运行日志出现 `MySQL init process done` 即表示成功
+   - 若需重置数据库：`docker rm -f comp3335-db`，然后清空 `docker\data`、`docker\keyring` 再重新运行上述命令
+   - **自动脚本**：运行 `.\scripts\setup-percona.ps1`（加 `-ResetData` 参数可在重启前清空数据）
+4. **验证状态**
+   ```powershell
+   docker ps --filter "name=comp3335-db"
+   docker exec -it comp3335-db mysql -uroot -p!testCOMP3335 -e "SHOW DATABASES;"
+   ```
+5. **后端连接**
+   - JDBC：`jdbc:mysql://localhost:3306/COMP3335`
+   - 用户：`root`
+   - 密码：`!testCOMP3335`
+   - 如需使用 Spring DataSource，参考前文“配置说明”中的 `spring.datasource.*`
+6. **常见问题**
+   - `Encryption can't find master key`：确保 `--early-plugin-load` 与 `--keyring_file_data` 参数存在，且 `docker\keyring` 目录已挂载
+   - 端口冲突：将 `-p 3306:3306` 改为其他端口（例如 `-p 3307:3306`），并同步修改应用配置
