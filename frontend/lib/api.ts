@@ -185,24 +185,32 @@ export type GradeRecord = {
   comments?: string;
 };
 
-export async function listGrades(params?: { studentId?: string; courseId?: string }): Promise<GradeRecord[]> {
-  const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
+export async function listGrades(params: { studentId: string; courseId: string }): Promise<GradeRecord[]> {
+  // 后端要求 studentId 与 courseId 同时提供，否则返回 400
+  if (!params?.studentId || !params?.courseId) {
+    throw new Error("studentId 和 courseId 均为必填");
+  }
+  const qs = `?${new URLSearchParams(params as Record<string, string>).toString()}`;
   return request<GradeRecord[]>(`/API/grades${qs}`);
 }
 
-export async function assignGrade(data: { studentId: string; courseId: string; grade: string; term?: string; comments?: string }): Promise<GradeRecord> {
+export async function assignGrade(data: { studentId: string; courseId: string; grade: string; term?: string; comments: string }): Promise<GradeRecord> {
   return request<GradeRecord>("/API/grades", { method: "POST", body: JSON.stringify(data) });
 }
 
 // Disciplinary records
 export type DisciplinaryRecord = { id: string; studentId: string; date: string; staffId: string; description?: string };
 
-export async function listDisciplinaryRecords(params?: { studentId?: string; staffId?: string; date?: string }): Promise<DisciplinaryRecord[]> {
-  const qs = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : "";
+// 后端仅允许 DRO，并且要求 studentId + date
+export async function listDisciplinaryRecords(params: { studentId: string; date: string }): Promise<DisciplinaryRecord[]> {
+  if (!params?.studentId || !params?.date) {
+    throw new Error("studentId 和 date 均为必填");
+  }
+  const qs = `?${new URLSearchParams(params as Record<string, string>).toString()}`;
   return request<DisciplinaryRecord[]>(`/API/disciplinary-records${qs}`);
 }
 
-export async function createDisciplinaryRecord(data: { studentId: string; date: string; description?: string }): Promise<DisciplinaryRecord> {
+export async function createDisciplinaryRecord(data: { studentId: string; date: string; description: string }): Promise<DisciplinaryRecord> {
   // staffId is derived from current DRO session on the backend
   return request<DisciplinaryRecord>("/API/disciplinary-records", { method: "POST", body: JSON.stringify(data) });
 }
@@ -240,9 +248,33 @@ export async function updatePassword(data: { oldPassword: string; newPassword: s
   return request<Json>("/API/modified_Passowrd", { method: "PUT", body: JSON.stringify(data) });
 }
 
-// Reports (placeholder)
-export async function generateReport(data: { kind: string; filters?: Record<string, unknown> }): Promise<Json> {
-  return request<Json>("/API/reports", { method: "GET" });
+export type ReportBundle = {
+  grade: GradeRecord[];
+  disciplinary: DisciplinaryRecord[];
+};
+
+export async function fetchSelfReports(): Promise<ReportBundle[]> {
+  const res = await request<{ ok?: boolean; data?: Array<{ grade?: Record<string, unknown>[]; disciplinary?: Record<string, unknown>[] }> }>("/API/reports", {
+    method: "GET",
+  });
+  const list = res?.data ?? [];
+  return list.map((entry) => ({
+    grade: (entry.grade ?? []).map((g) => ({
+      id: String(g.id ?? ""),
+      studentId: String(g.studentId ?? g.student_id ?? ""),
+      courseId: String(g.courseId ?? g.course_id ?? ""),
+      grade: String(g.grade ?? ""),
+      term: g.term ? String(g.term) : undefined,
+      comments: g.comments ? String(g.comments) : undefined,
+    })),
+    disciplinary: (entry.disciplinary ?? []).map((d) => ({
+      id: String(d.id ?? ""),
+      studentId: String(d.studentId ?? d.student_id ?? ""),
+      date: String(d.date ?? ""),
+      staffId: String(d.staffId ?? d.staff_id ?? ""),
+      description: d.description ? String(d.description) : d.descriptions ? String(d.descriptions) : undefined,
+    })),
+  }));
 }
 
 export async function getAdminSummary(): Promise<Json> {
@@ -293,7 +325,7 @@ export const api = {
   updateProfile,
   updatePassword,
   // reports
-  generateReport,
+  fetchSelfReports,
   // admin
   getAdminSummary,
   logout,

@@ -61,7 +61,7 @@ CREATE TABLE grades(
 );
 CREATE TABLE grades_encrypted(
     id VARCHAR(20) PRIMARY KEY,
-    grade FLOAT NOT NULL,
+    grade VARCHAR(2) NOT NULL,
     comments VARCHAR(1000),
     FOREIGN KEY (id) REFERENCES grades(id)
 ) ENCRYPTION='Y';

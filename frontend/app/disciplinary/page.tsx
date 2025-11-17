@@ -7,7 +7,7 @@ type Rec = { id: string; studentId: string; date: string; staffId: string; descr
 
 export default function DisciplinaryPage() {
   const [role, setRole] = useState<Role | null>(null);
-  const [filters, setFilters] = useState<{ studentId?: string; staffId?: string; date?: string }>({});
+  const [filters, setFilters] = useState<{ studentId?: string; date?: string }>({});
   const [items, setItems] = useState<Rec[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,9 @@ export default function DisciplinaryPage() {
     setError(null);
     setMsg(null);
     try {
-      const list = await api.listDisciplinaryRecords({ studentId: filters.studentId, staffId: filters.staffId, date: filters.date });
+      if (role !== "DRO") throw new Error("仅 DRO 可以查看/管理违纪记录");
+      if (!filters.studentId || !filters.date) throw new Error("查询需要同时填写 Student ID 与 Date");
+      const list = await api.listDisciplinaryRecords({ studentId: filters.studentId, date: filters.date });
       setItems(list || []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
@@ -51,7 +53,9 @@ export default function DisciplinaryPage() {
     setError(null);
     setMsg(null);
     try {
-      if (role !== "DRO") throw new Error("Read-only");
+      if (role !== "DRO") throw new Error("仅 DRO 可以管理违纪记录");
+      if (!form.studentId || !form.date) throw new Error("Student ID 与 Date 为必填");
+      if (!form.description || !form.description.trim()) throw new Error("Description 为必填");
       if (form.id) {
         await api.updateDisciplinaryRecord(form.id, { date: form.date, description: form.description });
       } else {
@@ -75,7 +79,7 @@ export default function DisciplinaryPage() {
   return (
     <div>
       <h1 className="mb-4 text-2xl font-semibold">Disciplinary Records</h1>
-      <p className="text-sm text-zinc-600">View records{role === "DRO" ? " and manage" : ""}.</p>
+      <p className="text-sm text-zinc-600">仅 DRO 可查看/管理违纪记录。</p>
       <div className="mt-6 grid gap-6 sm:grid-cols-2">
         {role === "DRO" && (
           <div className="rounded border p-4">
@@ -126,7 +130,6 @@ export default function DisciplinaryPage() {
           <h2 className="mb-2 font-medium">Search</h2>
           <div className="grid gap-2">
             <input className="rounded border px-3 py-2" placeholder="Student ID" value={filters.studentId || ""} onChange={(e) => setFilters({ ...filters, studentId: e.target.value || undefined })} />
-            <input className="rounded border px-3 py-2" placeholder="Staff ID" value={filters.staffId || ""} onChange={(e) => setFilters({ ...filters, staffId: e.target.value || undefined })} />
             <input className="rounded border px-3 py-2" placeholder="Date" value={filters.date || ""} onChange={(e) => setFilters({ ...filters, date: e.target.value || undefined })} />
             <button className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60" disabled={loading} onClick={load}>Search</button>
           </div>
