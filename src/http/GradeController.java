@@ -153,9 +153,25 @@ public class GradeController {
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Exception: " + e.getMessage()));
             return err;
         }
-        try{
-            
+        
+        String studentSql = "SELECT COUNT(*) AS count FROM students WHERE id = ?";
+        String[] studentParam = {studentID};
+        try(ResultSet rs = DBConnect.dbConnector.executeQuery(studentSql, studentParam)){
+            if(rs.next() && rs.getInt("count")==0){
+                err.put("code",400);
+                err.put("message","Bad Request: Invalid Student ID");
+                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Student ID"));
+                return err;
+            }
         }
+        catch (Exception e){
+            err.put("code",500);
+            err.put("message","Internal Server Error");
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Exception: " + e.getMessage()));
+            return err;
+
+        }
+        
         String querySql = "SELECT id, encrypted_id FROM grades WHERE student_id = ? AND course_id = ?";
         String[] queryParam = {studentID, courseID};
         String comment = body.get("comments")==null? "": body.get("comments").toString();
@@ -169,7 +185,7 @@ public class GradeController {
                 String insertEncSql = "INSERT INTO grades_encrypted (id, grade, comments) VALUES (?, ?, ?)";
                 String[] insertParam = {gid, enc_gid, studentID, courseID, term};
                 String[] insertEncParam = {enc_gid, grade, comment};
-                try{//插入
+                try{//创建
                     DBConnect.dbConnector.executeUpdate(insertSql, insertParam);
                     DBConnect.dbConnector.executeUpdate(insertEncSql, insertEncParam);
                     response.setStatus(201);
