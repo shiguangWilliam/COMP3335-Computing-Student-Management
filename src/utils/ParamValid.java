@@ -24,7 +24,7 @@ public class ParamValid {
         if(password.length() < 8 || password.length() > 72){
             return false;
         }
-        String regex = "^[A-Za-z0-9_*]+$";
+        String regex = "^[A-Za-z0-9_*@]+$";
         return password.matches(regex);
     }
 

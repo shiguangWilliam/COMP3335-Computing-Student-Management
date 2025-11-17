@@ -16,6 +16,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [changing, setChanging] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const [edit, setEdit] = useState<Record<string, string>>({});
   const [editPassword, setEditPassword] = useState<string>("");
@@ -77,6 +79,7 @@ export default function ProfilePage() {
     e.preventDefault();
     setMessage(null);
     setError(null);
+    setProfileError(null);
     setSaving(true);
     try {
       const payload: Record<string, string> = { password: editPassword } as any;
@@ -87,7 +90,7 @@ export default function ProfilePage() {
       setData(fresh || null);
       router.refresh();
     } catch (err) {
-      setError((err as Error).message);
+      setProfileError((err as Error).message);
     } finally {
       setSaving(false);
     }
@@ -97,12 +100,13 @@ export default function ProfilePage() {
     e.preventDefault();
     setMessage(null);
     setError(null);
+    setPasswordError(null);
     setChanging(true);
     try {
       const res = await api.updatePassword({ oldPassword, newPassword });
       setMessage(String((res as any)?.message || "Password updated"));
     } catch (err) {
-      setError((err as Error).message);
+      setPasswordError((err as Error).message);
     } finally {
       setChanging(false);
     }
@@ -155,6 +159,7 @@ export default function ProfilePage() {
               <div className="col-span-2">
                 <Input type="password" placeholder="Enter your current password to confirm profile changes" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
                 <p className="mt-1 text-xs text-zinc-500">We verify this password before applying your updates.</p>
+                {profileError && <p className="mt-1 text-sm text-red-600">{profileError}</p>}
               </div>
             </div>
             <div className="flex justify-end">
@@ -180,6 +185,7 @@ export default function ProfilePage() {
             <div className="flex justify-end">
               <Button type="submit" variant="secondary" disabled={changing}>{changing ? "Updating..." : "Update"}</Button>
             </div>
+            {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
           </form>
         </Card>
       </div>
