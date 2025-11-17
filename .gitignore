@@ -37,3 +37,7 @@ dependency-reduced-pom.xml
 
 # Spring Boot local profile config (keep example committed)
 src/resources/application-local.yml
+docker
+docker-compose.yaml
+Dockerfile.Backend
+.dockerignore

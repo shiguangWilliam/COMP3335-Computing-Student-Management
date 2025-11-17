@@ -82,7 +82,7 @@ public class GradeController {
                 grade.put("id", rs.getString("id"));
                 grade.put("student_id", rs.getString("student_id"));
                 grade.put("course_id", rs.getString("course_id"));
-                grade.put("grade", rs.getDouble("grade"));
+                grade.put("grade", rs.getString("grade"));
                 grade.put("comments", rs.getString("comments"));
                 grade.put("term", rs.getString("term"));
                 gradeList.add(grade);
@@ -252,6 +252,7 @@ public class GradeController {
                     resp.put("ok", true);
                     resp.put("message", "Grade Record Deleted Successfully");
                     log.warn("audit={}", AuditUtils.pack("requestId", requestId,"User",session.getUserId(), "message", "Grade Record Deleted Successfully"));//敏感操作
+                    return resp;
                 }
                 catch (SQLException e){
                     err.put("code",500);
