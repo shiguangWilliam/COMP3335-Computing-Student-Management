@@ -71,6 +71,38 @@ public class ProfileController {
         //调用Session表中存储的用户信息，构建响应体
         try {
             Map<String,String> info = user.queryInfo();
+            // enrich student profile with guardian name instead of raw guardian_id
+            if ("student".equals(role)) {
+                String guardianId = info.get("guardian_id");
+                if (guardianId != null && !guardianId.isBlank()) {
+                    try {
+                        ResultSet rs = DBConnect.dbConnector.executeQuery(
+                                "SELECT first_name, last_name FROM guardians WHERE id = ?",
+                                new String[]{guardianId}
+                        );
+                        if (rs.next()) {
+                            String first = rs.getString("first_name");
+                            String last = rs.getString("last_name");
+                            StringBuilder name = new StringBuilder();
+                            if (first != null && !first.isBlank()) {
+                                name.append(first);
+                            }
+                            if (last != null && !last.isBlank()) {
+                                if (name.length() > 0) {
+                                    name.append(" ");
+                                }
+                                name.append(last);
+                            }
+                            if (name.length() > 0) {
+                                info.put("guardian_name", name.toString());
+                            }
+                        }
+                    } catch (SQLException e) {
+                        log.warn("audit={}", AuditUtils.pack("requestId", requestId, "userId", session.getUserId(), "role", role, "emailMasked", SecurityUtils.maskEmail(session.getEmail()), "message", "guardian lookup failed", "errorMessage", e.getMessage()));
+                    }
+                }
+                info.remove("guardian_id");
+            }
             resp.putAll(info);
             // Attach a unified user object for frontend header/nav consumption
             String displayName = session.getName();
@@ -86,6 +118,7 @@ public class ProfileController {
                 displayName = sb.length() > 0 ? sb.toString() : null;
             }
             Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("id", session.getUserId());
             userInfo.put("email", session.getEmail());
             userInfo.put("role", role);
             if (displayName != null && !displayName.isBlank()) {
@@ -96,14 +129,14 @@ public class ProfileController {
             Set<String> allowed;
             switch (role) {
                 case "student":
-                    allowed = Set.of("first_name","last_name","gender","email","phone","address","enrollment_year");
+                    allowed = Set.of("id","first_name","last_name","gender","email","phone","address","enrollment_year","guardian_name");
                     break;
                 case "guardian":
-                    allowed = Set.of("first_name","last_name","email","phone");
+                    allowed = Set.of("id","first_name","last_name","email","phone");
                     break;
                 case "ARO":
                 case "DRO":
-                    allowed = Set.of("first_name","last_name","gender","email","phone","address","department","role");
+                    allowed = Set.of("id","first_name","last_name","gender","email","phone","address","department","role");
                     break;
                 default:
                     allowed = Set.of();
@@ -168,19 +201,19 @@ public class ProfileController {
         Set<String> allowed;
         switch (role) {
             case "student":
-                allowed = Set.of("first_name", "last_name", "email", "phone", "address");
+                allowed = Set.of("phone", "address");
                 break;
             case "guardian":
-                allowed = Set.of("first_name", "last_name", "email", "phone");
+                allowed = Set.of("phone");
                 break;
             case "ARO":
             case "DRO":
-                allowed = Set.of("first_name", "last_name", "email", "phone", "address");
+                allowed = Set.of("phone", "address");
                 break;
             default:
                 allowed = Set.of();
         }
-        Set<String> forbidden = Set.of("id", "role", "enrollment_year","gender","department", "guardian_id", "guardian_relation", "identification_number", "password_hash");
+        Set<String> forbidden = Set.of("first_name", "last_name", "email","id", "role", "enrollment_year","gender","department", "guardian_id", "guardian_relation", "identification_number", "password_hash");
 
         String password = body.get("password") == null ? null : String.valueOf(body.get("password"));
         if (password == null || password.isBlank()) {
