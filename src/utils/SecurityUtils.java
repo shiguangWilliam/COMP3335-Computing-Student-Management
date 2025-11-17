@@ -18,7 +18,7 @@ public class SecurityUtils {
     }
     private static final String[] encryptedAtt = {
             "email", "phone", "password_hash", "guardian_id", "guardian_relation", "gender",
-            "identification_number", "address", "grade", "comments", "description"
+            "identification_number", "address", "grade", "comments", "descriptions"
     };
     public static boolean isEncrypted(String str){
         for(String att : encryptedAtt){

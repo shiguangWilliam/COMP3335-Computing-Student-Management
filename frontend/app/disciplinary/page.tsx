@@ -51,10 +51,10 @@ export default function DisciplinaryPage() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (options?: { preserveMsg?: boolean; skipLoading?: boolean }) => {
+    if (!options?.skipLoading) setLoading(true);
     setError(null);
-    setMsg(null);
+    if (!options?.preserveMsg) setMsg(null);
     try {
       if (role !== "DRO") throw new Error("Only DRO staff can view or manage disciplinary records.");
       const list = await api.listDisciplinaryRecords(filters);
@@ -62,7 +62,7 @@ export default function DisciplinaryPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
     } finally {
-      setLoading(false);
+      if (!options?.skipLoading) setLoading(false);
     }
   };
 
@@ -89,7 +89,7 @@ export default function DisciplinaryPage() {
       }
       setMsg(form.id ? "Record updated" : "Record created");
       resetForm();
-      await load();
+      await load({ preserveMsg: true, skipLoading: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
     } finally {
@@ -118,7 +118,7 @@ export default function DisciplinaryPage() {
         resetForm();
       }
       setMsg("Record deleted");
-      await load();
+      await load({ preserveMsg: true, skipLoading: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to delete record");
     } finally {
