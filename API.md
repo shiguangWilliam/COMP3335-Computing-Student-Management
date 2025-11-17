@@ -1,262 +1,155 @@
-# API 概览
+# API 文档
 
-本文件描述对外暴露、和页面真正配合使用的业务 API。  
-安全网关、HMAC 等内部机制见 `frontend/api.md`。
+本文件描述 `src/http` 提供的 `/API/*` 端点、传输加固方式以及与 `frontend` 目录中 Next.js 客户端的实际约定。安全信封与更细的实现细节也可以参考 `frontend/api.md`。
 
-角色缩写：`student`（学生）、`guardian`（监护人）、`ARO`、`DRO`、`DBA`。
+## 1. 安全信道与鉴权机制
 
----
+### 1.1 HMAC 网关校验（`src/app/HmacAuthFilter.java`）
 
-## 1. 认证 / 会话
+- 所有非公开接口都必须附带以下请求头：
+  - `X-Gateway-Signature-Alg: HMAC-SHA256`
+  - `X-Gateway-Signature`: 对规范化字符串的 HMAC-SHA256，Base64 编码。
+  - `X-Gateway-Timestamp`: 毫秒级时间戳，允许 ±300 秒窗口。
+  - `X-Gateway-Nonce`: 5 分钟内唯一的随机字符串；服务端用 Caffeine cache 拒绝重放。
+- 规范化字符串为：`METHOD|/API/path[?query]|bodyJson|timestamp|nonce`。
+- 校验失败直接返回 401/403，并不会进入后续控制器。
 
-### POST /API/login
-- Roles: public（不需要现有会话）  
-- Content-Type: `application/json`
-- Request body:
-```json
-{
-  "email": "user@example.com",
-  "password": "<string>",
-  "role": "student|guardian|ARO|DRO"   // 可选，帮助前端选择账号类型
-}
-```
-- Behavior:
-  - 校验邮箱格式；
-  - 在 `students_encrypted / guardians_encrypted / staffs_encrypted` 中查找匹配账号；
-  - 成功时创建服务器端 Session，并下发 `sid` Cookie（`HttpOnly; SameSite=Lax`）。
-- Responses（body 为 JSON）:
-  - 200: `{ "ok": true, "message": "login accepted, session created" }`
-  - 400: `{ "ok": false, "message": "invalid email" }`
-  - 401: `{ "ok": false, "message": "invalid credentials" }`
+### 1.2 RSA + AES 混合信封（`frontend/lib/secureApi.ts` + `src/http/PublicKeyController.java`）
 
-### POST /API/logout
-- Roles: 已登录任意角色
-- Behavior:
-  - 使当前 `sid` 会话失效，并通过 `Set-Cookie` 将 `sid` 过期。
-- Responses:
-  - 200: `{ "ok": true, "message": "logged out" }`
+1. 客户端首先 `GET /API/public-key` 拿到服务端 RSA-OAEP 公钥（目前硬编码）。
+2. 每次 API 调用时生成随机 AES-256-GCM 密钥 + 12 byte IV，对 `{ method, query, body, timestamp, nonce }` 序列化结果加密。
+3. AES 密钥再用 RSA 公钥封装，附加可选 `sigBase64 = HMAC(AES key, 明文 JSON)`，一并 POST 到对应 `/API/*`。
+4. 服务器在网关层解密明文再转交实际控制器；响应可选择明文或再次用客户端公钥加密。
 
-### GET /API/profile
-- Roles: `student`, `guardian`, `ARO`, `DRO`
-- Behavior:
-  - 根据当前 `sid` 解析 Session，加载对应用户基本信息；
-  - 返回的字段会根据角色做最小暴露（例如学生不会看到加密字段）。
-- Responses（示例结构，实际字段略有差异）:
-```json
-{
-  "first_name": "Alice",
-  "last_name": "Chan",
-  "email": "alice@example.com",
-  "gender": "F",
-  "phone": "91234567",
-  "address": "…",
-  "enrollment_year": 2024
-}
-```
+> 目前客户端只对请求体进行强制加密；返回值默认明文 JSON。`frontend/lib/secureProxy.ts` 保留了双向加密的可选实现。
 
----
+### 1.3 Session Cookie 与 RBAC（`src/app/SessionFilter.java`, `RoleAuthFilter.java`, `URIRouteTable.java`）
 
-## 2. 成绩管理 /API/grades（ARO）
+- `POST /API/login` 成功后，通过 `Set-Cookie: sid=<uuid>; Path=/; HttpOnly; SameSite=Lax` 建立会话，所有受保护接口都依赖该 cookie。
+- `SessionFilter` 会拒绝缺少或过期的 `sid`，并把 `Session` 对象挂在 `request` 上。
+- `RoleAuthFilter` 根据 `URIRouteTable` 里的 `(method,path)->roles` 映射做 RBAC 判断；未登记的路由会被直接 403 拒绝，即便控制器存在。
+- `POST /API/logout` 或密码修改会显式作废 `sid`。
 
-### GET /API/grades
-- Roles: `ARO`
-- Query parameters（**必须同时提供**）:
-  - `studentId`：学生 ID（UUID）
-  - `courseId`：课程 ID（UUID）
-- Behavior:
-  - 仅在 ARO 身份下，根据给定 `studentId + courseId` 查询该学生在该课程的成绩记录；
-  - 不提供全表浏览接口，避免一次性导出全部成绩。
-- Responses（示例）:
-```json
-{
-  "ok": true,
-  "data": [
-    {
-      "id": "<grade-id>",
-      "student_id": "<student-id>",
-      "course_id": "<course-id>",
-      "course_name": "COMP3335",
-      "term": "2024-S1",
-      "grade": "A-",
-      "comments": "…"
-    }
-  ]
-}
-```
+## 2. 接口状态速览
 
-### POST /API/grades
-- Roles: `ARO`
-- Content-Type: `application/json`
-- Request body（计划设计，和前端 `/grades` 页面配合）:
-```json
-{
-  "studentId": "<uuid>",
-  "courseId": "<uuid>",
-  "grade": "A|B+|...",
-  "comments": "<optional string>"
-}
-```
-- Behavior:
-  - 为某个学生在某门课上创建或更新一条成绩记录；
-  - 写入 `grades` 与 `grade_encrypted` 两张表（明文字段 + 加密字段）。
-- Responses（示例）:
-  - 200/201: `{ "ok": true, "id": "<grade-id>", "message": "grade saved" }`
-  - 400: `{ "ok": false, "message": "invalid fields" }`
-  - 403: `{ "ok": false, "message": "forbidden" }`
+### 2.1 主表（Project.pdf 要求的最小实现）
 
-### DELETE /API/grades
-- Roles: `ARO`
-- Content-Type: `application/json`
-- Request body:
-```json
-{
-  "gradeId": "<grade-record-id>"
-}
-```
--- Behavior:
-  - ARO 根据传入的 `gradeId` 删除对应的成绩记录。
-  - 删除前先在 `grades` 表中检查该记录是否存在，仅在存在时执行删除。
-  - 删除时需同步删除 `grades_encrypted` 中同一 `id` 的加密记录。
-- Responses 示例:
-  - 200: `{ "ok": true, "message": "Grade Record Deleted Successfully" }`
-  - 404: `{ "ok": false, "message": "Grade Record Not Found" }`
-  - 403: `{ "ok": false, "message": "forbidden" }`
+| Endpoint | 控制器 | 当前状态 / 备注 |
+| --- | --- | --- |
+| `GET /API/public-key` | `src/http/PublicKeyController.java` | 返回硬编码 RSA 公钥 PEM。 |
+| `POST /API/login` | `AuthController` | 校验邮箱+SHA3-256 哈希；可选 `role`。 |
+| `POST /API/logout` | `LogoutController` | 释放 `sid`，下发过期 cookie。 |
+| `GET /API/profile` | `ProfileController` | 根据会话角色返回白名单字段。 |
+| `PUT /API/profile` | `ProfileController` | 仅允许角色各自的有限字段；字段校验严格。 |
+| `PUT /API/modified_Passowrd` | `ProfileController` | 校验旧密码后写入 `password_hash` 并强制登出。 |
+| `GET /API/students` | `StudentController` | 允许 ARO/DRO 查看所有或按 email 精确查询。 |
+| `GET /API/grades` | `GradeController` | 需要 **同时** 提供 `studentId` 和 `courseId`；返回 `{ ok,data:[...] }`。 |
+| `POST /API/grades` | `GradeController` | 期望 `grade` 为数值，无法接受 “A-” 等字母评分。 |
+| `DELETE /API/grades` | `GradeController` | 依据 `gradeId` 删除。 |
+| `GET /API/disciplinary-records` | `DisciplinaryController` | 只有方法骨架，尚未查询 / 返回任何数据。 |
+| `POST/PUT/DELETE /API/disciplinary-records` | —— | 完全未实现，但前端 `frontend/lib/api.ts` 仍会调用。 |
+| `GET/POST /API/reports` | `ReportController` | 针对 student/guardian；依赖 `tables.Grades/Disciplinary`，目前因表名错误而抛异常。 |
 
 
----
+### 2.2 可选表（模拟 DBA / 系统管理员职责，可按需要启用）
 
-## 3. 纪律记录 /API/disciplinary-records（DRO）
+| Endpoint | 控制器 / 状态 | 说明 |
+| --- | --- | --- |
+| `POST /API/students` | `StudentController`（被 `URIRouteTable` 拦截） | 控制器存在但路由未放行，若需开放需补 RBAC。 |
+| `PUT /API/students` | `StudentController` | 直接返回 501 `NOT_IMPLEMENTED`。 |
+| `POST /API/guardians` | `GuardianController`（被 `URIRouteTable` 拦截） | 缺少 Session/RBAC 校验且路由未放行。 |
+| `GET /API/guardians` | —— | 无实现；仅在路由表登记。 |
+| `/API/dba/students`, `/API/dba/guardians` | —— | 仅存在于前端的占位路由，后端完全没有实现。 |
+| `POST /API/register` | `RegisterController` | 恒定 501，响应 `{ "ok": false, "message": "No implement" }`。 |
 
-（控制器仍在实现中，这里是目标接口设计。）
+## 3. 接口细节
 
-通用记录结构示例：
-```json
-{
-  "id": "<uuid>",
-  "studentId": "<uuid>",
-  "staffId": "<uuid>",          // 记录操作者（DRO）
-  "date": "2024-04-01",
-  "description": "late submission",
-  "penalty": "warning"
-}
-```
+### 3.1 公共/会话接口
 
-### GET /API/disciplinary-records
-- Roles: `DRO`
-- Query parameters（可选组合）:
-  - `studentId`：按学生过滤
-  - `staffId`：按处理人过滤
-  - `date`：按日期过滤（例如 `2024-04-01`）
-- Behavior:
-  - 返回匹配条件的纪律记录列表。
+#### `GET /API/public-key`
+- 角色：公开。
+- 响应：`{ "publicKeyPem": "-----BEGIN PUBLIC KEY-----..." }`。
+- 用途：混合加密信封的服务器端公钥来源。
 
-### POST /API/disciplinary-records
-- Roles: `DRO`
-- Content-Type: `application/json`
-- Request body:
-```json
-{
-  "studentId": "<uuid>",
-  "date": "2024-04-01",
-  "description": "…",
-  "penalty": "…"
-}
-```
-- Behavior:
-  - 创建新的纪律记录，`staffId` 由当前会话用户填充。
+#### `POST /API/login`
+- 角色：公开。
+- 请求 JSON：`{ "email": "<必填>", "password": "<必填>", "role": "student|guardian|ARO|DRO" }`，其中 `role` 仅用于 UI 选择用户名，后端仍会根据邮箱所在表决定最终角色。
+- 行为：按 `students_encrypted / guardians_encrypted / staffs_encrypted` 顺序查找邮箱+`password_hash`；成功后写入 `SessionStore`，返回 `{ "ok": true, "message": "login accepted, session created" }` 并设置 `sid`。
+- 失败：邮箱格式非法 400，凭证不匹配 401，日志会记录掩码邮箱。
 
-### PUT /API/disciplinary-records
-- Roles: `DRO`
-- Content-Type: `application/json`
-- Request body:
-```json
-{
-  "id": "<uuid>",
-  "description": "…",
-  "penalty": "…"
-}
-```
-- Behavior:
-  - 按 `id` 更新已有记录的描述 / 处罚内容等字段。
+#### `POST /API/logout`
+- 角色：任何已登录角色。
+- 行为：读取 Cookie 中的 `sid`，调用 `SessionStore.invalidate`，然后写回过期 cookie。响应 `{ "ok": true, "message": "logged out" }`。
 
-### DELETE /API/disciplinary-records
-- Roles: `DRO`
-- Query parameters:
-  - `id`: 要删除的纪律记录 ID
-- Behavior:
-  - 按主键删除记录。
+#### `GET /API/profile` / `PUT /API/profile`
+- 角色：`student | guardian | ARO | DRO`。
+- GET：`ProfileController` 会调用对应 `users.*` 类查询基本信息 + 加密信息，然后删除敏感字段；不同角色只看到各自白名单字段（例如 guardian 只能看姓名、邮箱、手机）。
+- PUT：允许更新 `firstName/lastName/email/mobile/address`（以及 staff 的 `department`），每个字段都先用 `utils.ParamValid` 校验；写入时由 `users.User.updateInfo` 自动拆分到普通/加密表。
+
+#### `PUT /API/modified_Passowrd`
+- 角色：`student | guardian | ARO | DRO`。
+- 请求：`{ "oldPassword": "...", "newPassword": "..." }`，新密码必须符合 `ParamValid.isValidPassword`。
+- 行为：二次校验旧密码后把 `password_hash` 更新为 SHA3-256，新密码成功后立刻失效当前会话并清理 cookie。
+
+### 3.2 学生 / 监护人管理
+
+#### `GET /API/students`
+- 角色：`ARO`, `DRO`。
+- 查询参数：可选 `email`（必须为合法邮箱），不传则返回全部学生。
+- 响应：数组形式 `[ { "id", "firstName", "lastName", "email", "mobile", "gender", "identificationNumber", "address", "enrollmentYear" }, ... ]`。
+
+#### `POST /API/students`
+- 角色：理论上 `ARO`, `DRO`；**但由于 `URIRouteTable` 未登记 POST `/API/students`，请求在到达控制器前就被 403 拒绝**。
+- 逻辑（若绕过过滤器）：校验所有字段、检查邮箱/证件唯一性，写入 `students` + `students_encrypted`，密码会被 SHA3-256。
+
+#### `PUT /API/students`
+- 角色：同上，当前实现直接返回 501 `{ "ok": false, "message": "NOT_IMPLEMENTED" }`。
+
+#### `POST /API/guardians`
+- 控制器缺乏 Session 校验 & 角色判断，且由于 `URIRouteTable` 同样没有 POST `/API/guardians`，目前任何请求都会在过滤器层被拒绝。需要在路由表登记并补上 RBAC/会话逻辑后才能投入使用。
+- 预期 payload：`{ firstName, lastName, email, password, mobile?, studentId?, relation? }`，成功后写入 `guardians` 与 `guardians_encrypted`，可选地回填 `students_encrypted.guardian_id`。
+
+#### `GET /API/guardians`
+- 无控制器实现；`URIRouteTable` 的 GET 配置目前只是占位。
+
+### 3.3 成绩管理（`src/http/GradeController.java`）
+
+- `GET /API/grades`：
+  - 角色：`ARO`。
+  - Query：必须同时提供 `studentId` 与 `courseId`，缺任一字段即 400。
+  - 响应：`{ "ok": true, "data": [ { "id","student_id","course_id","term","grade","comments" } ] }`。注意未包含 `course_name`，也没有分页。
+- `POST /API/grades`：
+  - 角色：`ARO`。
+  - 请求：`{ "studentId", "courseId", "grade", "term"?, "comments"? }`，其中 `grade` 被解析为 `Float`，若传入 `"A-"` 会触发 `NumberFormatException` 并返回 500。
+  - 行为：若尚无记录则写入 `grades` + `grades_encrypted`，否则只更新加密表中的 `grade/comments`。
+- `DELETE /API/grades`：
+  - 角色：`ARO`。
+  - 请求体：`{ "gradeId": "<id>" }`。
+  - 行为：确保记录存在后先删加密表，再删主表。
+
+### 3.4 纪律记录管理
+
+- `GET /API/disciplinary-records`：`DisciplinaryController` 只创建了方法签名（需要 `studentId` + `date`），既没有 SQL 查询也没有返回体，调用会得到空响应或 500。前端 `frontend/lib/api.ts:listDisciplinaryRecords` 会把筛选条件放在查询串里，例如 `?studentId=<uuid>&staffId=<uuid>&date=2025-04-01`。
+- `POST /API/disciplinary-records`：前端 `createDisciplinaryRecord` 在请求体中发送 `{"studentId":"<uuid>","date":"YYYY-MM-DD","description":"<可选>"}`，`staffId` 预期由后端根据当前 DRO 会话自动填充，但控制器尚未实现逻辑。
+- `PUT /API/disciplinary-records`：前端 `updateDisciplinaryRecord` 发送 `{"id":"<record-id>","date":"YYYY-MM-DD","description":"<可选>"}`，后端同样没有实现。
+- `DELETE /API/disciplinary-records`：前端 `deleteDisciplinaryRecord` 通过 `DELETE /API/disciplinary-records?id=<record-id>` 指定要删除的记录，目前没有对应处理。
+- 底层表访问器 `src/tables/Disciplinary.java` 目前还错误地读取了 `grade_encrypted` 表，导致 `ReportController` / `users.Guardian` / `users.Student` 在查询纪律记录时也会失败。
+
+### 3.5 成绩 + 纪律汇总（`src/http/ReportController.java`）
+
+- 路由：`GET /API/reports` 与 `POST /API/reports` 共用同一个方法。
+- 角色：`student` 仅查看本人；`guardian` 先找出名下所有学生再汇总。
+- 响应：`{ "ok": true, "data": [ { "grade": [...], "disciplinary": [...] }, ... ] }`，其中每条记录都会删除 `student_id` 以减小暴露面。
+- 现状：因为 `tables.Grades` 查询 `grade_encrypted`（缺少 `s`）以及 `tables.Disciplinary` 读取错误表，接口会抛 SQL 异常，无法满足 Project.pdf “学生/监护人可查看成绩与处分” 的要求。
+
+### 3.6 注册占位接口
+
+- `POST /API/register`：直接返回 `501`（`{ "ok": false, "message": "No implement" }`），提示必须由管理员在数据库中预置账号。
+
+### 3.7 仅存在于前端的占位路径
+
+`frontend/lib/api.ts` 仍然暴露了一些 “DBA” 用接口（例如 `dbaCreateStudent -> /API/dba/students`, `dbaCreateGuardian -> /API/dba/guardians`），以及对 `PUT/DELETE /API/disciplinary-records` 的调用。这些路由在后端均不存在或未开放，调用会得到 `NOT_IMPLEMENTED` 或 404。开发/测试时需要保持前端的 `NotImplemented` 占位组件，以免误以为功能可用。
 
 ---
 
-## 4. 成绩 + 纪律报告 /API/reports（student / guardian）
-
-### GET /API/reports
-- Roles: `student`, `guardian`
-- Behavior:
-  - `student`：返回当前学生自己的所有课程成绩 + 纪律记录；
-  - `guardian`：根据 `guardian_id` 关联的所有学生，返回每个学生的成绩 + 纪律记录；
-  - 结果中会去掉 `student_id` 等不必要字段，避免暴露多余信息。
-- Responses（示例结构）:
-```json
-{
-  "ok": true,
-  "data": [
-    {
-      "grade": [ /* list of grade objects, without student_id */ ],
-      "disciplinary": [ /* list of disciplinary objects, without student_id */ ]
-    }
-  ]
-}
-```
-
-（`POST /API/reports` 目前与 GET 行为一致，仅为兼容性保留。）
-
----
-
-## 5. 学生 / 监护人初始化接口（可按需要使用）
-
-这些接口主要用于初始化测试数据或 DBA 工具；前端主流程不依赖它们。
-
-### POST /API/students
-- Roles: `ARO`, `DRO` 或 `DBA`（根据最终 RBAC 配置）
-- Content-Type: `application/json`
-- Request body:
-```json
-{
-  "firstName": "Alice",
-  "lastName": "Chan",
-  "email": "alice@example.com",
-  "mobile": "91234567",
-  "gender": "M|F",
-  "identificationNumber": "<string<=32>",
-  "address": "<string<=255>",
-  "enrollmentYear": 2024,
-  "password": "<string>"           // 如果用于创建登录账户
-}
-```
-- 典型响应：
-  - 201: `{ "ok": true, "id": "<uuid>", "message": "student created" }`
-  - 4xx/5xx: `{ "ok": false, "message": "…" }`
-
-### POST /API/guardians
-- Roles: `ARO`, `DRO` 或 `DBA`
-- Content-Type: `application/json`
-- Request body:
-```json
-{
-  "firstName": "Bob",
-  "lastName": "Lee",
-  "email": "bob@example.com",
-  "password": "<string>",
-  "mobile": "91230000",
-  "studentId": "<optional uuid>",
-  "relation": "father|mother|other"
-}
-```
-- 典型响应：
-  - 201: `{ "ok": true, "id": "<uuid>", "message": "guardian created" }`
-
-### POST /API/register
-- 本项目最终设计中注册入口关闭。
-- Responses:
-  - 501: `{ "code": "NOT_IMPLEMENTED", "message": "register not available" }`
+以上约定同步反映了当前 `frontend` 与 `src` 代码库的实际行为，后续若新增路由或放开被 `URIRouteTable` 禁止的接口，需要相应更新本说明以及 `frontend/api.md`。 

@@ -1,5 +1,10 @@
 package utils;
 
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+
 public class ParamValid {
     public static boolean isValidEmail(String email){
         if(email == null || email.isBlank()){
@@ -109,5 +114,31 @@ public class ParamValid {
         }
         String regex1 = "^[A-Z][0-9]{6}\\([0-9A]\\)$";//香港身份证
         return identityNum.matches(regex1);
+    }
+
+    public static boolean isValidDate(String date){
+        try{
+            LocalDate.parse(date);
+            return true;
+        }
+        catch(DateTimeException e){
+            return false;
+        }
+    }
+
+    public static boolean isValidString(String str){
+        if(str == null || str.isBlank()){
+            return false;
+        }
+        String regex = "^[A-Za-z0-9_\\s.,]+$";
+        return str.matches(regex);
+    }
+
+    public static boolean isValidGrade(String grade){
+        if(grade == null || grade.isBlank()){
+            return false;
+        }
+        List<String> validGrades = Arrays.asList("A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F");
+        return validGrades.contains(grade);
     }
 }

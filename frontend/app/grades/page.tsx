@@ -34,6 +34,10 @@ export default function GradesPage() {
     setError(null);
     setMsg(null);
     try {
+      if (role !== "ARO") throw new Error("仅 ARO 可以查看/管理成绩");
+      if (!filters.studentId || !filters.courseId) {
+        throw new Error("查询需要同时填写 Student ID 和 Course ID");
+      }
       const list = await api.listGrades({ studentId: filters.studentId, courseId: filters.courseId });
       setItems(list || []);
     } catch (e) {
@@ -52,16 +56,19 @@ export default function GradesPage() {
     setError(null);
     setMsg(null);
     try {
-      if (role !== "ARO") throw new Error("Read-only");
+      if (role !== "ARO") throw new Error("仅 ARO 可以管理成绩");
       if (!assign.studentId || !assign.courseId || !assign.term || !assign.grade) {
         throw new Error("Student ID, Course ID, Term and Grade are required");
+      }
+      if (!assign.comments || !assign.comments.trim()) {
+        throw new Error("Comments 为必填");
       }
       await api.assignGrade({
         studentId: assign.studentId,
         courseId: assign.courseId,
         term: assign.term,
         grade: assign.grade,
-        comments: assign.comments || undefined,
+        comments: assign.comments,
       });
       setMsg("Saved");
       await load();
@@ -75,7 +82,7 @@ export default function GradesPage() {
   return (
     <div>
       <h1 className="mb-4 text-2xl font-semibold">Grades</h1>
-      <p className="text-sm text-zinc-600">View grades{role === "ARO" ? " and assign" : ""}.</p>
+      <p className="text-sm text-zinc-600">仅 ARO 可查看/分配成绩。</p>
       <div className="mt-6 grid gap-6 sm:grid-cols-2">
         {role === "ARO" && (
           <div className="rounded border p-4">
@@ -171,4 +178,3 @@ export default function GradesPage() {
     </div>
   );
 }
-

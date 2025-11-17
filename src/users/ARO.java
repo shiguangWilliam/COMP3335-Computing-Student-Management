@@ -19,7 +19,7 @@ public class ARO extends User{
             String sql = "INSERT INTO grades (id, student_id, course_id, term) VALUES (?, ?, ?, ?)";
             String[] params = {ID, studentID, courseID, term};
             DBConnect.dbConnector.executeUpdate(sql, params);
-            String sqlEnc = "INSERT INTO grade_encrypted (id, grade, comments) VALUES (?, ?, ?)";
+            String sqlEnc = "INSERT INTO grades_encrypted (id, grade, comments) VALUES (?, ?, ?)";
             String[] paramsEnc = {ID, grade, comments};
             DBConnect.dbConnector.executeUpdate(sqlEnc, paramsEnc);
         } catch (Exception e) {
@@ -42,7 +42,7 @@ public class ARO extends User{
             }
         }
         StringBuilder sql = new StringBuilder("UPDATE grades SET ");
-        StringBuilder sqlEnc = new StringBuilder("UPDATE grade_encrypted SET ");
+        StringBuilder sqlEnc = new StringBuilder("UPDATE grades_encrypted SET ");
         for(int i=0;i<attNormal.size();i++){
             sql.append(i == attNormal.size() - 1 ? "%s = ? WHERE id = ?".formatted(attNormal.get(i)) : "%s = ?, ".formatted(attNormal.get(i)));
         }
@@ -61,7 +61,7 @@ public class ARO extends User{
             String sql = "DELETE FROM grades WHERE id = ?";
             String[] params = {ID};
             DBConnect.dbConnector.executeUpdate(sql, params);
-            String sqlEnc = "DELETE FROM grade_encrypted WHERE id = ?";
+            String sqlEnc = "DELETE FROM grades_encrypted WHERE id = ?";
             DBConnect.dbConnector.executeUpdate(sqlEnc, params);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
@@ -74,7 +74,7 @@ public class ARO extends User{
             String sql = "SELECT * FROM ";
             String[] params = {ID};
             DBConnect.dbConnector.executeUpdate(sql, params);
-            String sqlEnc = "DELETE FROM grade_encrypted WHERE id = ?";
+            String sqlEnc = "DELETE FROM grades_encrypted WHERE id = ?";
             DBConnect.dbConnector.executeUpdate(sqlEnc, params);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
