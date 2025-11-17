@@ -34,8 +34,7 @@ export default function DisciplinaryPage() {
     setMsg(null);
     try {
       if (role !== "DRO") throw new Error("Only DRO staff can view or manage disciplinary records.");
-      if (!filters.studentId || !filters.date) throw new Error("Search requires both Student ID and Date.");
-      const list = await api.listDisciplinaryRecords({ studentId: filters.studentId, date: filters.date });
+      const list = await api.listDisciplinaryRecords(filters);
       setItems(list || []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
@@ -45,8 +44,11 @@ export default function DisciplinaryPage() {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    if (role === "DRO") {
+      load();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role]);
 
   const save = async () => {
     setLoading(true);
@@ -131,13 +133,13 @@ export default function DisciplinaryPage() {
           <div className="grid gap-2">
             <input
               className="rounded border px-3 py-2"
-              placeholder="Student ID"
+              placeholder="Student ID (optional)"
               value={filters.studentId || ""}
               onChange={(e) => setFilters({ ...filters, studentId: e.target.value || undefined })}
             />
             <input
               className="rounded border px-3 py-2"
-              placeholder="Date"
+              placeholder="Date (optional, YYYY-MM-DD)"
               value={filters.date || ""}
               onChange={(e) => setFilters({ ...filters, date: e.target.value || undefined })}
             />

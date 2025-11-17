@@ -442,17 +442,11 @@ export type DisciplinaryRecord = { id: string; student_id: string; date: string;
 
 
 
-// 后端仅允许 DRO，并且要求 studentId + date
-
-export async function listDisciplinaryRecords(params: { studentId: string; date: string }): Promise<DisciplinaryRecord[]> {
-
-  if (!params?.studentId || !params?.date) {
-
-    throw new Error("studentId 和 date 均为必填");
-
-  }
-
-  const qs = `?${new URLSearchParams(params as Record<string, string>).toString()}`;
+export async function listDisciplinaryRecords(params?: { studentId?: string; date?: string }): Promise<DisciplinaryRecord[]> {
+  const entries = Object.entries(params ?? {}).filter(
+    ([, value]) => typeof value === "string" && value.trim().length > 0,
+  ) as Array<[string, string]>;
+  const qs = entries.length ? `?${new URLSearchParams(Object.fromEntries(entries)).toString()}` : "";
 
   const res = await request<{ data?: DisciplinaryRecord[] }>(`/API/disciplinary-records${qs}`);
 

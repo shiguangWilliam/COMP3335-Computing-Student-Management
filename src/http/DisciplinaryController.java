@@ -1,30 +1,23 @@
 package http;
 
 import app.Session;
-import ch.qos.logback.core.joran.sanity.Pair;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import service.DBConnect;
 import tables.Disciplinary;
-import tables.Grades;
-import users.ARO;
 import users.DRO;
-import users.User;
 import utils.AuditUtils;
 import utils.ParamValid;
-import java.util.ArrayList;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +29,10 @@ public class DisciplinaryController {
     private Logger log = LoggerFactory.getLogger(DisciplinaryController.class);
 
     @GetMapping(value = "/API/disciplinary-records", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> getDiscinaryRecord(@RequestParam("studentId") String studentId, @RequestParam("date") String date, HttpServletRequest request , HttpServletResponse response){
+    public Map<String, Object> getDiscinaryRecord(
+            @RequestParam(value = "studentId", required = false) String studentId,
+            @RequestParam(value = "date", required = false) String date,
+            HttpServletRequest request, HttpServletResponse response){
         String requestId = request.getHeader("X-Request-ID");
         if (requestId == null || requestId.isBlank()) {
             requestId = UUID.randomUUID().toString();
@@ -59,34 +55,30 @@ public class DisciplinaryController {
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "forbidden", "userID", session.getUserId()));
             return err;
         }
-        DRO user = new DRO(session.getUserId());
         String staffId = session.getUserId();
-        if(studentId == null || studentId.isBlank() || date == null || date.isBlank()){
-            err.put("error", "bad request");
+
+        String studentFilter = (studentId != null && !studentId.isBlank()) ? studentId.trim() : null;
+        String dateFilter = (date != null && !date.isBlank()) ? date.trim() : null;
+        if (dateFilter != null && !ParamValid.isValidDate(dateFilter)) {
+            err.put("error", "bad request - invalid date format");
             err.put("code", 400);
-            log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request", "userID", session.getUserId()));
+            log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request - invalid date format", "userID", session.getUserId()));
             return err;
         }
 
         try{
-            ArrayList<HashMap<String, String>> disciplinaryRecords = Disciplinary.getStudentDisciplinary(studentId, date, staffId);
-            if(disciplinaryRecords.isEmpty()){
-                err.put("error", "not found");
-                err.put("code", 404);
-                log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "not found", "userID", session.getUserId(), "studentID", studentId));
-                return err;
-            }else{
-                Map<String, Object> data = new HashMap<>();
-                resp.put("data", disciplinaryRecords);
-                resp.put("ok", true);
-                log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "disciplinary records retrieved", "userID", session.getUserId(), "studentID", studentId));
-                return resp;
-            }
+            ArrayList<HashMap<String, String>> disciplinaryRecords = Disciplinary.getStudentDisciplinary(studentFilter, dateFilter, staffId);
+            resp.put("data", disciplinaryRecords);
+            resp.put("ok", true);
+            log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "disciplinary records retrieved",
+                    "userID", session.getUserId(), "studentID", studentFilter == null ? "ALL" : studentFilter,
+                    "date", dateFilter == null ? "ALL" : dateFilter));
+            return resp;
         }
         catch(SQLException e){
             err.put("error", "internal server error");
             err.put("code", 500);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "internal server error", "userID", session.getUserId(), "studentID", studentId, "error", e.getMessage()));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "internal server error", "userID", session.getUserId(), "error", e.getMessage()));
             return err;
         }
 
