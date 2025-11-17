@@ -163,25 +163,26 @@ public class TestAccountSeeder {
         for (GradeData g : grades) {
             if (!courseIds.containsKey(g.courseId())) continue;
             ResultSet rs = DBConnect.dbConnector.executeQuery(
-                    "SELECT id FROM grades WHERE student_id = ? AND course_id = ? AND term = ?",
+                    "SELECT id, encrypted_id FROM grades WHERE student_id = ? AND course_id = ? AND term = ?",
                     new String[]{studentId, g.courseId(), g.term()}
             );
             if (rs.next()) {
-                String gid = rs.getString("id");
+                String encryptedId = rs.getString("encrypted_id");
                 DBConnect.dbConnector.executeUpdate(
                         "UPDATE grades_encrypted SET grade = ?, comments = ? WHERE id = ?",
-                        new String[]{String.valueOf(g.grade()), g.comments(), gid}
+                        new String[]{g.grade(), g.comments(), encryptedId}
                 );
                 System.out.println("  - 更新成绩 " + g.courseId());
             } else {
-                String gid = randomId();
-                DBConnect.dbConnector.executeUpdate(
-                        "INSERT INTO grades (id, student_id, course_id, term) VALUES (?, ?, ?, ?)",
-                        new String[]{gid, studentId, g.courseId(), g.term()}
-                );
+                String gradeId = randomId();
+                String encryptedId = randomId();
                 DBConnect.dbConnector.executeUpdate(
                         "INSERT INTO grades_encrypted (id, grade, comments) VALUES (?, ?, ?)",
-                        new String[]{gid, String.valueOf(g.grade()), g.comments()}
+                        new String[]{encryptedId, g.grade(), g.comments()}
+                );
+                DBConnect.dbConnector.executeUpdate(
+                        "INSERT INTO grades (id, encrypted_id, student_id, course_id, term) VALUES (?, ?, ?, ?, ?)",
+                        new String[]{gradeId, encryptedId, studentId, g.courseId(), g.term()}
                 );
                 System.out.println("  - 创建成绩 " + g.courseId());
             }
