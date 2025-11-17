@@ -33,9 +33,9 @@ export default function DisciplinaryPage() {
     setError(null);
     setMsg(null);
     try {
-      if (role !== "DRO") throw new Error("仅 DRO 可以查看/管理违纪记录");
-      if (role !== "DRO") throw new Error("只有 DRO 可以查看/管理记录")
-      if (!filters.studentId || !filters.date) throw new Error("查询需要同时填写 Student ID 和 Date")
+      if (role !== "DRO") throw new Error("Only DRO staff can view or manage disciplinary records.");
+      if (!filters.studentId || !filters.date) throw new Error("Search requires both Student ID and Date.");
+      const list = await api.listDisciplinaryRecords({ studentId: filters.studentId, date: filters.date });
       setItems(list || []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
@@ -53,14 +53,14 @@ export default function DisciplinaryPage() {
     setError(null);
     setMsg(null);
     try {
-      if (role !== "DRO") throw new Error("仅 DRO 可以管理违纪记录");
-      if (!form.studentId || !form.date) throw new Error("Student ID 与 Date 为必填");
-      if (!form.description || !form.description.trim()) throw new Error("Description 为必填");
+      if (role !== "DRO") throw new Error("Only DRO staff can create or edit records.");
+      if (!form.studentId || !form.date) throw new Error("Student ID and Date are required.");
+      if (!form.description || !form.description.trim()) throw new Error("Description is required.");
       if (form.id) {
         await api.updateDisciplinaryRecord(form.id, { date: form.date, description: form.description });
-      if (role !== "DRO") throw new Error("只有 DRO 可以管理记录")
-      if (!form.studentId || !form.date) throw new Error("Student ID 和 Date 为必填")
-      if (!form.description || !form.description.trim()) throw new Error("Description 为必填")
+      } else {
+        await api.createDisciplinaryRecord({ studentId: form.studentId, date: form.date, description: form.description });
+      }
       setMsg("Saved");
       setForm({ studentId: "", date: "", description: "" });
       await load();
@@ -79,7 +79,7 @@ export default function DisciplinaryPage() {
   return (
     <div>
       <h1 className="mb-4 text-2xl font-semibold">Disciplinary Records</h1>
-      <p className="text-sm text-zinc-600">仅 DRO 可查看/管理违纪记录。</p>
+      <p className="text-sm text-zinc-600">Only DRO staff can view or manage disciplinary actions.</p>
       <div className="mt-6 grid gap-6 sm:grid-cols-2">
         {role === "DRO" && (
           <div className="rounded border p-4">
@@ -87,7 +87,7 @@ export default function DisciplinaryPage() {
             <div className="mb-1 text-xs text-zinc-500">
               {form.id ? `Editing record ${form.id}` : "Creating new record"}
             </div>
-      <p className="text-sm text-zinc-600">仅 DRO 可查看/管理记录。</p>
+            <div className="grid gap-2">
               <input
                 className="rounded border px-3 py-2"
                 placeholder="Student ID"
@@ -126,12 +126,24 @@ export default function DisciplinaryPage() {
             </div>
           </div>
         )}
-                <div className="text-sm">{it.student_id} · {it.date} · {it.staff_id}</div>
+        <div className="rounded border p-4">
           <h2 className="mb-2 font-medium">Search</h2>
           <div className="grid gap-2">
-            <input className="rounded border px-3 py-2" placeholder="Student ID" value={filters.studentId || ""} onChange={(e) => setFilters({ ...filters, studentId: e.target.value || undefined })} />
-            <input className="rounded border px-3 py-2" placeholder="Date" value={filters.date || ""} onChange={(e) => setFilters({ ...filters, date: e.target.value || undefined })} />
-            <button className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60" disabled={loading} onClick={load}>Search</button>
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Student ID"
+              value={filters.studentId || ""}
+              onChange={(e) => setFilters({ ...filters, studentId: e.target.value || undefined })}
+            />
+            <input
+              className="rounded border px-3 py-2"
+              placeholder="Date"
+              value={filters.date || ""}
+              onChange={(e) => setFilters({ ...filters, date: e.target.value || undefined })}
+            />
+            <button className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60" disabled={loading} onClick={load}>
+              Search
+            </button>
           </div>
         </div>
       </div>
@@ -145,7 +157,9 @@ export default function DisciplinaryPage() {
           ) : (
             items.map((it) => (
               <button key={it.id} className="rounded border p-2 text-left" onClick={() => pick(it)}>
-                <div className="text-sm">{it.student_id} · {it.date} · {it.staff_id}</div>
+                <div className="text-sm">
+                  {it.student_id} · {it.date} · {it.staff_id}
+                </div>
                 {it.descriptions && <div className="text-xs text-zinc-700">{it.descriptions}</div>}
               </button>
             ))

@@ -67,9 +67,7 @@ export default function ReportsPage() {
                         {bundle.grade.map((g) => (
                           <li key={g.id} className="rounded border px-3 py-2">
                             <div>
-                            <div>
-                              {g.courseId}{g.term ? ` · Term ${g.term}` : ""}
-                            </div>
+                              {g.courseId}{g.term ? ` · Term ${g.term}` : }
                             </div>
                             <div className="text-zinc-600">Grade: {g.grade}</div>
                             {g.comments && <div className="text-xs text-zinc-500">Comments: {g.comments}</div>}
@@ -82,11 +80,9 @@ export default function ReportsPage() {
                     <h3 className="mb-2 text-sm font-semibold">Disciplinary</h3>
                     {bundle.disciplinary.length === 0 ? (
                       <p className="text-sm text-zinc-600">No disciplinary records.</p>
-                    ) : (
-                      <ul className="space-y-2 text-sm">
-                        {bundle.disciplinary.map((d) => (
-                          <li key={d.id} className="rounded border px-3 py-2">
                             <div>
+                              {d.date} · Staff: {d.staff_id}
+                            </div>
                             <div>
                               {d.date} · Staff: {d.staff_id}
                             </div>
