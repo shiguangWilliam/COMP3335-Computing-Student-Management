@@ -51,14 +51,20 @@ public class DRO extends User{
             DBConnect.dbConnector.executeUpdate(sqlEnc.toString(), valEnc.toArray(new String[0]));
     }
     public void addDisciplinary(String ID, String studentID, String date, String staffID, String descriptions) throws SQLException {
+        String sql = "INSERT INTO disciplinary_records (id, student_id, date, staff_id) VALUES (?, ?, ?, ?)";
+        String sqlEnc = "INSERT INTO disciplinary_records_encrypted (id, descriptions) VALUES (?, ?)";
+        String[] params = {ID, studentID, date, staffID};
+        String[] paramsEnc = {ID, descriptions};
         try {
-            String sql = "INSERT INTO disciplinary_records (id, student_id, date, staff_id) VALUES (?, ?, ?, ?)";
-            String[] params = {ID, studentID, date, staffID};
             DBConnect.dbConnector.executeUpdate(sql, params);
-            String sqlEnc = "INSERT INTO disciplinary_records_encrypted (id, descriptions) VALUES (?, ?)";
-            String[] paramsEnc = {ID, descriptions};
-            DBConnect.dbConnector.executeUpdate(sqlEnc, paramsEnc);
-        } catch (Exception e) {
+            try {
+                DBConnect.dbConnector.executeUpdate(sqlEnc, paramsEnc);
+            } catch (SQLException encEx) {
+                // rollback parent insert to keep FK consistent
+                DBConnect.dbConnector.executeUpdate("DELETE FROM disciplinary_records WHERE id = ?", new String[]{ID});
+                throw encEx;
+            }
+        } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
             throw e;
         }

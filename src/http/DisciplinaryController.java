@@ -17,7 +17,9 @@ import tables.Disciplinary;
 import users.DRO;
 import utils.AuditUtils;
 import utils.ParamValid;
+import service.DBConnect;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -135,9 +137,27 @@ public class DisciplinaryController {
             return err;
         }
 
+        // ensure student exists
+        try (ResultSet studentRs = DBConnect.dbConnector.executeQuery("SELECT COUNT(*) AS count FROM students WHERE id = ?", new String[]{studentId})) {
+            if (studentRs.next() && studentRs.getInt("count") == 0) {
+                err.put("error", "invalid student");
+                err.put("code", 400);
+                err.put("message", "invalid student id");
+                log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "invalid student id", "studentID", studentId));
+                return err;
+            }
+        } catch (SQLException e) {
+            err.put("error", "internal server error");
+            err.put("code", 500);
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "student check failed", "error", e.getMessage()));
+            return err;
+        }
+
         try{
-            String gid = UUID.randomUUID().toString();
-            gid.replace("-","");
+            String gid = UUID.randomUUID().toString().replace("-", "");
+            if (gid.length() > 20) {
+                gid = gid.substring(0, 20);
+            }
             user.addDisciplinary(gid, studentId, date, staffId, description);
             resp.put("ok", true);
             log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "disciplinary record added", "userID", session.getUserId(), "studentID", studentId));
@@ -187,24 +207,50 @@ public class DisciplinaryController {
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request", "userID", session.getUserId()));
             return err;
         }
-        if(ParamValid.isValidDate(date) == false){
-            err.put("error", "bad request - invalid date format");
+        HashMap<String, String> updateMap = new HashMap<>();
+        if(date != null && !date.isBlank()){
+            if(ParamValid.isValidDate(date) == false){
+                err.put("error", "bad request - invalid date format");
+                err.put("code", 400);
+                log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request - invalid date format", "userID", session.getUserId()));
+                return err;
+            }
+            updateMap.put("date", date);
+        }
+        if(descriptions != null && !descriptions.isBlank()){
+            if(ParamValid.isValidString(descriptions) == false){
+                err.put("error", "bad request - invalid descriptions format");
+                err.put("code", 400);
+                log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request - invalid descriptions format", "userID", session.getUserId()));
+                return err;
+            }
+            updateMap.put("descriptions", descriptions);
+        }
+        if(updateMap.isEmpty()){
+            err.put("error", "bad request");
             err.put("code", 400);
-            log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request - invalid date format", "userID", session.getUserId()));
+            err.put("message", "no valid fields to update");
+            log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "no valid fields to update", "userID", session.getUserId()));
             return err;
         }
-        if(ParamValid.isValidString(descriptions) == false){
-            err.put("error", "bad request - invalid descriptions format");
-            err.put("code", 400);
-            log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request - invalid descriptions format", "userID", session.getUserId()));
+
+        // ensure record exists
+        try(ResultSet rs = DBConnect.dbConnector.executeQuery("SELECT COUNT(*) AS count FROM disciplinary_records WHERE id = ?", new String[]{dicId})){
+            if(rs.next() && rs.getInt("count")==0){
+                err.put("error", "not found");
+                err.put("code", 404);
+                err.put("message", "record not found");
+                log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "record not found", "userID", session.getUserId(), "dicID", dicId));
+                return err;
+            }
+        } catch (SQLException e){
+            err.put("error", "internal server error");
+            err.put("code", 500);
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "internal server error", "userID", session.getUserId(), "dicID", dicId, "error", e.getMessage()));
             return err;
         }
 
         try{
-            HashMap<String, String> updateMap = new HashMap<>();
-            updateMap.put("date", date);
-            updateMap.put("descriptions", descriptions);
-            
             user.updateDisciplinary(dicId, updateMap);
             resp.put("ok", true);
             return resp;
