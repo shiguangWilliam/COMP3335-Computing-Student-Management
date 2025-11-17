@@ -82,6 +82,7 @@
 
 ### 1️⃣ 启动数据库（Docker）
 
+>请在运行前确认你已安装Docker Desktop
 ```powershell
 # 在项目根目录打开 PowerShell
 cd C:\...\COMP3335-Computing-Student-Management
@@ -131,7 +132,12 @@ npm run dev
 - **同网段其他设备访问**：`http://<主机IP>:3000`（需配置 Windows 防火墙规则）
 
 ---
-
+## 快速启动 ##
+    进入项目根目录，运行以下指令
+    ```
+    ./scripts/start-all.ps1
+    ```
+    可快速启动
 ## 详细部署步骤
 
 ### 步骤 1：数据库部署
