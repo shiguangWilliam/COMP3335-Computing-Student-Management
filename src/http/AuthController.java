@@ -83,8 +83,21 @@ public class AuthController {
 
     private static Map<String, Object> queryLogIn(String email, String password, String requestId) {
         for(String userType : USER_TYPE_STRINGS){
+            String saltQuery = "SELECT salt FROM %s_encrypted WHERE email = ?".formatted(userType);
+            String[] saltParams = {email};
+            String salt;
+            try (ResultSet rsSalt = DBConnect.dbConnector.executeQuery(saltQuery, saltParams)) {//根据ID搜索盐，没有跳过
+                if (rsSalt.next()) {
+                    salt = rsSalt.getString("salt");
+                } else {
+                    continue; // No matching email in this userType, try next
+                }
+            } catch (SQLException e) {
+                log.error("audit={}", AuditUtils.pack("requestId", requestId, "emailMasked", SecurityUtils.maskEmail(email), "userType", userType, "error", "SQL_EXCEPTION"));
+                continue; // On error, skip to next userType
+            }
             String sqlEnc = "SELECT COUNT(*) AS count FROM %s_encrypted WHERE email = ? AND password_hash = ?".formatted(userType);
-            String passwdHash = SecurityUtils.getPasswdHash(password);
+            String passwdHash = SecurityUtils.getPasswdHash(password, salt);
             String[] paramsEnc = {email, passwdHash};
             try(ResultSet rs = DBConnect.dbConnector.executeQuery(sqlEnc, paramsEnc)){
                 if(rs.next() && rs.getInt("count") > 0){

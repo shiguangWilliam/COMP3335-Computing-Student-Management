@@ -8,6 +8,7 @@ CREATE TABLE guardians_encrypted(
     id VARCHAR(20) PRIMARY KEY,
     email VARCHAR(100) NOT NULL,
     phone VARCHAR(20) NOT NULL,
+    salt VARCHAR(32) NOT NULL,
     password_hash VARCHAR(256) NOT NULL,
     FOREIGN KEY (id) REFERENCES guardians(id)
 ) ENCRYPTION='Y';
@@ -26,6 +27,7 @@ CREATE TABLE students_encrypted(
     phone VARCHAR(20) NOT NULL,
     guardian_id VARCHAR(20) NOT NULL,
     guardian_relation VARCHAR(20) NOT NULL,
+    salt VARCHAR(32) NOT NULL,
     password_hash VARCHAR(256) NOT NULL,
     FOREIGN KEY (id) REFERENCES students(id),
     FOREIGN KEY (guardian_id) REFERENCES guardians(id)
@@ -44,6 +46,7 @@ CREATE TABLE staffs_encrypted(
     phone VARCHAR(20) NOT NULL,
     address VARCHAR(500) NOT NULL,
     identification_number VARCHAR(20) NOT NULL,
+    salt VARCHAR(32) NOT NULL,
     password_hash VARCHAR(256) NOT NULL,
     FOREIGN KEY (id) REFERENCES staffs(id)
 ) ENCRYPTION='Y';

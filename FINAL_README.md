@@ -268,6 +268,7 @@ curl http://localhost:3335/API/public-key
 #### 安装 Node.js
 
 下载并安装：https://nodejs.org/zh-cn/download/
+推荐下载.msi安装包
 
 验证安装：
 ```powershell

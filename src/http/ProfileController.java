@@ -3,6 +3,8 @@ package http;
 import app.Session;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.checkerframework.checker.units.qual.s;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -224,8 +226,18 @@ public class ProfileController {
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "userId", session.getUserId(), "role", role, "emailMasked", SecurityUtils.maskEmail(session.getEmail()), "message", "password required"));
             return err;
         }
-        
-        String passwdHash = SecurityUtils.getPasswdHash(password);
+        String salt;
+        try{
+            salt = querySalt(session.getUserId(), role);
+        }
+        catch(SQLException e){
+            resp.put("ok",false);
+            resp.put("message","fetch failed");
+            response.setStatus(500);
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "userId", session.getUserId(), "role", role, "emailMasked", SecurityUtils.maskEmail(session.getEmail()), "error", "SQL_EXCEPTION","errorMessage",e.getMessage()));
+            return resp;
+        }
+        String passwdHash = SecurityUtils.getPasswdHash(password, salt);
         try {//先验证是本人
             boolean check = User.checkLogin(session.getUserId(), passwdHash, session.getRole());
             if(!check){
@@ -388,7 +400,18 @@ public class ProfileController {
             return resp;
         }
         //检验旧密码是否正确
-        String oldPassHash = SecurityUtils.getPasswdHash(oldPassword);
+        String salt;
+        try{
+            salt = querySalt(session.getUserId(), role);
+        }
+        catch(SQLException e){
+            resp.put("ok",false);
+            resp.put("message","fetch failed");
+            response.setStatus(500);
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "userId", session.getUserId(), "role", role, "emailMasked", SecurityUtils.maskEmail(session.getEmail()), "error", "SQL_EXCEPTION","errorMessage",e.getMessage()));
+            return resp;
+        }
+        String oldPassHash = SecurityUtils.getPasswdHash(oldPassword,salt);
         try{
             boolean result = User.checkLogin(session.getUserId(),oldPassHash,session.getRole());
             if(!result){
@@ -398,9 +421,11 @@ public class ProfileController {
                 log.warn("audit={}", AuditUtils.pack("requestId", requestId, "userId", session.getUserId(), "role", role, "emailMasked", SecurityUtils.maskEmail(session.getEmail()), "message", "no valid fields to update"));
                 return resp;
             }
-            String newPassHash = SecurityUtils.getPasswdHash(newPassword);
+            String new_salt = SecurityUtils.generateSalt();
+            String newPassHash = SecurityUtils.getPasswdHash(newPassword, new_salt);
             HashMap<String,String> update = new HashMap<>();
             update.put("password_hash",newPassHash);
+            update.put("salt", new_salt);
             user.updateInfo(update);
             sessionStore.invalidate(session.getSid());
             response.addHeader("Set-Cookie", "sid=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0");
@@ -415,6 +440,27 @@ public class ProfileController {
             resp.put("message","update failed");
             response.setStatus(500);
             return resp;
+        }
+    }
+    private String querySalt(String userId, String role) throws SQLException {
+        String table;
+        if ("student".equalsIgnoreCase(role)) {
+            table = "students_encrypted";
+        } else if ("guardian".equalsIgnoreCase(role)) {
+            table = "guardians_encrypted";
+        } else if ("ARO".equalsIgnoreCase(role) || "DRO".equalsIgnoreCase(role)) {
+            table = "staffs_encrypted";
+        } else {
+            throw new SQLException("invalid role");
+        }
+        ResultSet rs = DBConnect.dbConnector.executeQuery(
+                "SELECT salt FROM " + table + " WHERE id = ?",
+                new String[]{userId}
+        );
+        if (rs.next()) {
+            return rs.getString("salt");
+        } else {
+            throw new SQLException("user not found");
         }
     }
 }

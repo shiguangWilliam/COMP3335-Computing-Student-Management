@@ -57,14 +57,15 @@ public class TestAccountSeeder {
             throw new IllegalStateException("缺少 guardian 账号，无法创建 student");
         }
         String id = randomId();
+        String salt = SecurityUtils.generateSalt();
         System.out.println("  - 创建学生 " + account.email);
         DBConnect.dbConnector.executeUpdate(
                 "INSERT INTO students (id, last_name, first_name, enrollment_year) VALUES (?, ?, ?, ?)",
                 new String[]{id, account.lastName, account.firstName, "2024"}
         );
         DBConnect.dbConnector.executeUpdate(
-                "INSERT INTO students_encrypted (id, gender, identification_number, address, email, phone, guardian_id, guardian_relation, password_hash) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO students_encrypted (id, gender, identification_number, address, email, phone, guardian_id, guardian_relation, password_hash, salt) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 new String[]{
                         id,
                         "F",
@@ -74,7 +75,8 @@ public class TestAccountSeeder {
                         "91234567",
                         guardianId,
                         "mother",
-                        SecurityUtils.getPasswdHash(account.password)
+                        SecurityUtils.getPasswdHash(account.password, salt),
+                        salt
                 }
         );
         return id;
@@ -86,18 +88,20 @@ public class TestAccountSeeder {
             return lookupId("guardians_encrypted", account.email);
         }
         String id = randomId();
+        String salt = SecurityUtils.generateSalt();
         System.out.println("  - 创建监护人 " + account.email);
         DBConnect.dbConnector.executeUpdate(
                 "INSERT INTO guardians (id, last_name, first_name) VALUES (?, ?, ?)",
                 new String[]{id, account.lastName, account.firstName}
         );
         DBConnect.dbConnector.executeUpdate(
-                "INSERT INTO guardians_encrypted (id, email, phone, password_hash) VALUES (?, ?, ?, ?)",
+                "INSERT INTO guardians_encrypted (id, email, phone, password_hash, salt) VALUES (?, ?, ?, ?, ?)",
                 new String[]{
                         id,
                         account.email,
                         "92345678",
-                        SecurityUtils.getPasswdHash(account.password)
+                        SecurityUtils.getPasswdHash(account.password, salt),
+                        salt
                 }
         );
         return id;
@@ -109,13 +113,14 @@ public class TestAccountSeeder {
             return lookupId("staffs_encrypted", account.email);
         }
         String id = randomId();
+        String salt = SecurityUtils.generateSalt();
         System.out.println("  - 创建员工 " + account.role + " " + account.email);
         DBConnect.dbConnector.executeUpdate(
                 "INSERT INTO staffs (id, last_name, first_name, department, role) VALUES (?, ?, ?, ?, ?)",
                 new String[]{id, account.lastName, account.firstName, department, account.role}
         );
         DBConnect.dbConnector.executeUpdate(
-                "INSERT INTO staffs_encrypted (id, gender, email, phone, address, identification_number, password_hash) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO staffs_encrypted (id, gender, email, phone, address, identification_number, password_hash, salt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 new String[]{
                         id,
                         "M",
@@ -123,7 +128,8 @@ public class TestAccountSeeder {
                         "93456789",
                         department + " Office",
                         (account.role + "ID12345").substring(0, Math.min(20, (account.role + "ID12345").length())),
-                        SecurityUtils.getPasswdHash(account.password)
+                        SecurityUtils.getPasswdHash(account.password, salt),
+                        salt
                 }
         );
         return id;
