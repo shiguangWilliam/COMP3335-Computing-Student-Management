@@ -14,11 +14,11 @@ public class Grades {
             while (rs.next()) {
                 HashMap<String, String> map = new HashMap<>();
                 String ID = rs.getString("id");
-                String encrypt_id = rs.getString("encrypted_id");
+                String encrypted_id = rs.getString("encrypted_id");
                 String courseID = rs.getString("course_id");
                 String courseName = Courses.getName(courseID);
                 String term = rs.getString("term");
-                ResultSet trs = DBConnect.dbConnector.executeQuery("SELECT grade,comments FROM grades_encrypted WHERE id = ?", new String[]{ID});
+                ResultSet trs = DBConnect.dbConnector.executeQuery("SELECT grade,comments FROM grades_encrypted WHERE id = ?", new String[]{encrypted_id});
                 // System.err.println(trs.next());
                 String grade = trs.getString("grade");
                 String comments = trs.getString("comments");
