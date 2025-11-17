@@ -52,6 +52,7 @@ public class URIRouteTable {
         routeTable.put(key("POST", "/API/disciplinary-records"), new String[]{"DRO"});
         
         routeTable.put(key("PUT", "/API/disciplinary-records"), new String[]{"DRO"});
+        routeTable.put(key("DELETE", "/API/disciplinary-records"), new String[]{"DRO"})
     }
 
     private static final Set<String> publicRoutes = new HashSet<>();
