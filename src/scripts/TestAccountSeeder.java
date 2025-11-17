@@ -156,9 +156,9 @@ public class TestAccountSeeder {
         if (studentId == null || courseIds.isEmpty()) return;
         record GradeData(String courseId, String term, double grade, String comments) {}
         GradeData[] grades = {
-                new GradeData("CS101", "2024Sem1", 92.5, "Excellent performance"),
-                new GradeData("MATH201", "2024Sem1", 85.0, "Solid understanding"),
-                new GradeData("SEC301", "2024Sem1", 88.0, "Great progress")
+                new GradeData("CS101", "2024Sem1", "A+", "Excellent performance"),
+                new GradeData("MATH201", "2024Sem1", "A-", "Solid understanding"),
+                new GradeData("SEC301", "2024Sem1", "A", "Great progress")
         };
         for (GradeData g : grades) {
             if (!courseIds.containsKey(g.courseId())) continue;
