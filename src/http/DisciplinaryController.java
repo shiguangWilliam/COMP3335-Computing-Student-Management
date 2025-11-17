@@ -59,7 +59,7 @@ public class DisciplinaryController {
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "forbidden", "userID", session.getUserId()));
             return err;
         }
-        User user = new DRO(session.getUserId());
+        DRO user = new DRO(session.getUserId());
         String staffId = session.getUserId();
         if(studentId == null || studentId.isBlank() || date == null || date.isBlank()){
             err.put("error", "bad request");

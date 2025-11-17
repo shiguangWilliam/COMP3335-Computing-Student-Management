@@ -8,11 +8,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Guardian extends User {
-    static String[] normalAttributes = new String[]{"id","last_name","first_name"};
-    static String[] encryptedAttributes = new String[]{"email","phone"};
+    private static final String[] NORMAL_ATTRIBUTES = new String[]{"id","last_name","first_name"};
+    private static final String[] ENCRYPTED_ATTRIBUTES = new String[]{"email","phone"};
     public Guardian(String ID) {
         super(ID);
         this.type = "Guardian";
+    }
+    @Override
+    protected String[] getNormalAttributes() {
+        return NORMAL_ATTRIBUTES;
+    }
+    @Override
+    protected String[] getEncryptedAttributes() {
+        return ENCRYPTED_ATTRIBUTES;
     }
     public HashMap[] getChildGrades() throws SQLException{
         ArrayList<HashMap<String,String>> childGrades = new ArrayList<>();

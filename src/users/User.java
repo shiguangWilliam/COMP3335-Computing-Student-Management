@@ -9,11 +9,15 @@ import java.util.HashMap;
 
 public abstract class User {
     String ID, type;
-    static String[] normalAttributes;
-    static String[] encryptedAttributes;
     public User(String ID) {
         this.ID = ID;
     }
+    /**
+     * Subclasses must provide their own attribute lists instead of relying on a shared static array.
+     */
+    protected abstract String[] getNormalAttributes();
+    protected abstract String[] getEncryptedAttributes();
+
     public void updateInfo(HashMap<String,String> map) throws SQLException {
         ArrayList<String> attNormal = new ArrayList<>();
         ArrayList<String> attEnc = new ArrayList<>();
@@ -44,6 +48,11 @@ public abstract class User {
             DBConnect.dbConnector.executeUpdate(sqlEnc.toString(), valEnc.toArray(new String[0]));
     }
     public HashMap<String,String> queryInfo() throws SQLException {
+        String[] normalAttributes = getNormalAttributes();
+        String[] encryptedAttributes = getEncryptedAttributes();
+        if (normalAttributes == null || encryptedAttributes == null) {
+            throw new IllegalStateException("User attribute definitions are not initialized");
+        }
         HashMap<String,String> map = new HashMap<>();
         StringBuilder sql = new StringBuilder("SELECT ");
         StringBuilder sqlEnc = new StringBuilder("SELECT ");

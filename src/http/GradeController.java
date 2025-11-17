@@ -49,7 +49,7 @@ public class GradeController {
 
 
         String role = session.getRole();
-        User user;
+        ARO user;
         if("ARO".equalsIgnoreCase(role)){
             user = new ARO(session.getUserId());
         }
@@ -118,7 +118,7 @@ public class GradeController {
         }
 
         String role = session.getRole();
-        User user;
+        ARO user;
         if("ARO".equalsIgnoreCase(role)){
             user = new ARO(session.getUserId());
         }
@@ -218,7 +218,7 @@ public class GradeController {
         }
 
         String role = session.getRole();
-        User user;
+        ARO user;
         if("ARO".equalsIgnoreCase(role)){
             user = new ARO(session.getUserId());
         }

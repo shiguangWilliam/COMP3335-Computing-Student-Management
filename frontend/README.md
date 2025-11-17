@@ -248,3 +248,15 @@ lib/config.ts 包含了项目的配置信息，例如 Cookie 名称、过期时�
 应用https+HTTPS Strict Transport Security (HSTS),TLS 1.2及以上
 应用CORS策略
 
+## Test Account
+```
+{
+  "accounts": [
+    { "email": "student@test.local", "role": "student", "password": "Test@12345", "name": "Student Test" },
+    { "email": "aro@test.local", "role": "ARO", "password": "Aro@12345", "name": "ARO Admin" },
+    { "email": "guardian@test.local", "role": "guardian", "password": "Guardian@12345", "name": "Guardian User" },
+    { "email": "dro@test.local", "role": "DRO", "password": "Dro@12345", "name": "DRO Officer" },
+    { "email": "dba@test.local", "role": "DBA", "password": "Dba@12345", "name": "DBA Admin" }
+    ]
+}
+```
