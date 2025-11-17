@@ -164,19 +164,13 @@ public class GradeController {
         }
         term = term.trim();
         String normalizedCourseName = courseNameParam == null ? null : courseNameParam.trim();
-        if((courseID == null || courseID.isBlank()) && normalizedCourseName != null && !normalizedCourseName.isBlank()){
+        if(normalizedCourseName != null && !normalizedCourseName.isBlank()){
             try{
                 courseID = Courses.getIdByName(normalizedCourseName);
             } catch (SQLException e){
                 err.put("code",500);
                 err.put("message","Internal Server Error");
                 log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
-                return err;
-            }
-            if(courseID == null){
-                err.put("code",400);
-                err.put("message","Bad Request: Invalid Course Name");
-                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Course Name"));
                 return err;
             }
         }
@@ -227,13 +221,13 @@ public class GradeController {
             if(!rs.next()){//没有对应成绩记录，创建
                 String gid = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
                 String enc_gid = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
-                String insertSql = "INSERT INTO grades (id,encrypted_id, student_id, course_id, term) VALUES (?, ?, ?, ?, ?)";
+                String insertGradeSql = "INSERT INTO grades (id,encrypted_id, student_id, course_id, term) VALUES (?, ?, ?, ?, ?)";
                 String insertEncSql = "INSERT INTO grades_encrypted (id, grade, comments) VALUES (?, ?, ?)";
-                String[] insertParam = {gid, enc_gid, studentID, courseID, term};
+                String[] insertGradeParam = {gid, enc_gid, studentID, courseID, term};
                 String[] insertEncParam = {enc_gid, grade, comment};
-                try{//创建
-                    DBConnect.dbConnector.executeUpdate(insertSql, insertParam);
+                try{//创建，先写加密表再写明文表，避免 FK 约束冲突
                     DBConnect.dbConnector.executeUpdate(insertEncSql, insertEncParam);
+                    DBConnect.dbConnector.executeUpdate(insertGradeSql, insertGradeParam);
                     response.setStatus(201);
                     resp.put("ok", true);
                     resp.put("message", "Grade Record Created Successfully");
@@ -241,6 +235,12 @@ public class GradeController {
                     log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grade Record Created Successfully"));
                 }
                 catch (SQLException e){
+                    // 如果第二步失败，回滚已写入的加密表记录
+                    try {
+                        DBConnect.dbConnector.executeUpdate("DELETE FROM grades_encrypted WHERE id = ?", new String[]{enc_gid});
+                    } catch (SQLException rollbackIgnored) {
+                        log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "rollback failed", "error", rollbackIgnored.getMessage()));
+                    }
                     err.put("code",500);
                     err.put("message","Internal Server Error");
                     log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
