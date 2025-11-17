@@ -149,6 +149,18 @@ npm run dev
    # 重置数据库（清空所有数据）
    .\scripts\setup-percona.ps1 -ResetData
    ```
+   如果报错
+   ```
+   因为在此系统上禁止运行脚本
+   ```
+   尝试运行一下指令以临时允许当前会话执行脚本
+   ```
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   ```
+   或者运行以下指令以进行永久修改（需要管理员）
+   ```
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
 
 3. **验证数据库状态**
    ```powershell
@@ -244,7 +256,6 @@ curl http://localhost:3335/API/public-key
 
 | 问题 | 解决方案 |
 |------|----------|
-| 依赖下载慢 | 配置阿里云 Maven 镜像（见根目录 `README.md`） |
 | `JAVA_HOME not found` | 设置环境变量 `JAVA_HOME=C:\Program Files\Java\jdk-21` |
 | 端口 3335 被占用 | 修改 `application.properties` 中的 `server.port` |
 | 数据库连接失败 | 检查 Docker 容器是否运行：`docker ps` |

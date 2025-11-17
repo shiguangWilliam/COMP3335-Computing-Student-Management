@@ -10,7 +10,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "未知参数: $1" >&2
+      echo "Unkonwn Param: $1" >&2
       exit 1
       ;;
   esac
@@ -25,7 +25,7 @@ CONFIG_PATH="${DOCKER_DIR}/my.cnf"
 INIT_SQL="${PROJECT_ROOT}/init_database.sql"
 CONTAINER_NAME="comp3335-db"
 
-echo "==> 准备目录..."
+echo "==> Preparing directories..."
 mkdir -p "${DOCKER_DIR}" "${DATA_DIR}" "${KEYRING_DIR}"
 
 if [[ ! -f "${CONFIG_PATH}" ]]; then
@@ -34,28 +34,28 @@ if [[ ! -f "${CONFIG_PATH}" ]]; then
 early-plugin-load=keyring_file.so
 keyring_file_data=/keyring/keyring
 EOF
-  echo "    已创建 docker/my.cnf"
+  echo "    Created docker/my.cnf"
 else
-  echo "    docker/my.cnf 已存在，跳过创建"
+  echo "    docker/my.cnf already exists, skipping creation"
 fi
 
 if [[ "${RESET_DATA}" == "true" ]]; then
-  echo "==> 清空 data/keyring 目录（ResetData）..."
+  echo "==> Clearing data/keyring directories (ResetData)..."
   rm -rf "${DATA_DIR}/"* "${KEYRING_DIR}/"*
 fi
 
-echo "==> 检查旧容器..."
+echo "==> Checking for old container..."
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}\$"; then
-  echo "    移除旧容器 ${CONTAINER_NAME}"
+  echo "    Removing old container ${CONTAINER_NAME}"
   docker rm -f "${CONTAINER_NAME}" >/dev/null
 fi
 
 if [[ ! -f "${INIT_SQL}" ]]; then
-  echo "init_database.sql 不存在，无法继续" >&2
+  echo "init_database.sql does not exist, cannot continue" >&2
   exit 1
 fi
 
-echo "==> 启动 Percona 容器..."
+echo "==> Starting Percona container..."
 docker run \
   --name "${CONTAINER_NAME}" \
   -p 3306:3306 \
@@ -70,5 +70,5 @@ docker run \
   --keyring_file_data=/keyring/keyring
 
 echo
-echo "完成。可使用以下命令验证："
+echo "Done. You can verify with the following command:"
 echo "  docker exec ${CONTAINER_NAME} mysql -uroot -p'!testCOMP3335' -e \"SHOW DATABASES;\""
