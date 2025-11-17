@@ -10,7 +10,7 @@ public class Courses {
             String[] params = {courseID};
             ResultSet rs = service.DBConnect.dbConnector.executeQuery(sql, params);
             if(rs.next()){
-                return rs.getString("course_name");
+                return rs.getString("name");
             } else {
                 return null;
             }

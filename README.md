@@ -4,7 +4,7 @@
 
 ## 一分钟启动
 - 在项目根目录打开终端：`C:\...\COMP3335-Computing-Student-Management`
-- 启动开发服务器：`.\n+mvnw spring-boot:run`
+- 启动开发服务器：`.\mvnw spring-boot:run`
 - 打开浏览器：`http://localhost:3335/`（没有接口时看到 404 也表示服务已启动）
 
 ## 打包运行
