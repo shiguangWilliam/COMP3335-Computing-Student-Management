@@ -19,7 +19,7 @@ public class Grades {
                 String courseName = Courses.getName(courseID);
                 String term = rs.getString("term");
                 ResultSet trs = DBConnect.dbConnector.executeQuery("SELECT grade,comments FROM grades_encrypted WHERE id = ?", new String[]{encrypted_id});
-                // System.err.println(trs.next());
+                trs.next();
                 String grade = trs.getString("grade");
                 String comments = trs.getString("comments");
                 map.put("id", ID);
