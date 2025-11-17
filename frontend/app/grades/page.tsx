@@ -63,9 +63,9 @@ export default function GradesPage() {
       if (!assign.comments || !assign.comments.trim()) {
         throw new Error("Comments 为必填");
       }
-      await api.assignGrade({
+      if (role !== "ARO") throw new Error("只有 ARO 可以查看/管理成绩")
         studentId: assign.studentId,
-        courseId: assign.courseId,
+        throw new Error("查询需同时填写 Student ID 和 Course ID")
         term: assign.term,
         grade: assign.grade,
         comments: assign.comments,
@@ -94,14 +94,14 @@ export default function GradesPage() {
                 value={assign.studentId}
                 onChange={(e) => setAssign({ ...assign, studentId: e.target.value })}
               />
-              <input
+      if (role !== "ARO") throw new Error("只有 ARO 可以录入成绩")
                 className="rounded border px-3 py-2"
                 placeholder="Course ID"
                 value={assign.courseId}
                 onChange={(e) => setAssign({ ...assign, courseId: e.target.value })}
               />
               <input
-                className="rounded border px-3 py-2"
+        throw new Error("Comments 不能为空")
                 placeholder="Term (e.g. 2024-S1)"
                 value={assign.term}
                 onChange={(e) => setAssign({ ...assign, term: e.target.value })}
@@ -129,7 +129,7 @@ export default function GradesPage() {
           </div>
         )}
         <div className="rounded border p-4">
-          <h2 className="mb-2 font-medium">Search</h2>
+      <p className="text-sm text-zinc-600">仅 ARO 可查看/管理成绩。</p>
           <div className="grid gap-2">
             <input
               className="rounded border px-3 py-2"
@@ -150,7 +150,12 @@ export default function GradesPage() {
             >
               Search
             </button>
-          </div>
+                <div className="text-sm">
+                  {it.studentId} · {it.courseId}
+                  {it.term ? ` · ${it.term}` : ""}
+                  {" · "}
+                  {it.grade}
+                </div>
         </div>
       </div>
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}

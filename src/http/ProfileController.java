@@ -72,6 +72,26 @@ public class ProfileController {
         try {
             Map<String,String> info = user.queryInfo();
             resp.putAll(info);
+            // Attach a unified user object for frontend header/nav consumption
+            String displayName = session.getName();
+            if (displayName == null || displayName.isBlank()) {
+                String first = info.get("first_name");
+                String last = info.get("last_name");
+                StringBuilder sb = new StringBuilder();
+                if (first != null) sb.append(first);
+                if (last != null && !last.isBlank()) {
+                    if (sb.length() > 0) sb.append(" ");
+                    sb.append(last);
+                }
+                displayName = sb.length() > 0 ? sb.toString() : null;
+            }
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("email", session.getEmail());
+            userInfo.put("role", role);
+            if (displayName != null && !displayName.isBlank()) {
+                userInfo.put("name", displayName);
+            }
+            resp.put("user", userInfo);
             Set<String> sensitiveRemove = Set.of("identification_number","guardian_id","password_hash");
             Set<String> allowed;
             switch (role) {

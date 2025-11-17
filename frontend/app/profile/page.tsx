@@ -152,8 +152,8 @@ export default function ProfilePage() {
             <div className="grid grid-cols-3 items-center gap-2">
               <label className="text-sm text-zinc-600">Password</label>
               <div className="col-span-2">
-                <Input type="password" placeholder="请输入你的密码以确认本次修改" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
-                <p className="mt-1 text-xs text-zinc-500">这是输入你的密码来确认是你的操作</p>
+                <Input type="password" placeholder="Enter your current password to confirm profile changes" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
+                <p className="mt-1 text-xs text-zinc-500">We verify this password before applying your updates.</p>
               </div>
             </div>
             <div className="flex justify-end">

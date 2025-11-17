@@ -34,8 +34,8 @@ export default function DisciplinaryPage() {
     setMsg(null);
     try {
       if (role !== "DRO") throw new Error("仅 DRO 可以查看/管理违纪记录");
-      if (!filters.studentId || !filters.date) throw new Error("查询需要同时填写 Student ID 与 Date");
-      const list = await api.listDisciplinaryRecords({ studentId: filters.studentId, date: filters.date });
+      if (role !== "DRO") throw new Error("只有 DRO 可以查看/管理记录")
+      if (!filters.studentId || !filters.date) throw new Error("查询需要同时填写 Student ID 和 Date")
       setItems(list || []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
@@ -58,9 +58,9 @@ export default function DisciplinaryPage() {
       if (!form.description || !form.description.trim()) throw new Error("Description 为必填");
       if (form.id) {
         await api.updateDisciplinaryRecord(form.id, { date: form.date, description: form.description });
-      } else {
-        await api.createDisciplinaryRecord({ studentId: form.studentId, date: form.date, description: form.description });
-      }
+      if (role !== "DRO") throw new Error("只有 DRO 可以管理记录")
+      if (!form.studentId || !form.date) throw new Error("Student ID 和 Date 为必填")
+      if (!form.description || !form.description.trim()) throw new Error("Description 为必填")
       setMsg("Saved");
       setForm({ studentId: "", date: "", description: "" });
       await load();
@@ -87,7 +87,7 @@ export default function DisciplinaryPage() {
             <div className="mb-1 text-xs text-zinc-500">
               {form.id ? `Editing record ${form.id}` : "Creating new record"}
             </div>
-            <div className="grid gap-2">
+      <p className="text-sm text-zinc-600">仅 DRO 可查看/管理记录。</p>
               <input
                 className="rounded border px-3 py-2"
                 placeholder="Student ID"
@@ -126,7 +126,7 @@ export default function DisciplinaryPage() {
             </div>
           </div>
         )}
-        <div className="rounded border p-4">
+                <div className="text-sm">{it.student_id} · {it.date} · {it.staff_id}</div>
           <h2 className="mb-2 font-medium">Search</h2>
           <div className="grid gap-2">
             <input className="rounded border px-3 py-2" placeholder="Student ID" value={filters.studentId || ""} onChange={(e) => setFilters({ ...filters, studentId: e.target.value || undefined })} />

@@ -11,7 +11,7 @@ public class Student extends User{
     private static final String[] ENCRYPTED_ATTRIBUTES = new String[]{"gender","identification_number","address","email","phone","guardian_id","guardian_relation"};
     public Student(String ID) {
         super(ID);
-        this.type = "Student";
+        this.type = "Students";
     }
     @Override
     protected String[] getNormalAttributes() {

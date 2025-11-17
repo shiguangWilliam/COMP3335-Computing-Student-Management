@@ -12,7 +12,7 @@ public class Guardian extends User {
     private static final String[] ENCRYPTED_ATTRIBUTES = new String[]{"email","phone"};
     public Guardian(String ID) {
         super(ID);
-        this.type = "Guardian";
+        this.type = "Guardians";
     }
     @Override
     protected String[] getNormalAttributes() {

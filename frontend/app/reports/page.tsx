@@ -28,7 +28,7 @@ export default function ReportsPage() {
         setError(null);
       } catch (err) {
         if (!mounted) return;
-        setError(err instanceof Error ? err.message : "加载失败");
+        setError(err instanceof Error ? err.message : "Failed to load reports.");
         setReports([]);
       } finally {
         if (mounted) setLoading(false);
@@ -45,29 +45,31 @@ export default function ReportsPage() {
   return (
     <div>
       <h1 className="mb-4 text-2xl font-semibold">Reports</h1>
-      <p className="text-sm text-zinc-600">学生与监护人可在此查看与自己相关的成绩和违纪记录。</p>
-      {loading && <p className="mt-4 text-sm text-zinc-600">加载中...</p>}
-      {notAllowed && !loading && <p className="mt-4 text-sm text-zinc-600">当前角色无权访问此页面，请使用学生或监护人账号登录。</p>}
+      <p className="text-sm text-zinc-600">Students and guardians can review their grades and disciplinary records here.</p>
+      {loading && <p className="mt-4 text-sm text-zinc-600">Loading...</p>}
+      {notAllowed && !loading && <p className="mt-4 text-sm text-zinc-600">Your role cannot access this page. Please log in as a student or guardian.</p>}
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       {!loading && !notAllowed && !error && (
         <div className="mt-6 space-y-4">
           {reports.length === 0 ? (
-            <div className="rounded border p-4 text-sm text-zinc-600">暂未查询到任何记录。</div>
+            <div className="rounded border p-4 text-sm text-zinc-600">No records found.</div>
           ) : (
             reports.map((bundle, idx) => (
               <div key={idx} className="rounded border p-4">
-                <h2 className="mb-3 font-medium">记录 {idx + 1}</h2>
+                <h2 className="mb-3 font-medium">Report {idx + 1}</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <section>
                     <h3 className="mb-2 text-sm font-semibold">Grades</h3>
                     {bundle.grade.length === 0 ? (
-                      <p className="text-sm text-zinc-600">暂无成绩记录</p>
+                      <p className="text-sm text-zinc-600">No grade records.</p>
                     ) : (
                       <ul className="space-y-2 text-sm">
                         {bundle.grade.map((g) => (
                           <li key={g.id} className="rounded border px-3 py-2">
                             <div>
-                              {g.courseId} {g.term ? `· ${g.term}` : ""}
+                            <div>
+                              {g.courseId}{g.term ? ` · Term ${g.term}` : ""}
+                            </div>
                             </div>
                             <div className="text-zinc-600">Grade: {g.grade}</div>
                             {g.comments && <div className="text-xs text-zinc-500">Comments: {g.comments}</div>}
@@ -79,13 +81,15 @@ export default function ReportsPage() {
                   <section>
                     <h3 className="mb-2 text-sm font-semibold">Disciplinary</h3>
                     {bundle.disciplinary.length === 0 ? (
-                      <p className="text-sm text-zinc-600">暂无违纪记录</p>
+                      <p className="text-sm text-zinc-600">No disciplinary records.</p>
                     ) : (
                       <ul className="space-y-2 text-sm">
                         {bundle.disciplinary.map((d) => (
                           <li key={d.id} className="rounded border px-3 py-2">
                             <div>
+                            <div>
                               {d.date} · Staff: {d.staff_id}
+                            </div>
                             </div>
                             {d.descriptions && <div className="text-xs text-zinc-500">{d.descriptions}</div>}
                           </li>
