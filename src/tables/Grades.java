@@ -14,11 +14,12 @@ public class Grades {
             while (rs.next()) {
                 HashMap<String, String> map = new HashMap<>();
                 String ID = rs.getString("id");
+                String encrypt_id = rs.getString("encrypted_id");
                 String courseID = rs.getString("course_id");
                 String courseName = Courses.getName(courseID);
                 String term = rs.getString("term");
                 ResultSet trs = DBConnect.dbConnector.executeQuery("SELECT grade,comments FROM grades_encrypted WHERE id = ?", new String[]{ID});
-                trs.next();
+                // System.err.println(trs.next());
                 String grade = trs.getString("grade");
                 String comments = trs.getString("comments");
                 map.put("id", ID);
@@ -31,6 +32,7 @@ public class Grades {
                 gradesMap.add(map);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("Error: " + e.getMessage());
             throw e;
         }
