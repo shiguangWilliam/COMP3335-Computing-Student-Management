@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import service.DBConnect;
 import tables.Grades;
+import tables.Courses;
 import users.ARO;
 import users.User;
 import utils.AuditUtils;
-import tables.Courses;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,6 +33,7 @@ public class GradeController {
     @GetMapping(value = "/API/grades", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> getGradeList(@RequestParam(value = "studentId", required = false) String studentid,
                                             @RequestParam(value = "courseId", required = false) String courseID,
+                                            @RequestParam(value = "courseName", required = false) String courseName,
                                             HttpServletRequest request, HttpServletResponse response){
         //基础信息（RequestID，session获取校验）
         String requestId = request.getHeader("X-Request-ID");
@@ -64,8 +65,8 @@ public class GradeController {
         }
         //确认用户身份
         ArrayList<String> params = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT g.id, g.encrypted_id, g.student_id, g.course_id, g.term, ge.grade, ge.comments " +
-                "FROM grades g JOIN grades_encrypted ge ON g.encrypted_id = ge.id WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT g.id, g.encrypted_id, g.student_id, g.course_id, g.term, ge.grade, ge.comments, c.name " +
+                "FROM grades g JOIN grades_encrypted ge ON g.encrypted_id = ge.id LEFT JOIN courses c ON g.course_id = c.id WHERE 1=1");
         if(studentid != null && !studentid.isBlank()){
             sql.append(" AND g.student_id = ?");
             params.add(studentid);
@@ -74,6 +75,10 @@ public class GradeController {
             sql.append(" AND g.course_id = ?");
             params.add(courseID);
         }
+        if(courseName != null && !courseName.isBlank()){
+            sql.append(" AND c.name LIKE ?");
+            params.add("%" + courseName.trim() + "%");
+        }
         try(ResultSet rs = DBConnect.dbConnector.executeQuery(sql.toString(), params.toArray(new String[0]))){
             ArrayList<Map<String, Object>> gradeList = new ArrayList<>();
             while(rs.next()){
@@ -81,6 +86,10 @@ public class GradeController {
                 grade.put("id", rs.getString("id"));
                 grade.put("student_id", rs.getString("student_id"));
                 grade.put("course_id", rs.getString("course_id"));
+                String cname = rs.getString("name");
+                if (cname != null && !cname.isBlank()) {
+                    grade.put("course_name", cname);
+                }
                 grade.put("grade", rs.getString("grade"));
                 grade.put("comments", rs.getString("comments"));
                 grade.put("term", rs.getString("term"));
@@ -131,12 +140,50 @@ public class GradeController {
         //安全读取（避免把null读成"null"字符串）
         String studentID = body.get("studentId")==null?null:body.get("studentId").toString();
         String courseID = body.get("courseId")==null?null:body.get("courseId").toString();
+        String courseNameParam = body.get("courseName")==null?null:body.get("courseName").toString();
         String grade = body.get("grade")==null?null:body.get("grade").toString();
+        String term = body.get("term")==null?null:body.get("term").toString();
 
-        if(studentID==null || studentID.isBlank() || courseID==null || courseID.isBlank() || grade==null){
+        if(studentID==null || studentID.isBlank()){
             err.put("code",400);
             err.put("message","Bad Request: Missing Parameters");
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Parameters"));
+            return err;
+        }
+        if((courseID==null || courseID.isBlank()) && (courseNameParam==null || courseNameParam.isBlank())){
+            err.put("code",400);
+            err.put("message","Bad Request: Missing Course");
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Course"));
+            return err;
+        }
+        if(grade==null || grade.isBlank() || term==null || term.isBlank()){
+            err.put("code",400);
+            err.put("message","Bad Request: Missing Parameters");
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Parameters"));
+            return err;
+        }
+        term = term.trim();
+        String normalizedCourseName = courseNameParam == null ? null : courseNameParam.trim();
+        if((courseID == null || courseID.isBlank()) && normalizedCourseName != null && !normalizedCourseName.isBlank()){
+            try{
+                courseID = Courses.getIdByName(normalizedCourseName);
+            } catch (SQLException e){
+                err.put("code",500);
+                err.put("message","Internal Server Error");
+                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
+                return err;
+            }
+            if(courseID == null){
+                err.put("code",400);
+                err.put("message","Bad Request: Invalid Course Name");
+                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Course Name"));
+                return err;
+            }
+        }
+        if(courseID == null || courseID.isBlank()){
+            err.put("code",400);
+            err.put("message","Bad Request: Invalid Course");
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Course"));
             return err;
         }
         try{
@@ -172,10 +219,9 @@ public class GradeController {
 
         }
         
-        String querySql = "SELECT id, encrypted_id FROM grades WHERE student_id = ? AND course_id = ?";
-        String[] queryParam = {studentID, courseID};
+        String querySql = "SELECT id, encrypted_id FROM grades WHERE student_id = ? AND course_id = ? AND term = ?";
+        String[] queryParam = {studentID, courseID, term};
         String comment = body.get("comments")==null? "": body.get("comments").toString();
-        String term = body.get("term")==null? "2024Sem1": body.get("term").toString();//默认学期2024Sem1
 
         try(ResultSet rs = DBConnect.dbConnector.executeQuery(querySql, queryParam)){
             if(!rs.next()){//没有对应成绩记录，创建

@@ -4,11 +4,16 @@ import { api, type GradeRecord } from "@/lib/api";
 
 type Role = "student" | "ARO" | "guardian" | "DRO";
 
-const emptyAssign = { studentId: "", courseId: "", term: "", grade: "", comments: "" };
+const emptyAssign = { studentId: "", courseName: "", courseId: "", term: "", grade: "", comments: "" };
+
+type LoadOptions = {
+  preserveMsg?: boolean;
+  skipLoading?: boolean;
+};
 
 export default function GradesPage() {
   const [role, setRole] = useState<Role | null>(null);
-  const [filters, setFilters] = useState<{ studentId?: string; courseId?: string }>({});
+  const [filters, setFilters] = useState<{ studentId?: string; courseName?: string }>({});
   const [items, setItems] = useState<GradeRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +30,10 @@ export default function GradesPage() {
       .catch(() => setRole(null));
   }, []);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (options?: LoadOptions) => {
+    if (!options?.skipLoading) setLoading(true);
     setError(null);
-    setMsg(null);
+    if (!options?.preserveMsg) setMsg(null);
     try {
       if (role !== "ARO") throw new Error("Only ARO staff can view/manage grades.");
       const list = await api.listGrades(filters);
@@ -36,7 +41,7 @@ export default function GradesPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed");
     } finally {
-      setLoading(false);
+      if (!options?.skipLoading) setLoading(false);
     }
   };
 
@@ -50,27 +55,57 @@ export default function GradesPage() {
   const submit = async () => {
     setLoading(true);
     setError(null);
-    setMsg(null);
     try {
       if (role !== "ARO") throw new Error("Only ARO staff can assign grades.");
-      if (!assign.studentId || !assign.courseId || !assign.term || !assign.grade) {
-        throw new Error("Student ID, Course ID, Term and Grade are required");
-      }
-      if (!assign.comments.trim()) {
-        throw new Error("Comments are required");
+      if (!assign.studentId || !assign.courseName || !assign.term || !assign.grade) {
+        throw new Error("Student ID, Course Name, Term and Grade are required");
       }
       await api.assignGrade({
         studentId: assign.studentId,
-        courseId: assign.courseId,
+        courseName: assign.courseName,
+        courseId: assign.courseId || undefined,
         term: assign.term,
         grade: assign.grade,
-        comments: assign.comments,
+        comments: assign.comments?.trim() || undefined,
       });
-      setMsg("Saved");
+      await load({ preserveMsg: true, skipLoading: true });
+      setMsg(`Saved ${assign.studentId} · ${assign.courseName}${assign.term ? ` · ${assign.term}` : ""}`);
       setAssign(emptyAssign);
-      await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const pick = (record: GradeRecord) => {
+    if (role !== "ARO") return;
+      setAssign({
+        studentId: record.studentId,
+        courseId: record.courseId || "",
+        courseName: record.courseName || "",
+        term: record.term || "",
+        grade: record.grade || "",
+        comments: record.comments || "",
+      });
+    setMsg(null);
+    setError(null);
+  };
+
+  const remove = async (gradeId: string) => {
+    if (role !== "ARO") return;
+    if (!gradeId) return;
+    const confirmDelete = window.confirm("Are you sure you want to delete this grade record?");
+    if (!confirmDelete) return;
+    setLoading(true);
+    setError(null);
+    setMsg(null);
+    try {
+      await api.deleteGrade({ gradeId });
+      setMsg("Grade deleted");
+      await load({ preserveMsg: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete grade");
     } finally {
       setLoading(false);
     }
@@ -93,9 +128,9 @@ export default function GradesPage() {
               />
               <input
                 className="rounded border px-3 py-2"
-                placeholder="Course ID"
-                value={assign.courseId}
-                onChange={(e) => setAssign({ ...assign, courseId: e.target.value })}
+                placeholder="Course Name"
+                value={assign.courseName}
+                onChange={(e) => setAssign({ ...assign, courseName: e.target.value })}
               />
               <input
                 className="rounded border px-3 py-2"
@@ -111,7 +146,7 @@ export default function GradesPage() {
               />
               <textarea
                 className="rounded border px-3 py-2"
-                placeholder="Comments (required)"
+                placeholder="Comments (optional)"
                 value={assign.comments}
                 onChange={(e) => setAssign({ ...assign, comments: e.target.value })}
               />
@@ -136,9 +171,9 @@ export default function GradesPage() {
             />
             <input
               className="rounded border px-3 py-2"
-              placeholder="Course ID (optional)"
-              value={filters.courseId || ""}
-              onChange={(e) => setFilters({ ...filters, courseId: e.target.value || undefined })}
+              placeholder="Course Name (optional)"
+              value={filters.courseName || ""}
+              onChange={(e) => setFilters({ ...filters, courseName: e.target.value || undefined })}
             />
             <button
               className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
@@ -159,14 +194,34 @@ export default function GradesPage() {
             <p className="text-sm text-zinc-600">No records</p>
           ) : (
             items.map((it) => (
-              <div key={it.id} className="rounded border p-2">
-                <div className="text-sm">
-                  {it.studentId} · {it.courseId}
-                  {it.term ? ` · ${it.term}` : ""}
-                  {" · "}
-                  {it.grade}
+              <div key={it.id} className="rounded border p-2 text-left transition hover:border-blue-500">
+                <div className="flex flex-col gap-1">
+                  <div className="text-sm">
+                    {it.studentId} · {it.courseName || "Unknown Course"}
+                    {it.term ? ` · ${it.term}` : ""}
+                    {" · "}
+                    {it.grade}
+                  </div>
+                  {it.comments && <div className="text-xs text-zinc-600">Comments: {it.comments}</div>}
                 </div>
-                {it.comments && <div className="text-xs text-zinc-600">Comments: {it.comments}</div>}
+                <div className="mt-2 flex gap-2 text-xs">
+                  <button
+                    type="button"
+                    className="rounded border px-2 py-1 text-blue-600"
+                    disabled={loading}
+                    onClick={() => pick(it)}
+                  >
+                    Load to form
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded border px-2 py-1 text-red-600"
+                    disabled={loading}
+                    onClick={() => remove(it.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))
           )}

@@ -355,24 +355,18 @@ export async function unenrollStudent(id: string): Promise<Json> {
 // Grades
 
 export type GradeRecord = {
-
   id: string;
-
   studentId: string;
-
-  courseId: string;
-
+  courseName?: string;
+  courseId?: string;
   grade: string;
-
   term?: string;
-
   comments?: string;
-
 };
 
 
 
-export async function listGrades(params?: { studentId?: string; courseId?: string }): Promise<GradeRecord[]> {
+export async function listGrades(params?: { studentId?: string; courseId?: string; courseName?: string }): Promise<GradeRecord[]> {
   const entries = Object.entries(params ?? {}).filter(
     ([, value]) => typeof value === "string" && value.trim().length > 0,
   ) as Array<[string, string]>;
@@ -386,36 +380,14 @@ export async function listGrades(params?: { studentId?: string; courseId?: strin
 
   const list = res?.data ?? [];
 
-
-
   return list.map((g) => ({
-
-
-
     id: String(g.id ?? ""),
-
-
-
     studentId: String(g.studentId ?? g.student_id ?? ""),
-
-
-
-    courseId: String(g.courseId ?? g.course_id ?? ""),
-
-
-
+    courseId: g.courseId || g.course_id ? String(g.courseId ?? g.course_id) : undefined,
+    courseName: g.courseName || g.course_name ? String(g.courseName ?? g.course_name) : undefined,
     grade: String(g.grade ?? ""),
-
-
-
     term: g.term ? String(g.term) : undefined,
-
-
-
     comments: g.comments ? String(g.comments) : undefined,
-
-
-
   }));
 
 
@@ -428,10 +400,12 @@ export async function listGrades(params?: { studentId?: string; courseId?: strin
 
 
 
-export async function assignGrade(data: { studentId: string; courseId: string; grade: string; term?: string; comments: string }): Promise<GradeRecord> {
-
+export async function assignGrade(data: { studentId: string; courseName: string; grade: string; term?: string; comments?: string; courseId?: string }): Promise<GradeRecord> {
   return request<GradeRecord>("/API/grades", { method: "POST", body: JSON.stringify(data) });
+}
 
+export async function deleteGrade(data: { gradeId: string }): Promise<Json> {
+  return request<Json>("/API/grades", { method: "DELETE", body: JSON.stringify(data) });
 }
 
 
@@ -654,6 +628,7 @@ export const api = {
   listGrades,
 
   assignGrade,
+  deleteGrade,
 
   // disciplinary records
 

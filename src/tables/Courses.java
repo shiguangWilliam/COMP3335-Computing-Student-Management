@@ -19,4 +19,20 @@ public class Courses {
             throw e;
         }
     }
+
+    public static String getIdByName(String courseName) throws SQLException {
+        try{
+            String sql = "SELECT id FROM Courses WHERE name = ? LIMIT 1";
+            String[] params = {courseName};
+            ResultSet rs = service.DBConnect.dbConnector.executeQuery(sql, params);
+            if(rs.next()){
+                return rs.getString("id");
+            } else {
+                return null;
+            }
+        } catch (Exception e){
+            System.out.println("Error: " + e.getMessage());
+            throw e;
+        }
+    }
 }
