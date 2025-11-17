@@ -1,6 +1,11 @@
-# COMP3335 计算机学生管理系统 - 完整部署指南
+# COMP3335 计算机学生管理系统 - Windows 部署指南
 
-本文档提供 COMP3335 计算机学生管理系统的完整部署流程，包括数据库、后端（Spring Boot）和前端（Next.js）的配置与启动步骤。
+本文档提供 COMP3335 计算机学生管理系统在 **Windows 平台**的完整部署流程。
+
+**部署架构说明：**
+- ✅ **前后端部署在同一主机**
+- ✅ **通过内网 HTTP 通信** (localhost/127.0.0.1)
+- ✅ **用户通过访问 `http://ip:3000` 访问系统**
 
 ---
 
@@ -8,33 +13,42 @@
 
 1. [系统架构概览](#系统架构概览)
 2. [环境要求](#环境要求)
-3. [快速开始（本地开发）](#快速开始本地开发)
+3. [快速开始](#快速开始)
 4. [详细部署步骤](#详细部署步骤)
    - [步骤 1：数据库部署](#步骤-1数据库部署)
    - [步骤 2：后端部署](#步骤-2后端部署)
    - [步骤 3：前端部署](#步骤-3前端部署)
-5. [生产环境部署](#生产环境部署)
-6. [安全架构说明](#安全架构说明)
-7. [常见问题排查](#常见问题排查)
-8. [测试账号](#测试账号)
+5. [安全架构说明](#安全架构说明)
+6. [常见问题排查](#常见问题排查)
+7. [测试账号](#测试账号)
 
 ---
 
 ## 系统架构概览
 
-本系统采用三层架构：
+**单主机同域部署架构：**
 
 ```
-浏览器 <--[RSA+AES混合加密]--> Next.js前端 <--[HMAC签名]--> Spring Boot后端 <--> MySQL数据库
-   ↓                                ↓                           ↓                    ↓
-端口:*                          端口:3000                    端口:3335           端口:3306
+用户浏览器 (http://server-ip:3000)
+         ↓
+   [Next.js 前端服务器] (端口 3000)
+         ↓ [内网 HTTP - 127.0.0.1]
+   [Spring Boot 后端] (端口 3335)
+         ↓ [内网 MySQL]
+   [Percona 数据库] (端口 3306)
 ```
 
-**安全特性：**
-- **浏览器 ↔ Next.js**：RSA-OAEP + AES-256-GCM 混合加密，防止窃听和篡改
-- **Next.js ↔ Java 后端**：HMAC-SHA256 + timestamp + nonce 防伪造和重放攻击
-- **后端访问控制**：基于 Session 的 RBAC（Role-Based Access Control）+ URI 路由表
-- **数据库安全**：参数化 SQL 防注入 + Percona 加密表存储敏感数据
+**关键特性：**
+- ✅ **同域部署**：用户只访问 `:3000`，所有 API 请求都是相对路径 `/API/*`，无跨域问题
+- ✅ **内网通信**：Next.js 网关层通过 `http://127.0.0.1:3335` 转发请求到后端
+- ✅ **安全隔离**：后端 3335 端口**不对外开放**，仅接受来自 Next.js 网关的 HMAC 签名请求
+- ✅ **Cookie 自动携带**：浏览器与 Next.js 同域，Session Cookie 自动携带，无需额外配置
+
+**安全层级：**
+- **浏览器 ↔ Next.js**：RSA-OAEP + AES-256-GCM 混合加密
+- **Next.js ↔ Spring Boot**：HMAC-SHA256 + timestamp + nonce 网关认证
+- **后端访问控制**：Session + RBAC + URI 路由表
+- **数据库安全**：参数化 SQL + Percona TDE 加密表
 
 ---
 
@@ -49,17 +63,22 @@
 | **Docker Desktop** | 最新版 | 运行 Percona MySQL 数据库容器 |
 | **Git** | 最新版 | 版本控制（可选） |
 
-### 操作系统支持
+### 操作系统要求
 
-- ✅ **Windows 10/11**（主要支持平台，内置 PowerShell 脚本）
-- ✅ **Linux**（Ubuntu/Debian/CentOS/RHEL，参考前端 README 的 Linux 安装指南）
-- ✅ **macOS**（基本兼容，需手动调整路径分隔符）
+- ✅ **Windows 10/11** (64-bit)
+- ✅ PowerShell 5.1+ (系统自带)
+
+### 安装链接
+
+- **JDK 21**：https://adoptium.net/zh-CN/temurin/releases/?version=21
+- **Node.js**：https://nodejs.org/zh-cn/download/
+- **Docker Desktop**：https://www.docker.com/products/docker-desktop/
 
 ---
 
-## 快速开始（本地开发）
+## 快速开始
 
-以下步骤适用于 **Windows 本地开发环境**，3 分钟内完成启动：
+以下步骤适用于 **Windows 单机部署**，3 分钟内完成启动：
 
 ### 1️⃣ 启动数据库（Docker）
 
@@ -80,7 +99,7 @@ cd C:\...\COMP3335-Computing-Student-Management
 .\mvnw spring-boot:run
 ```
 
-✅ 看到 `Started Application in X seconds` 表示后端启动成功（默认端口 `3335`）
+✅ 看到 `Started Application in X seconds` 表示后端启动成功（**内网端口 3335**）
 
 ### 3️⃣ 启动前端（Next.js）
 
@@ -95,7 +114,7 @@ npm install
 npm run dev
 ```
 
-✅ 打开浏览器访问 `http://localhost:3000` 进入系统
+✅ 看到 `Ready on http://localhost:3000` 表示前端启动成功
 
 ### 4️⃣ 写入测试数据（可选）
 
@@ -106,18 +125,23 @@ npm run dev
 
 这将写入默认测试账号（student/guardian/ARO/DRO/DBA）及示例课程、成绩、纪律记录。
 
+### 5️⃣ 访问系统
+
+- **本机访问**：`http://localhost:3000`
+- **同网段其他设备访问**：`http://<主机IP>:3000`（需配置 Windows 防火墙规则）
+
 ---
 
 ## 详细部署步骤
 
 ### 步骤 1：数据库部署
 
-#### Windows + Docker（推荐）
+#### 使用自动化脚本（推荐）
 
-1. **安装 Docker Desktop**  
-   下载并安装：https://www.docker.com/products/docker-desktop/
+1. **确保 Docker Desktop 已启动**  
+   任务栏看到 Docker 图标即可。
 
-2. **运行自动化脚本**
+2. **运行 PowerShell 脚本**
    ```powershell
    # 在项目根目录
    .\scripts\setup-percona.ps1
@@ -126,36 +150,33 @@ npm run dev
    .\scripts\setup-percona.ps1 -ResetData
    ```
 
-3. **手动启动（可选）**  
-   如果脚本失败，可手动执行：
-   ```powershell
-   docker run `
-     --name comp3335-db `
-     -p 3306:3306 `
-     -p 33060:33060 `
-     -e MYSQL_ROOT_PASSWORD=!testCOMP3335 `
-     -e MYSQL_DATABASE=COMP3335 `
-     -v ${PWD}\docker\data:/var/lib/mysql `
-     -v ${PWD}\docker\keyring:/keyring `
-     -v ${PWD}\init_database.sql:/docker-entrypoint-initdb.d/init_database.sql `
-     percona/percona-server:latest `
-     --early-plugin-load=keyring_file.so `
-     --keyring_file_data=/keyring/keyring
-   ```
-
-4. **验证数据库**
+3. **验证数据库状态**
    ```powershell
    docker ps --filter "name=comp3335-db"
-   docker exec -it comp3335-db mysql -uroot -p!testCOMP3335 -e "SHOW DATABASES;"
    ```
+   应显示容器状态为 `Up`。
 
-#### Linux（命令行）
+#### 手动启动（脚本失败时）
 
-参考 `scripts/setup-percona.sh`（需要手动调整权限）：
+```powershell
+docker run `
+  --name comp3335-db `
+  -p 3306:3306 `
+  -p 33060:33060 `
+  -e MYSQL_ROOT_PASSWORD=!testCOMP3335 `
+  -e MYSQL_DATABASE=COMP3335 `
+  -v ${PWD}\docker\data:/var/lib/mysql `
+  -v ${PWD}\docker\keyring:/keyring `
+  -v ${PWD}\init_database.sql:/docker-entrypoint-initdb.d/init_database.sql `
+  percona/percona-server:latest `
+  --early-plugin-load=keyring_file.so `
+  --keyring_file_data=/keyring/keyring
+```
 
-```bash
-chmod +x scripts/setup-percona.sh
-./scripts/setup-percona.sh
+#### 验证数据库连接
+
+```powershell
+docker exec -it comp3335-db mysql -uroot -p!testCOMP3335 -e "SHOW DATABASES;"
 ```
 
 **数据库连接信息：**
@@ -169,7 +190,7 @@ chmod +x scripts/setup-percona.sh
 
 ### 步骤 2：后端部署
 
-#### 开发模式
+#### 前置检查
 
 1. **确认 JDK 版本**
    ```powershell
@@ -181,7 +202,7 @@ chmod +x scripts/setup-percona.sh
    ```properties
    server.port=3335
    
-   # 数据库配置
+   # 数据库配置（内网连接）
    spring.datasource.url=jdbc:mysql://localhost:3306/COMP3335?useSSL=false&serverTimezone=UTC
    spring.datasource.username=root
    spring.datasource.password=!testCOMP3335
@@ -190,20 +211,34 @@ chmod +x scripts/setup-percona.sh
    # spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
    ```
 
-3. **启动开发服务器**
-   ```powershell
-   .\mvnw spring-boot:run
+3. **配置 HMAC 共享密钥**  
+   编辑 `src/main/resources/application.yml`：
+   ```yaml
+   app:
+     gateway:
+       shared-secret: b6e618d7fb5b8bc0e9fe1b804d7eb722a35e5159bc2efb68e5f1419e3f56fc90
    ```
+   改成你自己的密钥
 
-#### 生产模式（打包运行）
+#### 启动后端服务
 
 ```powershell
-# 清理并打包
-.\mvnw -U clean package
+# 开发模式
+.\mvnw spring-boot:run
 
-# 运行 JAR
+# 生产模式（打包运行）
+.\mvnw -U clean package
 java -jar target\comp3335-0.0.1-SNAPSHOT.jar
 ```
+
+#### 验证后端启动
+
+访问健康检查接口：
+```powershell
+curl http://localhost:3335/API/public-key
+```
+
+应返回 RSA 公钥 JSON。
 
 #### 常见问题
 
@@ -213,150 +248,72 @@ java -jar target\comp3335-0.0.1-SNAPSHOT.jar
 | `JAVA_HOME not found` | 设置环境变量 `JAVA_HOME=C:\Program Files\Java\jdk-21` |
 | 端口 3335 被占用 | 修改 `application.properties` 中的 `server.port` |
 | 数据库连接失败 | 检查 Docker 容器是否运行：`docker ps` |
+| HMAC 验证失败 | 确认前后端 `GATEWAY_SHARED_SECRET` 一致 |
 
 ---
 
 ### 步骤 3：前端部署
 
-#### 开发模式
+#### 安装 Node.js
 
-1. **安装 Node.js**  
-   Windows：下载 `.msi` 安装包  
-   Linux：使用 `nvm`（参考 `frontend/README.md` 的详细步骤）
+下载并安装：https://nodejs.org/zh-cn/download/
 
-2. **安装依赖**
-   ```powershell
-   cd frontend
-   npm install
-   ```
+验证安装：
+```powershell
+node -v   # 应显示 v18+ 或 v20+
+npm -v    # 应显示 npm 版本号
+```
 
-3. **配置环境变量**  
-   创建 `frontend/.env.local`：
-   ```env
-   # 本地开发推荐配置
-   AUTH_DEBUG=1                  # 启用本地测试账号
-   COOKIE_SECURE=0              # HTTP 环境下关闭（生产必须开启）
-   
-   # 可选：连接外部后端（不推荐本地开发使用）
-   # NEXT_PUBLIC_USE_TEST_API=1
-   # NEXT_PUBLIC_API_URL=http://localhost:3335
-   
-   # 必填：HMAC 共享密钥（与后端保持一致）
-   GATEWAY_SHARED_SECRET=your-secret-key-here
-   ```
+#### 配置环境变量
 
-4. **启动开发服务器**
-   ```powershell
-   npm run dev
-   # 或指定端口
-   npm run dev -- -p 3001
-   ```
+创建 `frontend/.env.local`：
+```env
+# 内网后端地址（Next.js 网关转发目标）
+NEXT_PUBLIC_API_URL=http://127.0.0.1:3335
 
-5. **访问系统**  
-   打开浏览器：`http://localhost:3000`
+# HMAC 共享密钥（必须与后端 application.yml 一致）
+GATEWAY_SHARED_SECRET=b6e618d7fb5b8bc0e9fe1b804d7eb722a35e5159bc2efb68e5f1419e3f56fc90
 
-#### 生产模式
+# 开发模式配置
+AUTH_DEBUG=1          # 启用本地测试账号
+COOKIE_SECURE=0       # HTTP 环境下关闭（生产必须开启）
+```
+
+> **重要**：`NEXT_PUBLIC_API_URL` 必须设置为 `http://127.0.0.1:3335`，确保 Next.js 通过内网连接后端。
+
+#### 安装依赖
 
 ```powershell
-# 构建静态资源
+cd frontend
+npm install
+```
+
+
+
+#### 启动前端服务
+
+```powershell
+# 开发模式
+npm run dev
+
+# 生产模式
 npm run build
-
-# 启动生产服务器
-npm run start -- -p 3000
+npm run start
 ```
 
-#### Linux 生产部署（systemd）
+#### 验证前端启动
 
-创建 `/etc/systemd/system/next-frontend.service`：
+打开浏览器访问：
+- **本机**：`http://localhost:3000`
+- **局域网**：`http://<Windows主机IP>:3000`
 
-```ini
-[Unit]
-Description=Next.js Frontend Service
-After=network.target
+#### 允许局域网访问（可选）
 
-[Service]
-Type=simple
-WorkingDirectory=/path/to/COMP3335-Computing-Student-Management/frontend
-ExecStart=/usr/bin/npm run start -- -p 3000
-Restart=always
-Environment=NEXT_PUBLIC_API_URL=http://127.0.0.1:3335
-Environment=GATEWAY_SHARED_SECRET=your-secret-key-here
+如需从其他设备访问，需配置 Windows 防火墙：
 
-[Install]
-WantedBy=multi-user.target
-```
-
-启动服务：
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now next-frontend
-systemctl status next-frontend
-```
-
----
-
-## 生产环境部署
-
-### 安全加固建议
-
-1. **启用 HTTPS**  
-   - 使用 Nginx/Apache 作为反向代理
-   - 配置 TLS 1.2+ 证书
-   - 启用 HSTS（HTTP Strict Transport Security）
-
-2. **环境变量配置**
-   ```env
-   # 前端 .env.local
-   COOKIE_SECURE=1                          # 强制 HTTPS Cookie
-   COOKIE_DOMAIN=yourdomain.com            # 跨子域共享 Session
-   GATEWAY_SHARED_SECRET=<强随机密钥>       # 后端 HMAC 签名密钥
-   SERVER_RSA_PUBLIC_PEM=<固定公钥PEM>     # RSA 密钥对（持久化）
-   SERVER_RSA_PRIVATE_PEM=<固定私钥PEM>
-   ```
-
-3. **后端配置**
-   - 在 `application.properties` 中设置生产数据库凭证
-   - 使用环境变量或配置中心管理敏感信息
-   - 配置 `GATEWAY_SHARED_SECRET` 与前端保持一致
-
-4. **数据库安全**
-   - 修改默认密码 `!testCOMP3335`
-   - 限制远程访问（仅允许后端 IP）
-   - 启用 Percona TDE（Transparent Data Encryption）
-
-5. **网络架构**
-   ```
-   互联网
-     ↓
-   [Nginx/反向代理] (HTTPS)
-     ↓          ↓
-   Next.js   Spring Boot
-     ↓          ↓
-        MySQL
-   ```
-
-### Nginx 配置示例
-
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name yourdomain.com;
-
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-
-    # 前端
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-
-    # 后端 API（可选，直接暴露）
-    location /api/ {
-        proxy_pass http://127.0.0.1:3335/API/;
-    }
-}
+```powershell
+# 允许入站连接到 3000 端口
+New-NetFirewallRule -DisplayName "Next.js Dev Server" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 3000
 ```
 
 ---
@@ -376,9 +333,11 @@ server {
 2. 生成随机 AES 密钥 + IV
 3. 用 AES 加密请求数据
 4. 用 RSA 加密 AES 密钥
-5. 发送加密信封到 Next.js
+5. 发送加密信封到 Next.js `/API/*` 路由
 
 #### 2. Next.js ↔ Spring Boot（HMAC 签名）
+
+**位置：**`frontend/lib/secureProxy.ts`
 
 - **共享密钥**：前后端通过 `GATEWAY_SHARED_SECRET` 环境变量配置
 - **规范化字符串**：`METHOD|PATH|BODY|TIMESTAMP|NONCE`
@@ -391,6 +350,12 @@ X-Gateway-Signature-Alg: HMAC-SHA256
 X-Gateway-Signature: <Base64签名>
 X-Gateway-Timestamp: <毫秒时间戳>
 X-Gateway-Nonce: <随机字符串>
+```
+
+**内网通信保障：**
+```typescript
+const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3335";
+const url = `${base}/API${targetTail}${qs ? `?${qs}` : ""}`;
 ```
 
 #### 3. 后端内部（RBAC + 防 SQL 注入）
@@ -427,6 +392,7 @@ X-Gateway-Nonce: <随机字符串>
 | 编译错误 | 检查 JDK 版本：`java -version` |
 | 接口返回 500 | 查看终端日志，检查数据库表名是否正确 |
 | HMAC 验证失败 | 确认前后端 `GATEWAY_SHARED_SECRET` 一致 |
+| 后端无法连接数据库 | 确认 Docker 容器运行：`docker ps` |
 
 ### 前端相关
 
@@ -434,10 +400,25 @@ X-Gateway-Nonce: <随机字符串>
 |------|----------|
 | `npm install` 失败 | 切换淘宝镜像：`npm config set registry https://registry.npmmirror.com` |
 | 端口冲突 | 使用 `-p` 指定端口：`npm run dev -- -p 3001` |
-| Cookie 无法写入 | 本地开发设置 `COOKIE_SECURE=0`（生产必须为 1） |
+| Cookie 无法写入 | 本地开发设置 `COOKIE_SECURE=0` |
 | 登录失败 | 启用调试模式：`.env.local` 设置 `AUTH_DEBUG=1` |
+| 无法连接后端 | 检查 `.env.local` 中 `NEXT_PUBLIC_API_URL` 是否正确 |
 
-### 集成测试
+### 内网通信验证
+
+```powershell
+# 验证后端可访问
+curl http://127.0.0.1:3335/API/public-key
+
+# 验证前端可访问
+curl http://localhost:3000
+
+# 验证 Next.js 网关转发
+# 在浏览器打开开发者工具 -> Network，登录时查看请求
+# 应该看到：POST http://localhost:3000/API/login (200 OK)
+```
+
+### 集成测试流程
 
 ```powershell
 # 1. 启动数据库
@@ -446,10 +427,10 @@ X-Gateway-Nonce: <随机字符串>
 # 2. 写入测试数据
 .\mvnw --% -q compile exec:java -Dexec.mainClass=scripts.TestAccountSeeder
 
-# 3. 启动后端
+# 3. 启动后端（新建终端）
 .\mvnw spring-boot:run
 
-# 4. 启动前端（新终端）
+# 4. 启动前端（新建终端）
 cd frontend
 npm run dev
 
@@ -490,15 +471,50 @@ dba@test.local,Dba@12345,DBA,DBA Admin
 
 ---
 
+## 部署检查清单
+
+部署完成后，请确认以下事项：
+
+### ✅ 数据库
+- [ ] Docker 容器运行正常：`docker ps`
+- [ ] 可连接到数据库：`docker exec -it comp3335-db mysql -uroot -p!testCOMP3335`
+- [ ] 数据库表已创建：`SHOW TABLES FROM COMP3335;`
+
+### ✅ 后端
+- [ ] JDK 21+ 已安装：`java -version`
+- [ ] 后端服务启动成功：看到 `Started Application` 日志
+- [ ] 公钥接口可访问：`curl http://localhost:3335/API/public-key`
+- [ ] `application.yml` 中 `shared-secret` 已配置
+
+### ✅ 前端
+- [ ] Node.js 18+ 已安装：`node -v`
+- [ ] 依赖安装成功：`npm install` 无错误
+- [ ] `.env.local` 已正确配置（包含 `NEXT_PUBLIC_API_URL` 和 `GATEWAY_SHARED_SECRET`）
+- [ ] 前端服务启动成功：看到 `Ready on http://localhost:3000`
+- [ ] 可访问登录页面：`http://localhost:3000/login`
+
+### ✅ 内网通信
+- [ ] Next.js 可访问后端：查看终端日志无 `ECONNREFUSED` 错误
+- [ ] HMAC 签名验证通过：后端日志无 `HMAC validation failed` 错误
+- [ ] 登录功能正常：可使用测试账号成功登录
+
+### ✅ 安全配置
+- [ ] 后端 3335 端口**未对外开放**（仅 Next.js 内网访问）
+- [ ] 前端 3000 端口已开放（用户访问入口）
+- [ ] 生产环境设置 `COOKIE_SECURE=1`
+- [ ] 生产环境禁用 `AUTH_DEBUG`
+
+---
+
 ## 项目文档索引
 
 | 文档 | 路径 | 内容 |
 |------|------|------|
 | **后端指南** | `README.md` | Spring Boot 启动、数据库配置、Maven 使用 |
-| **前端指南** | `frontend/README.md` | Next.js 开发、环境变量、Linux 部署 |
+| **前端指南** | `frontend/README.md` | Next.js 开发、环境变量配置 |
 | **API 规范** | `API.md` | 所有 HTTP 接口的请求/响应格式 |
 | **安全设计** | `frontend/api.md` | 加密方案、HMAC 签名、RBAC 详解 |
-| **本文档** | `FINAL_README.md` | **完整部署流程与问题排查** |
+| **本文档** | `FINAL_README.md` | **Windows 单机部署流程** |
 
 ---
 
@@ -521,38 +537,15 @@ dba@test.local,Dba@12345,DBA,DBA Admin
 
 ---
 
-## 开发团队建议
-
-1. **版本控制**  
-   - 所有敏感文件已加入 `.gitignore`（`.env.local`, `*.pem`, `test_acount`）
-   - 提交前检查：`git status`
-
-2. **协作开发**  
-   - 后端：IntelliJ IDEA Community（免费）
-   - 前端：VS Code + ESLint + Prettier
-   - 数据库：DBeaver 或 MySQL Workbench
-
-3. **代码规范**  
-   - 后端：遵循 Spring Boot 官方最佳实践
-   - 前端：使用 ESLint 配置（`frontend/eslint.config.mjs`）
-   - 提交信息：使用 Conventional Commits 格式
-
-4. **性能优化**  
-   - 前端：启用 Next.js 生产构建 `npm run build`
-   - 后端：使用 `mvnw package` 打包为可执行 JAR
-   - 数据库：为常用查询添加索引
-
----
-
 ## 联系与支持
 
 - **课程代码**：COMP3335
 - **项目名称**：Computing Student Management System
-- **仓库地址**：（根据实际情况填写 GitHub/GitLab 链接）
+- **部署方式**：Windows 单主机，前后端内网 HTTP 通信
 
-如有问题，请优先参考各子文档的"常见问题"章节，或在项目 Issue 中提问。
+如有问题，请优先参考各子文档的"常见问题"章节。
 
 ---
 
 **最后更新时间**：2025-01-17  
-**文档版本**：v1.0
+**文档版本**：v2.0 (Windows Only)

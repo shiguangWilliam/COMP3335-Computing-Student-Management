@@ -49,23 +49,23 @@ export default function Home() {
 
   return (
     <div>
-      <h1 className="mb-2 text-3xl font-semibold">ComputingU 学生管理系统</h1>
+      <h1 className="mb-2 text-3xl font-semibold">ComputingU Student Management System</h1>
       {role ? (
         <p className="mb-6 text-sm text-zinc-600">
-          欢迎, <span className="font-medium">{userName}</span> ({role})
+          Welcome, <span className="font-medium">{userName}</span> ({role})
         </p>
       ) : (
         <p className="mb-6 text-sm text-zinc-600">
-          请先 <Link href="/login" className="text-blue-700 hover:underline">登录</Link> 以使用本系统。
+          Please <Link href="/login" className="text-blue-700 hover:underline">log in</Link> to use the system.
         </p>
       )}
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {modules.length === 0 ? (
           <li className="col-span-full">
             <Card className="text-center py-8">
-              <p className="text-zinc-600">暂无可用功能模块</p>
+              <p className="text-zinc-600">No available function modules</p>
               <Link href="/login" className="mt-2 inline-block text-blue-700 hover:underline">
-                前往登录
+                Log in
               </Link>
             </Card>
           </li>
