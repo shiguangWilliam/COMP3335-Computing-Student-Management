@@ -12,7 +12,7 @@ $configPath = Join-Path $dockerDir "my.cnf"
 $initSql = Join-Path $projectRoot "init_database.sql"
 $containerName = "comp3335-db"
 
-Write-Host "==> 准备目录..." -ForegroundColor Cyan
+Write-Host "==> Preparing directories..." -ForegroundColor Cyan
 New-Item -ItemType Directory -Force -Path $dockerDir | Out-Null
 New-Item -ItemType Directory -Force -Path $dataDir | Out-Null
 New-Item -ItemType Directory -Force -Path $keyringDir | Out-Null
@@ -23,26 +23,26 @@ if (-not (Test-Path $configPath)) {
 early-plugin-load=keyring_file.so
 keyring_file_data=/keyring/keyring
 "@ | Set-Content -Encoding UTF8 $configPath
-    Write-Host "    已创建 docker\my.cnf" -ForegroundColor Green
+    Write-Host "    Created docker\my.cnf" -ForegroundColor Green
 } else {
-    Write-Host "    docker\my.cnf 已存在，跳过创建" -ForegroundColor Yellow
+    Write-Host "    docker\my.cnf already exists, skipping" -ForegroundColor Yellow
 }
 
 if ($ResetData) {
-    Write-Host "==> 清空 data/keyring 目录（ResetData）..." -ForegroundColor Cyan
+    Write-Host "==> ResetData enabled: clearing data/keyring directories..." -ForegroundColor Cyan
     Get-ChildItem $dataDir -Force -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
     Get-ChildItem $keyringDir -Force -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
 }
 
-Write-Host "==> 检查旧容器..." -ForegroundColor Cyan
+Write-Host "==> Checking existing container..." -ForegroundColor Cyan
 $existing = docker ps -a -q -f "name=$containerName"
 if ($existing) {
-    Write-Host "    移除旧容器 $containerName" -ForegroundColor Yellow
+    Write-Host "    Removing old container $containerName" -ForegroundColor Yellow
     docker rm -f $containerName | Out-Null
 }
 
 if (-not (Test-Path $initSql)) {
-    throw "init_database.sql 不存在，无法继续"
+    throw "init_database.sql is missing; cannot continue"
 }
 
 $pwdEscaped = $projectRoot -replace "\\", "/"
@@ -61,9 +61,9 @@ $dockerCmd = @(
     "--keyring_file_data=/keyring/keyring"
 )
 
-Write-Host "==> 启动 Percona 容器..." -ForegroundColor Cyan
+Write-Host "==> Starting Percona container..." -ForegroundColor Cyan
 docker @dockerCmd
 
-Write-Host "`n完成。可使用以下命令验证：" -ForegroundColor Green
-Write-Host "  docker exec comp3335-db mysql -uroot -p!testCOMP3335 -e `"SHOW DATABASES;`""
+Write-Host "`nCompleted. You can verify with:" -ForegroundColor Green
+Write-Host '  docker exec comp3335-db mysql -uroot -p!testCOMP3335 -e "SHOW DATABASES;"'
 
