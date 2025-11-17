@@ -1,7 +1,6 @@
 package http;
 
 import app.Session;
-import ch.qos.logback.core.joran.sanity.Pair;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -274,10 +273,6 @@ public class GradeController {
             return err;
         }
 
-        
+        return resp;
     }
-
-
-
-
 }

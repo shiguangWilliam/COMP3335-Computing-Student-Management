@@ -128,3 +128,15 @@ keyring_file_data=/keyring/keyring
 6. **常见问题**
    - `Encryption can't find master key`：确保 `--early-plugin-load` 与 `--keyring_file_data` 参数存在，且 `docker\keyring` 目录已挂载
    - 端口冲突：将 `-p 3306:3306` 改为其他端口（例如 `-p 3307:3306`），并同步修改应用配置
+
+## 写入默认测试账号
+
+项目提供 `scripts.TestAccountSeeder` 用于把默认账号（student / guardian / ARO / DRO / DBA）写入数据库：
+
+```powershell
+mvnw --% -q compile exec:java -Dexec.mainClass=scripts.TestAccountSeeder
+```
+
+- 多次运行会跳过已存在的邮箱
+- Guardian 账号会自动与 student 账号建立监护关系
+- 如需彻底重置，可配合 `scripts/setup-percona.ps1 -ResetData`
