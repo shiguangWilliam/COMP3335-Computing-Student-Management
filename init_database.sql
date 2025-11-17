@@ -51,6 +51,13 @@ CREATE TABLE courses(
     id VARCHAR(20) PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
+
+CREATE TABLE grades_encrypted(
+    id VARCHAR(20) PRIMARY KEY,
+    grade VARCHAR(2) NOT NULL,
+    comments VARCHAR(1000),
+) ENCRYPTION='Y';
+
 CREATE TABLE grades(
     id VARCHAR(20) PRIMARY KEY,
     encrypted_id VARCHAR(20) NOT NULL,
@@ -61,11 +68,7 @@ CREATE TABLE grades(
     FOREIGN KEY (course_id) REFERENCES courses(id)
     FOREIGN KEY (encrypted_id) REFERENCES grades_encrypted(id)
 );
-CREATE TABLE grades_encrypted(
-    id VARCHAR(20) PRIMARY KEY,
-    grade VARCHAR(2) NOT NULL,
-    comments VARCHAR(1000),
-) ENCRYPTION='Y';
+
 CREATE TABLE disciplinary_records(
     id VARCHAR(20) PRIMARY KEY,
     student_id VARCHAR(20) NOT NULL,

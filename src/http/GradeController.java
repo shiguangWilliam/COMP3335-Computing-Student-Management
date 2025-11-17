@@ -131,7 +131,7 @@ public class GradeController {
         String studentID = body.get("studentId")==null?null:body.get("studentId").toString();
         String courseID = body.get("courseId")==null?null:body.get("courseId").toString();
         String grade = body.get("grade")==null?null:body.get("grade").toString();
-
+        
         if(studentID==null || studentID.isBlank() || courseID==null || courseID.isBlank() || grade==null){
             err.put("code",400);
             err.put("message","Bad Request: Missing Parameters");
@@ -139,7 +139,7 @@ public class GradeController {
             return err;
         }
 
-        String querySql = "SELECT id FROM grades WHERE student_id = ? AND course_id = ?";
+        String querySql = "SELECT id, encrypted_id FROM grades WHERE student_id = ? AND course_id = ?";
         String[] queryParam = {studentID, courseID};
         String comment = body.get("comments")==null? "": body.get("comments").toString();
         String term = body.get("term")==null? "2024Sem1": body.get("term").toString();//默认学期2024Sem1
@@ -147,10 +147,11 @@ public class GradeController {
         try(ResultSet rs = DBConnect.dbConnector.executeQuery(querySql, queryParam)){
             if(!rs.next()){//没有对应成绩记录，创建
                 String gid = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
-                String insertSql = "INSERT INTO grades (id, student_id, course_id, term) VALUES (?, ?, ?, ?)";
+                String enc_gid = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+                String insertSql = "INSERT INTO grades (id,encrypted_id, student_id, course_id, term) VALUES (?, ?, ?, ?, ?)";
                 String insertEncSql = "INSERT INTO grades_encrypted (id, grade, comments) VALUES (?, ?, ?)";
-                String[] insertParam = {gid, studentID, courseID, term};
-                String[] insertEncParam = {gid, grade, comment};
+                String[] insertParam = {gid, enc_gid, studentID, courseID, term};
+                String[] insertEncParam = {enc_gid, grade, comment};
                 try{//插入
                     DBConnect.dbConnector.executeUpdate(insertSql, insertParam);
                     DBConnect.dbConnector.executeUpdate(insertEncSql, insertEncParam);
@@ -168,7 +169,7 @@ public class GradeController {
                 }
             }
             else{//有记录，更新
-                String gid = rs.getString("id");
+                String gid = rs.getString("encrypted_id");
                 String updateSql = "UPDATE grades_encrypted SET grade = ?, comments = ? WHERE id = ?";
                 String[] updateParam = {grade, comment, gid};
                 try{
