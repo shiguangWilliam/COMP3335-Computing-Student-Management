@@ -130,7 +130,7 @@ public class GradeController {
         //安全读取（避免把null读成"null"字符串）
         String studentID = body.get("studentId")==null?null:body.get("studentId").toString();
         String courseID = body.get("courseId")==null?null:body.get("courseId").toString();
-        Float grade = body.get("grade")==null?null:Float.parseFloat(body.get("grade").toString());
+        String grade = body.get("grade")==null?null:body.get("grade").toString();
 
         if(studentID==null || studentID.isBlank() || courseID==null || courseID.isBlank() || grade==null){
             err.put("code",400);
@@ -150,7 +150,7 @@ public class GradeController {
                 String insertSql = "INSERT INTO grades (id, student_id, course_id, term) VALUES (?, ?, ?, ?)";
                 String insertEncSql = "INSERT INTO grades_encrypted (id, grade, comments) VALUES (?, ?, ?)";
                 String[] insertParam = {gid, studentID, courseID, term};
-                String[] insertEncParam = {gid, grade.toString(), comment};
+                String[] insertEncParam = {gid, grade, comment};
                 try{//插入
                     DBConnect.dbConnector.executeUpdate(insertSql, insertParam);
                     DBConnect.dbConnector.executeUpdate(insertEncSql, insertEncParam);
@@ -170,7 +170,7 @@ public class GradeController {
             else{//有记录，更新
                 String gid = rs.getString("id");
                 String updateSql = "UPDATE grades_encrypted SET grade = ?, comments = ? WHERE id = ?";
-                String[] updateParam = {grade.toString(), comment, gid};
+                String[] updateParam = {grade, comment, gid};
                 try{
                     DBConnect.dbConnector.executeUpdate(updateSql, updateParam);
                     resp.put("ok", true);
