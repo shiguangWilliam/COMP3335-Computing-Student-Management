@@ -467,25 +467,11 @@ npm run dev
 
 | 邮箱 | 密码 | 角色 | 说明 |
 |------|------|------|------|
-| `student@comp3335.test` | `Student@123` | student | 学生账号（带成绩和纪律记录） |
-| `guardian@comp3335.test` | `Guardian@123` | guardian | 监护人账号（关联学生账号） |
-| `aro@comp3335.test` | `ARO@123` | ARO | 学术注册官（管理成绩） |
-| `dro@comp3335.test` | `DRO@123` | DRO | 纪律注册官（管理纪律记录） |
-| `dba@comp3335.test` | `DBA@123` | DBA | 数据库管理员 |
+| `student@test.local` | `Test@12345` | student | 学生账号（带成绩和纪律记录） |
+| `guardian@test.local` | `Guardian@12345` | guardian | 监护人账号（关联学生账号） |
+| `aro@test.local` | `ARO@1245` | ARO | 学术注册官（管理成绩） |
+| `dro@test.local` | `DRO@12345` | DRO | 纪律注册官（管理纪律记录） |
 
-### 前端调试账号（AUTH_DEBUG=1）
-
-编辑 `frontend/test_acount` 文件（格式：`email,password,role,name`）：
-
-```
-student@test.local,Test@12345,student,Student Test
-aro@test.local,Aro@12345,ARO,ARO Admin
-guardian@test.local,Guardian@12345,guardian,Guardian User
-dro@test.local,Dro@12345,DRO,DRO Officer
-dba@test.local,Dba@12345,DBA,DBA Admin
-```
-
-> **注意**：生产环境必须删除此文件或设置 `AUTH_DEBUG=0`
 
 ---
 
