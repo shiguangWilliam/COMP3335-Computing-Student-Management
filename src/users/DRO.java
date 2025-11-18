@@ -71,11 +71,11 @@ public class DRO extends User{
     }
     public void deleteDisciplinary(String ID) throws SQLException {
         try {
-            String sql = "DELETE FROM disciplinary_records WHERE id = ?";
-            String[] params = {ID};
-            DBConnect.dbConnector.executeUpdate(sql, params);
             String sqlEnc = "DELETE FROM disciplinary_records_encrypted WHERE id = ?";
+            String[] params = {ID};
             DBConnect.dbConnector.executeUpdate(sqlEnc, params);
+            String sql = "DELETE FROM disciplinary_records WHERE id = ?";
+            DBConnect.dbConnector.executeUpdate(sql, params);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             throw e;
