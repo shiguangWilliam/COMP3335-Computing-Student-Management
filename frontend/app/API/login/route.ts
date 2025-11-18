@@ -80,14 +80,12 @@ export async function POST(req: NextRequest) {
     const nonce = crypto.randomBytes(12).toString("hex");
     const bodyStr = JSON.stringify({ email, password, role });
     const canonical = [method, "/API/login", bodyStr, String(timestamp), nonce].join("|");
-    console.log("[Debug] HMACAuth canonical:", canonical);
     
     
     const signature = crypto.createHmac("sha256", secret).update(canonical, "utf8").digest("base64");
 
     const cookieHeader = req.headers.get("cookie") || undefined;
     // Debug: 输出当前请求携带的 Cookie 头（服务端终端可见）
-    console.log("[Debug] Cookie header:", cookieHeader);
     const res = await fetch(url, {
       method: "POST",
       headers: {

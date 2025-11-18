@@ -34,11 +34,7 @@ export async function relaySecure(req: NextRequest, targetTail: string): Promise
     const pathToSign = `/API${targetTail}${qs ? `?${qs}` : ""}`;
     const canonical = [method, pathToSign, bodyStr, String(timestamp), nonce].join("|");
     // Debug: 在服务端终端打印被签名字符串（任何 login 请求都会触发）
-    console.log("[Debug] HMACAuth canonical:", canonical);
-    console.log("[Debug] HMACAuth key:", secret);
-    console.log("[Debug] HMACAuth key length:", secret.length);
     const signature = crypto.createHmac("sha256", secret).update(canonical, "utf8").digest("base64");
-    console.log("[Debug] HMACAuth signature:", signature);
     const init: RequestInit = {
       method,
       headers: {

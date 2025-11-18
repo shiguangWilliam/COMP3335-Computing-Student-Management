@@ -118,16 +118,11 @@ public class HmacAuthFilter implements Filter {
                 String.valueOf(timestamp),
                 nonce
         );
-        System.out.println("[Debug] Key:"+new String(hmacSharedKey,StandardCharsets.UTF_8));
-        System.out.println("[Debug] Key Length:"+hmacSharedKey.length);
-        System.out.println("[Debug] Canonical:"+canonical);
+        log.debug("Canonical String: {}", canonical);
         byte[] expectSignature = hmacSha256(canonical,hmacSharedKey);// 计算期望 HMAC
         byte[] providedSignature;
         try {
             providedSignature = Base64.getDecoder().decode(signature);
-            System.out.println("[Debug]:expect:"+expectSignature);
-            System.out.println("[Debug]:provide:"+providedSignature);
-            System.out.println("[Debug]:Origin:"+signature);
         } catch (IllegalArgumentException e) {
             throw new HmacValidationException("Invalid signature encoding",401);
         }
