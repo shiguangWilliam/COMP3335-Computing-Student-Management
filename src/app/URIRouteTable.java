@@ -18,22 +18,8 @@ public class URIRouteTable {
         routeTable.put(key("PUT", "/API/profile"), new String[]{"student","guardian","ARO","DRO"});
         routeTable.put(key("PUT", "/API/modified_Passowrd"), new String[]{"student","guardian","ARO","DRO"});
 
-        // students（DBA，搁置）
-        routeTable.put(key("GET", "/API/students"), new String[]{"ARO", "DRO"});
+        
 
-        // guardians（DBA，搁置）
-        routeTable.put(key("GET", "/API/guardians"), new String[]{"ARO", "DRO"});
-
-        // courses（额外实现）
-        // routeTable.put(key("GET", "/API/courses"), new String[]{"ARO", "DRO"});
-        // routeTable.put(key("POST", "/API/courses"), new String[]{"ARO", "DRO"});
-        // routeTable.put(key("PUT", "/API/courses"), new String[]{"ARO", "DRO"});
-        // routeTable.put(key("DELETE", "/API/courses"), new String[]{"ARO", "DRO"});
-
-        // enrollments（额外实现）
-        // routeTable.put(key("GET", "/API/enrollments"), new String[]{"ARO", "DRO"});
-        // routeTable.put(key("POST", "/API/enrollments"), new String[]{"ARO", "DRO"});
-        // routeTable.put(key("DELETE", "/API/enrollments"), new String[]{"ARO", "DRO"});
 
         // grades
         routeTable.put(key("GET", "/API/grades"), new String[]{"ARO"});

@@ -141,4 +141,12 @@ public class ParamValid {
         List<String> validGrades = Arrays.asList("A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F");
         return validGrades.contains(grade);
     }
+
+    public static boolean isValidTerm(String term){
+        if(term == null || term.isBlank()){
+            return false;
+        }
+        String regex = "^(20\\d{2})Sem(1|2)$";
+        return term.matches(regex);
+    }
 }

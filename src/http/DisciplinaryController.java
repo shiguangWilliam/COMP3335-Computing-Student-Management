@@ -119,9 +119,9 @@ public class DisciplinaryController {
         }
         DRO user = new DRO(session.getUserId());
 
-        String staffId = session.getUserId();
-        String studentId = body.get("studentId");
-        String date = body.get("date");
+        String staffId = session.getUserId().trim();
+        String studentId = body.get("studentId").trim();
+        String date = body.get("date").trim();
         String description = body.get("description");
         //参数校验
         if(studentId == null || studentId.isBlank() || date == null || date.isBlank() || description == null || description.isBlank()){

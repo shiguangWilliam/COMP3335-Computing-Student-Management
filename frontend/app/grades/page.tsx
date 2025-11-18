@@ -55,6 +55,7 @@ export default function GradesPage() {
   const submit = async () => {
     setLoading(true);
     setError(null);
+     setMsg(null);
     try {
       if (role !== "ARO") throw new Error("Only ARO staff can assign grades.");
       if (!assign.studentId || !assign.courseName || !assign.term || !assign.grade) {
