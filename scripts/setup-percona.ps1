@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 
 # 使用自定义 Docker 根目录或默认路径
-$dockerDir = if ($DockerDir) { $DockerDir } else { Join-Path $projectRoot "docker" }
+$dockerDir = if ($DockerDir) { Join-Path $DockerDir "docker" } else { Join-Path $projectRoot "docker" }
 $dataDir = Join-Path $dockerDir "data"
 $keyringDir = Join-Path $dockerDir "keyring"
 $configPath = Join-Path $dockerDir "my.cnf"
