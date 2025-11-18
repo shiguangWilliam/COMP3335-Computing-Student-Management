@@ -45,6 +45,7 @@ public class ProfileController {
             Map<String, Object> err = new HashMap<>();
             err.put("error", "unauthorized");
             err.put("code", 401);
+            response.setStatus(401);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "unauthorized"));
             return err;
         }
@@ -171,6 +172,7 @@ public class ProfileController {
             Map<String, Object> err = new HashMap<>();
             err.put("error", "unauthorized");
             err.put("code", 401);
+            response.setStatus(401);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "unauthorized"));
             return err;
         }
@@ -353,6 +355,7 @@ public class ProfileController {
             Map<String, Object> err = new HashMap<>();
             err.put("error", "unauthorized");
             err.put("code", 401);
+            response.setStatus(401);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "unauthorized"));
             return err;
         }

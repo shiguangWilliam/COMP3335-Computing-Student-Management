@@ -38,6 +38,7 @@ public class ReportController {
         if (session == null) {
             err.put("error", "unauthorized");
             err.put("code", 401);
+            response.setStatus(401);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "unauthorized"));
             return err;
         }
@@ -60,6 +61,7 @@ public class ReportController {
                     err.put("code", 404);
                     err.put("message", "No student found");
                     log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "NoStudentForGuardian", "guardianId", session.getUserId()));
+                    response.setStatus(404);
                     return err;
                 }
                 do{
@@ -71,6 +73,7 @@ public class ReportController {
                 err.put("code", 500);
                 err.put("message", "Failed to query guardian's students");
                 log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "QueryError","id",session.getUserId()));
+                response.setStatus(500);
                 return err;
             }
 
@@ -78,6 +81,7 @@ public class ReportController {
         else{
             err.put("error", "Invalid role");
             err.put("code",401);
+            response.setStatus(401);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "InvalidRole"));
             return err;
         }
@@ -98,6 +102,7 @@ public class ReportController {
             } catch (SQLException e) {
                 err.put("error", "QueryError");
                 err.put("code",500);
+                response.setStatus(500);
                 err.put("message","Query failed");
                 log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "ReportQueryError", "studentId", id));
                 return err;
