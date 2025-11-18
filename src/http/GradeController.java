@@ -122,7 +122,7 @@ public class GradeController {
 
     @PostMapping(value = "/API/grades", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String,Object> postGrade(@RequestBody Map<String, Object> body, HttpServletRequest request, HttpServletResponse response){
-        //基础信息（RequestID，session获取校验）
+        //基础信息
         String requestId = request.getHeader("X-Request-ID");
         if (requestId == null || requestId.isBlank()) {
             requestId = UUID.randomUUID().toString();
@@ -147,7 +147,7 @@ public class GradeController {
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Role Forbidden"));
             return err;
         }
-        //安全读取（避免把null读成"null"字符串）
+        //安全读取
         String studentID = body.get("studentId")==null?null:body.get("studentId").toString().trim();
         String courseID = body.get("courseId")==null?null:body.get("courseId").toString().trim();
         String courseNameParam = body.get("courseName")==null?null:body.get("courseName").toString().trim();
@@ -260,7 +260,7 @@ public class GradeController {
                 String insertEncSql = "INSERT INTO grades_encrypted (id, grade, comments) VALUES (?, ?, ?)";
                 String[] insertGradeParam = {gid, enc_gid, studentID, courseID, term};
                 String[] insertEncParam = {enc_gid, grade, comment};
-                try{//创建，先写加密表再写明文表，避免 FK 约束冲突
+                try{//创建，先写加密表再写明文
                     DBConnect.dbConnector.executeUpdate(insertEncSql, insertEncParam);
                     DBConnect.dbConnector.executeUpdate(insertGradeSql, insertGradeParam);
                     response.setStatus(201);
@@ -270,7 +270,7 @@ public class GradeController {
                     log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grade Record Created Successfully"));
                 }
                 catch (SQLException e){
-                    // 如果第二步失败，回滚已写入的加密表记录
+                    // 如果第二步失败,rollback
                     try {
                         DBConnect.dbConnector.executeUpdate("DELETE FROM grades_encrypted WHERE id = ?", new String[]{enc_gid});
                     } catch (SQLException rollbackIgnored) {
@@ -318,7 +318,7 @@ public class GradeController {
 
     @DeleteMapping(value = "/API/grades")
     public Map<String, Object> deleteGrade(@RequestBody Map<String, Object> body, HttpServletRequest request, HttpServletResponse response){
-        //基础信息（RequestID，session获取校验）
+        //基础信息
         String requestId = request.getHeader("X-Request-ID");
         if (requestId == null || requestId.isBlank()) {
             requestId = UUID.randomUUID().toString();
@@ -343,7 +343,7 @@ public class GradeController {
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Role Forbidden"));
             return err;
         }
-        //安全读取（避免把null读成"null"字符串）
+        //安全读取
         String gradeID = body.get("gradeId")==null?null:body.get("gradeId").toString();
 
         if(gradeID==null || gradeID.isBlank()){

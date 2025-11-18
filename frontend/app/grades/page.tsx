@@ -49,7 +49,7 @@ export default function GradesPage() {
     if (role === "ARO") {
       load();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [role]);
 
   const submit = async () => {

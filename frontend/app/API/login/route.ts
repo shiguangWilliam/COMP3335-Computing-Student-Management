@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    // 使用 clone() 读取请求体以进行格式判定，避免消耗原始流
+    
     const body = await req.clone().json();
     const isEnvelope = !!(
       body && typeof body === "object" &&
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       return relaySecure(req, "/login");
     }
 
-    // Plain JSON fallback: forward to backend /API/login with HMAC
+    
     const { email, password, role } = body as { email: string; password: string; role?: "student" | "ARO" | "guardian" | "DRO" };
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     const signature = crypto.createHmac("sha256", secret).update(canonical, "utf8").digest("base64");
 
     const cookieHeader = req.headers.get("cookie") || undefined;
-    // Debug: 输出当前请求携带的 Cookie 头（服务端终端可见）
+    // Debug: 输出当前请求携带的 Cookie 头
     const res = await fetch(url, {
       method: "POST",
       headers: {

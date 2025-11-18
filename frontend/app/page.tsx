@@ -31,17 +31,17 @@ export default function Home() {
   }, []);
 
   const modules = [
-    // 个人信息（所有角色）
+    // profile
     ...(role ? [{ href: "/profile", title: "Profile", desc: "View and edit your personal information" }] : []),
-    // 成绩管理（ARO）
+    // grade(ARO)
     ...(role === "ARO" ? [{ href: "/grades", title: "Grades", desc: "Assign and view student grades" }] : []),
-    // 违纪管理（DRO）
+    // disciplinary(DRO)
     ...(role === "DRO" ? [{ href: "/disciplinary", title: "Disciplinary", desc: "Manage disciplinary records" }] : []),
-    // 报表查看（学生/监护人）
+    // reports(student/guardian)
     ...(role === "student" || role === "guardian"
       ? [{ href: "/reports", title: "Reports", desc: "View your grades and disciplinary records" }]
       : []),
-    // 数据库管理（DBA，仅本地）
+    
     ...(role === "DBA" && (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"))
       ? [{ href: "/dba", title: "DBA Panel", desc: "Database administration (localhost only)" }]
       : []),

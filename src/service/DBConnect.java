@@ -18,7 +18,7 @@ public class DBConnect {
     @Autowired
     private DataSource dataSource;
 
-    // 供现有代码静态访问的“软单例”，由 Spring 初始化时赋值
+    
     public static DBConnect dbConnector;
 
     @Autowired

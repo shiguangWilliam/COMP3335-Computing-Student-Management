@@ -30,8 +30,6 @@ public class URIRouteTable {
         routeTable.put(key("POST", "/API/reports"), new String[]{"student", "guardian"});
         routeTable.put(key("GET", "/API/reports"), new String[]{"student", "guardian"});
 
-        // admin summary（额外实现）
-        // routeTable.put(key("GET", "/API/admin-summary"), new String[]{"ARO", "DRO"});
 
         // disciplinary records
         routeTable.put(key("GET", "/API/disciplinary-records"), new String[]{"DRO"});

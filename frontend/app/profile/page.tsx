@@ -56,7 +56,7 @@ export default function ProfilePage() {
       .join(" ");
 
   const allowedEdit = (r?: Role) => {
-    // must align with backend forbidden list: names/emails are not editable in UI
+    
     if (r === "student") return ["phone", "address"];
     if (r === "guardian") return ["phone"];
     if (r === "ARO" || r === "DRO") return ["phone", "address"];

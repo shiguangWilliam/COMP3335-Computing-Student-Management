@@ -146,7 +146,7 @@ public class DisciplinaryController {
             return err;
         }
 
-        // ensure student exists
+        //确保学生存在
         try (ResultSet studentRs = DBConnect.dbConnector.executeQuery("SELECT COUNT(*) AS count FROM students WHERE id = ?", new String[]{studentId})) {
             if (studentRs.next() && studentRs.getInt("count") == 0) {
                 err.put("error", "invalid student");
@@ -252,7 +252,7 @@ public class DisciplinaryController {
             return err;
         }
 
-        // ensure record exists
+        //确保学生存在
         try(ResultSet rs = DBConnect.dbConnector.executeQuery("SELECT COUNT(*) AS count FROM disciplinary_records WHERE id = ?", new String[]{dicId})){
             if(rs.next() && rs.getInt("count")==0){
                 err.put("error", "not found");

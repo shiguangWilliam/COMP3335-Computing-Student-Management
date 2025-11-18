@@ -12,7 +12,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Enforce light theme: remove dark scheme overrides */
+
 
 body {
   background: var(--background);
@@ -22,7 +22,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Hide default Edge/IE password reveal/clear icons to avoid overlap with our custom toggle */
+
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
   display: none;

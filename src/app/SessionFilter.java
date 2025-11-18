@@ -21,7 +21,7 @@ import java.util.Set;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE+2)
-//会话校验器，检验是否过期，是否在会话缓存中
+//检验session是否过期，是否在会话缓存中
 public class SessionFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(SessionFilter.class);
 
@@ -41,13 +41,13 @@ public class SessionFilter implements Filter {
         String uri = request.getRequestURI();
         String method = request.getMethod();
 
-        // 公共接口允许匿名访问
+        // 公共，可直连
         if (URIRouteTable.isPublic(method, uri)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 受保护接口：必须存在有效 sid
+        // 私有，需要认证cookie
         String sid = readSidCookie(request);
         if (sid == null || sid.isBlank()) {
             response.setStatus(401);
@@ -64,7 +64,7 @@ public class SessionFilter implements Filter {
             return;
         }
 
-        //确认会话未过期
+        //过期
         if (session.isExpired()) {
             response.setStatus(401);
             response.setContentType("application/json");
@@ -72,7 +72,7 @@ public class SessionFilter implements Filter {
             return;
         }
 
-        //未过期会话，绑定session的请求属性方便调用（解码多cookie）
+        //映射session的请求属性方便调用（解码多cookie）
         request.setAttribute("session", session);
         filterChain.doFilter(request, response);
     }

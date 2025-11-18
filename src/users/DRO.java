@@ -60,7 +60,7 @@ public class DRO extends User{
             try {
                 DBConnect.dbConnector.executeUpdate(sqlEnc, paramsEnc);
             } catch (SQLException encEx) {
-                // rollback parent insert to keep FK consistent
+                
                 DBConnect.dbConnector.executeUpdate("DELETE FROM disciplinary_records WHERE id = ?", new String[]{ID});
                 throw encEx;
             }

@@ -41,7 +41,7 @@ public class ProfileController {
         }
         Session session = (Session) request.getAttribute("session");
         if (session == null) {
-            // 正常情况下，SessionFilter已返回401；这里兜底
+            // 兜底
             Map<String, Object> err = new HashMap<>();
             err.put("error", "unauthorized");
             err.put("code", 401);
@@ -74,7 +74,7 @@ public class ProfileController {
         //调用Session表中存储的用户信息，构建响应体
         try {
             Map<String,String> info = user.queryInfo();
-            // enrich student profile with guardian name instead of raw guardian_id
+            
             if ("student".equals(role)) {
                 String guardianId = info.get("guardian_id");
                 if (guardianId != null && !guardianId.isBlank()) {
@@ -107,7 +107,7 @@ public class ProfileController {
                 info.remove("guardian_id");
             }
             resp.putAll(info);
-            // Attach a unified user object for frontend header/nav consumption
+            
             String displayName = session.getName();
             if (displayName == null || displayName.isBlank()) {
                 String first = info.get("first_name");

@@ -46,21 +46,21 @@ public class RoleAuthFilter implements Filter {
         }
         String sid = session.getSid();
 
-        //兜底检查过期
+        //过期
         if(session.isExpired()){
             response.setStatus(401);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"unauthorized: session expired\"}");
             return;
         }
-        //兜底检查session是否存在
+        //session
         if(sessionStore.get(sid)==null){
             response.setStatus(401);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"unauthorized: session expired\"}");
             return;
         }
-        //是否是合法身份
+        //合法身份
         String role = session.getRole();
         Set<String> allowed = new HashSet<>(Arrays.asList("student", "guardian", "ARO", "DRO"));
         if (role == null || !allowed.contains(role)) {
@@ -69,7 +69,7 @@ public class RoleAuthFilter implements Filter {
             response.getWriter().write("{\"error\":\"forbidden: invalid role\"}");
             return;
         }
-        //是否是合法路由
+        //合法路由
         String[] requiredRoles = URIRouteTable.rolesFor(method, uri);
         if (requiredRoles == null || !Arrays.asList(requiredRoles).contains(role)) {
             response.setStatus(403);

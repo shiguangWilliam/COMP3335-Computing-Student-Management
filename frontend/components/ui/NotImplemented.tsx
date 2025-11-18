@@ -4,7 +4,7 @@ import Link from "next/link";
 type Props = {
   title?: string;
   message?: string;
-  endpoint?: string; // 相对路径提示，避免暴露完整目录
+  endpoint?: string;
 };
 
 export default function NotImplemented({

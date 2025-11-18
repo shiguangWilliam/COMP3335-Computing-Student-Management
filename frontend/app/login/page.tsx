@@ -29,12 +29,12 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      // 使用统一的加密传输单层端点进行登录
+      
       const res = await api.login(form);
       setMessage("Logged in");
-      // 刷新导航与页面，使后续请求稳定携带新 Cookie
+      // 刷新
       router.refresh();
-      // 登录成功后统一跳转到首页，由首页根据角色显示对应功能
+      // 登录成功后统一跳转到首页
       router.push("/");
     } catch (err) {
       setMessage((err as Error).message);

@@ -55,7 +55,7 @@ public class HmacAuthFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         System.out.println("[Debug] HMACAuth started");
         try{
-            // 公钥接口不需要 HMAC 校验，直接放行
+            // 公钥接口
             String uri = request.getRequestURI();
             if ("/API/public-key".equals(uri)) {
                 filterChain.doFilter(request, response);
@@ -98,12 +98,12 @@ public class HmacAuthFilter implements Filter {
         if((curTime - time)>TIMESTAMP_WINDOW_MS){
             throw new HmacValidationException("TimeStamp Out of range",401);
         }
-        // Nonce 去重（重放）：使用 Caffeine TTL 缓存，原子检查并写入
+        // Nonce随机数
         Boolean prev = nonceCache.asMap().putIfAbsent(nonce, Boolean.TRUE);
         if (prev != null) {
             throw new HmacValidationException("Replayed nonce", 401);
         }
-        // 签名信息构建：使用原始请求体字符串（与前端 JSON.stringify 一致）
+        // 签名信息回复+校验
         String body = new String(getRequestBody(req), StandardCharsets.UTF_8);
 
         String method = req.getMethod();//Method
@@ -119,14 +119,14 @@ public class HmacAuthFilter implements Filter {
                 nonce
         );
         log.debug("Canonical String: {}", canonical);
-        byte[] expectSignature = hmacSha256(canonical,hmacSharedKey);// 计算期望 HMAC
+        byte[] expectSignature = hmacSha256(canonical,hmacSharedKey);
         byte[] providedSignature;
         try {
             providedSignature = Base64.getDecoder().decode(signature);
         } catch (IllegalArgumentException e) {
             throw new HmacValidationException("Invalid signature encoding",401);
         }
-        if(!MessageDigest.isEqual(expectSignature, providedSignature)){//防御时序攻击（遍历整个数组，返回时间固定）
+        if(!MessageDigest.isEqual(expectSignature, providedSignature)){//防御时序攻击(返回时间固定)
             throw new HmacValidationException("Invalid Signature",401);
         }
 

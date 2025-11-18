@@ -16,7 +16,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (isInternal) {
 
-    // 单层 /API/* 路径统一走安全传输：端点接收加密信封并转发到后端
+    
 
     const method = (init?.method || "GET").toUpperCase();
 
@@ -50,7 +50,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!res.ok) {
 
-    // 优先按 JSON 错误处理，避免把 HTML 直接显示到 UI
 
     if (contentType.includes("application/json")) {
 
@@ -60,7 +59,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
         if ((errJson as Record<string, unknown>)?.code === "NOT_IMPLEMENTED") {
 
-          // 抛出可识别的简短错误，带相对路径，避免暴露完整目录
 
           throw new Error(`NOT_IMPLEMENTED: ${isInternal ? path : ""}`.trim());
 
@@ -74,7 +72,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
       } catch {
 
-        // JSON 解析失败则退回到通用处理
+
 
         throw new Error("Request failed");
 
@@ -82,7 +80,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
     }
 
-    // 非 JSON（如 404/HTML）统一为未实现或缺失的简短错误
+ 
 
     if (res.status === 404 || res.status === 501) {
 
@@ -124,9 +122,7 @@ export type RegisterPayload = {
 
 export async function register(payload: RegisterPayload): Promise<Json> {
 
-  // Registration is disabled in the final design:
-
-  // sample users are created directly in the database.
+  
 
   throw new Error("NOT_IMPLEMENTED: register disabled; use pre-configured accounts");
 
@@ -152,9 +148,6 @@ export async function login(payload: LoginPayload): Promise<Json> {
 
 
 
-// Role-based login
-
-// 依据 Project.pdf：四种角色为 student/ARO/guardian/DRO
 
 export type UserRole = "student" | "ARO" | "guardian" | "DRO";
 

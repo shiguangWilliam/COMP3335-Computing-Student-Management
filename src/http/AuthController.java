@@ -32,7 +32,7 @@ public class AuthController {
     private SessionStore sessionStore;
     private static final String[] USER_TYPE_STRINGS = {"students", "guardians","staffs"};
     private static final Logger log = LoggerFactory.getLogger(AuthController.class.getName());
-    // 登录：创建服务端会话并下发 sid Cookie（HttpOnly, SameSite=Lax）
+    // 登录
     @PostMapping(value = "/API/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> login(@RequestBody Map<String, Object> body, HttpServletRequest request, HttpServletResponse response) {
 
@@ -65,7 +65,7 @@ public class AuthController {
 
         Session session = sessionStore.create(claims);
 
-        // 构造 Set-Cookie（不启用 Secure，遵循仅HTTP开发环境；生产建议开启）
+        // 构造Cookie
         String setCookie = buildSidCookie(session);
         response.addHeader("Set-Cookie", setCookie);
 
@@ -77,7 +77,7 @@ public class AuthController {
 
     private String buildSidCookie(Session session) {
         long maxAgeSec = Math.max(0, Duration.between(Instant.now(), session.getExpiresAt()).getSeconds());
-        // SameSite=Lax: 降低CSRF风险；Path=/ 让所有API可用；HttpOnly防脚本访问
+        //lax降低csrf
         return String.format("sid=%s; Path=/; HttpOnly; SameSite=Lax; Max-Age=%d", session.getSid(), maxAgeSec);
     }
 
@@ -90,11 +90,11 @@ public class AuthController {
                 if (rsSalt.next()) {
                     salt = rsSalt.getString("salt");
                 } else {
-                    continue; // No matching email in this userType, try next
+                    continue; 
                 }
             } catch (SQLException e) {
                 log.error("audit={}", AuditUtils.pack("requestId", requestId, "emailMasked", SecurityUtils.maskEmail(email), "userType", userType, "error", "SQL_EXCEPTION"));
-                continue; // On error, skip to next userType
+                continue; 
             }
             String sqlEnc = "SELECT COUNT(*) AS count FROM %s_encrypted WHERE email = ? AND password_hash = ?".formatted(userType);
             String passwdHash = SecurityUtils.getPasswdHash(password, salt);

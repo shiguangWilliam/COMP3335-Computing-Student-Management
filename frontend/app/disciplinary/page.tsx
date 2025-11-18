@@ -107,7 +107,7 @@ export default function DisciplinaryPage() {
     if (role === "DRO") {
       load({ context: "init" });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [role]);
 
   const createRecord = async () => {
