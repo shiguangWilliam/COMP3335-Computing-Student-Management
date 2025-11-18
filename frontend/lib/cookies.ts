@@ -17,6 +17,6 @@ export function setAuthCookie(res: NextResponse, payload: AuthCookieInput) {
 }
 
 export function clearAuthCookie(res: NextResponse) {
-  // 复用统一选项，并强制 maxAge=0 清除
+ 
   res.cookies.set(COOKIE_NAME_AUTH, "", { ...cookieOptionsAuth, maxAge: 0 });
 }

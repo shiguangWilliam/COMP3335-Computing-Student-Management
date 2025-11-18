@@ -1,13 +1,10 @@
 export const isProd = process.env.NODE_ENV === "production";
 
-// Cookie 名称
 export const COOKIE_NAME_AUTH = "auth";
 
-// 过期时间（秒 / 毫秒）
-export const AUTH_COOKIE_MAX_AGE_SECONDS = 24 * 60 * 60; // 1 day
+export const AUTH_COOKIE_MAX_AGE_SECONDS = 24 * 60 * 60; // 1天
 export const AUTH_COOKIE_EXP_MS = AUTH_COOKIE_MAX_AGE_SECONDS * 1000;
 
-// Cookie 选项（服务端）
 export const cookieOptionsAuth = {
   httpOnly: true,
   sameSite: "lax" as const,

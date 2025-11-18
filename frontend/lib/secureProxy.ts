@@ -33,7 +33,7 @@ export async function relaySecure(req: NextRequest, targetTail: string): Promise
     const bodyStr = method !== "GET" && dec.body ? JSON.stringify(dec.body) : "";
     const pathToSign = `/API${targetTail}${qs ? `?${qs}` : ""}`;
     const canonical = [method, pathToSign, bodyStr, String(timestamp), nonce].join("|");
-    // Debug: 在服务端终端打印被签名字符串（任何 login 请求都会触发）
+    //打印被签名字符串
     const signature = crypto.createHmac("sha256", secret).update(canonical, "utf8").digest("base64");
     const init: RequestInit = {
       method,
@@ -56,7 +56,7 @@ export async function relaySecure(req: NextRequest, targetTail: string): Promise
     const isJson = ct.includes("application/json");
     const payload = isJson ? await res.json() : await res.text();
 
-    // 若客户端提供一次性公钥，则对 JSON 响应进行混合加密
+
     let responseBody: string;
     let responseContentType = isJson ? "application/json" : "text/plain";
     if (isJson && dec.clientPublicKeyPem) {

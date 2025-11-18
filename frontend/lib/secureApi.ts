@@ -1,9 +1,4 @@
-// 客户端加密工具：获取服务器公钥、混合加密并发起安全登录
 
-// 同时支持「响应体混合加密」：
-// - 每次请求生成一次性 RSA-OAEP 密钥对；把 clientPublicKeyPem 放入明文信封一并发送
-// - 服务端中继若检测到 clientPublicKeyPem，则对 JSON 响应做 AES-GCM 加密，并用该公钥加密 AES 密钥
-// - 浏览器用一次性私钥解密响应信封，还原 JSON
 
 type Json = Record<string, unknown>;
 

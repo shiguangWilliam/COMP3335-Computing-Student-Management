@@ -414,7 +414,6 @@ export async function deleteGrade(data: { gradeId: string }): Promise<Json> {
 
 
 
-// Disciplinary records
 
 export type DisciplinaryRecord = {
   id: string;
@@ -457,7 +456,6 @@ export async function listDisciplinaryRecords(params?: { studentId?: string; dat
 
 export async function createDisciplinaryRecord(data: { studentId: string; date: string; description: string }): Promise<DisciplinaryRecord> {
 
-  // staffId is derived from current DRO session on the backend
 
   return request<DisciplinaryRecord>("/API/disciplinary-records", { method: "POST", body: JSON.stringify(data) });
 
@@ -489,7 +487,6 @@ export async function deleteDisciplinaryRecord(id: string): Promise<Json> {
 
 
 
-// Profile (placeholder)
 
 export async function getProfile(): Promise<ProfileResponse> {
   const res = await fetch("/API/profile", { method: "GET", credentials: "include" });

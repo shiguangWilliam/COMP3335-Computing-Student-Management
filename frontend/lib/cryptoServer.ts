@@ -29,11 +29,11 @@ export function getServerKeyPair(): KeyPair {
 }
 
 export type HybridEncryptedPayload = {
-  encryptedKeyBase64: string; // RSA-OAEP 加密的 AES-256 密钥
-  ivBase64: string; // AES-GCM 12 字节 IV
-  ciphertextBase64: string; // 密文（不含 tag）
-  tagBase64: string; // AES-GCM 16 字节鉴别标签
-  sigBase64?: string; // 额外的 HMAC-SHA256 签名（可选，但建议提供）
+  encryptedKeyBase64: string; // 被RSA-OAEP加密的AES密钥
+  ivBase64: string; // IV
+  ciphertextBase64: string; // 密文
+  tagBase64: string; // 字节鉴别标签
+  sigBase64?: string; //HMAC
 };
 
 export function decryptHybridJson(payload: HybridEncryptedPayload): Record<string, unknown> {
@@ -42,7 +42,7 @@ export function decryptHybridJson(payload: HybridEncryptedPayload): Record<strin
   const iv = Buffer.from(payload.ivBase64, "base64");
   const ciphertext = Buffer.from(payload.ciphertextBase64, "base64");
   const tag = Buffer.from(payload.tagBase64, "base64");
-// RSA解密获取AES密钥
+
   const aesKey = crypto.privateDecrypt(
     { key: privateKeyPem, padding: crypto.constants.RSA_PKCS1_OAEP_PADDING, oaepHash: OAEP_HASH },
     encryptedKey
@@ -51,12 +51,11 @@ export function decryptHybridJson(payload: HybridEncryptedPayload): Record<strin
   if (aesKey.length !== 32) {
     throw new Error("Invalid AES key length");
   }
-//创建AES解密器
   const decipher = crypto.createDecipheriv("aes-256-gcm", aesKey, iv);
   decipher.setAuthTag(tag);
   const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
   const jsonStr = decrypted.toString("utf8");
-  // 额外完整性校验：若提供了 sigBase64，使用 AES 密钥作为 HMAC key 对明文进行校验
+
   if (payload.sigBase64) {
     const expectedSig = crypto.createHmac("sha256", aesKey).update(jsonStr, "utf8").digest("base64");
     if (expectedSig !== payload.sigBase64) {

@@ -21,24 +21,20 @@ async function getUser(req: NextRequest): Promise<{ role: string; email: string 
 
 function isPublic(path: string) {
   if (path.startsWith("/_next") || path.startsWith("/public") || path.startsWith("/favicon.ico")) return true;
-  if (path.startsWith("/API/")) return true; // allow API routes
+  if (path.startsWith("/API/")) return true; 
   return ["/", "/login", "/register"].includes(path);
 }
 
 function allowedRoles(path: string): string[] | null {
-  // Define simple role-based restrictions; adjust as needed
-  if (path.startsWith("/admin")) return ["ARO", "DRO"]; // staff-only
+  if (path.startsWith("/admin")) return ["ARO", "DRO"]; 
   if (path.startsWith("/grades")) return ["ARO"];
-  // Disciplinary records: DRO manages; include both possible paths for future pages
   if (path.startsWith("/disciplinary") || path.startsWith("/disciplinaries")) return ["DRO"];
-  // Other academic management sections remain staff-only
   if (path.startsWith("/enrollments")) return ["ARO", "DRO"];
   if (path.startsWith("/courses")) return ["ARO", "DRO"];
   if (path.startsWith("/reports")) return ["student", "guardian"];
-  if (path.startsWith("/students")) return ["ARO", "DRO"]; // limit student management to staff roles
-  // Profile: all roles can maintain personal information
-  if (path.startsWith("/profile")) return ["student", "ARO", "guardian", "DRO"]; // any logged-in user
-  return null; // no special restriction (public or default)
+  if (path.startsWith("/students")) return ["ARO", "DRO"]; 
+  if (path.startsWith("/profile")) return ["student", "ARO", "guardian", "DRO"]; 
+  return null; 
 }
 
 export async function proxy(req: NextRequest) {
@@ -54,12 +50,10 @@ export async function proxy(req: NextRequest) {
 
   const roles = allowedRoles(pathname);
   if (roles && !roles.includes(user.role)) {
-    // redirect unauthorized users to home
     const url = new URL("/", req.url);
     return NextResponse.redirect(url);
   }
 
-  // Additional host restriction: /dba only from localhost
   if (pathname.startsWith("/dba")) {
     const h = hostname.toLowerCase();
     if (!(h === "localhost" || h === "127.0.0.1") || user.role !== "DBA") {
@@ -68,7 +62,6 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // Prevent logged-in users from visiting login/register
   if (pathname === "/login" || pathname === "/register") {
     const url = new URL("/", req.url);
     return NextResponse.redirect(url);
