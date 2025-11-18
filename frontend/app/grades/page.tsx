@@ -195,8 +195,8 @@ export default function GradesPage() {
             <p className="text-sm text-zinc-600">No records</p>
           ) : (
             items.map((it) => {
-              const studentLabel = it.studentName || it.studentId || "Student";
-              const courseLabel = it.courseName || "Unknown Course";
+              const studentLabel = it.studentName && it.studentId ? `${it.studentName} (${it.studentId})` : it.studentName || it.studentId || "Student";
+              const courseLabel = it.courseName && it.courseId ? `${it.courseName} (${it.courseId})` : it.courseName || it.courseId || "Unknown Course";
               return (
                 <div key={it.id} className="rounded border p-2 text-left transition hover:border-blue-500">
                   <div className="flex flex-col gap-1">

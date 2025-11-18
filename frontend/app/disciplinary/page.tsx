@@ -12,12 +12,19 @@ export default function DisciplinaryPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const [form, setForm] = useState<{ id?: string; studentId: string; date: string; description?: string }>({
+  const [createForm, setCreateForm] = useState<{ studentId: string; date: string; description?: string }>({
     studentId: "",
     date: "",
     description: "",
   });
-  const [errors, setErrors] = useState<{ studentId?: string; date?: string; description?: string }>({});
+  const [createErrors, setCreateErrors] = useState<{ studentId?: string; date?: string; description?: string }>({});
+  const [editForm, setEditForm] = useState<{ id?: string; date: string; description?: string }>({
+    id: undefined,
+    date: "",
+    description: "",
+  });
+  const [editErrors, setEditErrors] = useState<{ date?: string; description?: string }>({});
+  const [editInfo, setEditInfo] = useState<{ student?: string; staff?: string }>({});
 
   useEffect(() => {
     api
@@ -29,25 +36,45 @@ export default function DisciplinaryPage() {
       .catch(() => setRole(null));
   }, []);
 
-  const resetForm = () => {
-    setForm({ studentId: "", date: "", description: "" });
-    setErrors({});
+  const resetCreateForm = () => {
+    setCreateForm({ studentId: "", date: "", description: "" });
+    setCreateErrors({});
   };
 
-  const validateForm = () => {
-    const nextErrors: typeof errors = {};
-    if (!form.studentId.trim()) {
+  const resetEditForm = () => {
+    setEditForm({ id: undefined, date: "", description: "" });
+    setEditErrors({});
+    setEditInfo({});
+  };
+
+  const validateCreate = () => {
+    const nextErrors: typeof createErrors = {};
+    if (!createForm.studentId.trim()) {
       nextErrors.studentId = "Student ID is required";
     }
-    if (!form.date.trim()) {
+    if (!createForm.date.trim()) {
       nextErrors.date = "Date is required";
-    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(form.date.trim())) {
+    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(createForm.date.trim())) {
       nextErrors.date = "Date must be YYYY-MM-DD";
     }
-    if (!form.description || !form.description.trim()) {
+    if (!createForm.description || !createForm.description.trim()) {
       nextErrors.description = "Description is required";
     }
-    setErrors(nextErrors);
+    setCreateErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const validateEdit = () => {
+    const nextErrors: typeof editErrors = {};
+    if (!editForm.date.trim()) {
+      nextErrors.date = "Date is required";
+    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(editForm.date.trim())) {
+      nextErrors.date = "Date must be YYYY-MM-DD";
+    }
+    if (!editForm.description || !editForm.description.trim()) {
+      nextErrors.description = "Description is required";
+    }
+    setEditErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
 
@@ -73,22 +100,46 @@ export default function DisciplinaryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role]);
 
-  const save = async () => {
+  const createRecord = async () => {
     setLoading(true);
     setError(null);
     setMsg(null);
     try {
-      if (role !== "DRO") throw new Error("Only DRO staff can create or edit records.");
-      if (!validateForm()) {
+      if (role !== "DRO") throw new Error("Only DRO staff can create records.");
+      if (!validateCreate()) {
         throw new Error("Please fix validation errors");
       }
-      if (form.id) {
-        await api.updateDisciplinaryRecord(form.id, { date: form.date, description: form.description });
-      } else {
-        await api.createDisciplinaryRecord({ studentId: form.studentId, date: form.date, description: form.description || "" });
+      await api.createDisciplinaryRecord({
+        studentId: createForm.studentId,
+        date: createForm.date,
+        description: createForm.description || "",
+      });
+      setMsg("Record created");
+      resetCreateForm();
+      await load({ preserveMsg: true, skipLoading: true });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateRecord = async () => {
+    setLoading(true);
+    setError(null);
+    setMsg(null);
+    try {
+      if (role !== "DRO") throw new Error("Only DRO staff can edit records.");
+      if (!editForm.id) throw new Error("Select a record to edit");
+      if (!validateEdit()) {
+        throw new Error("Please fix validation errors");
       }
-      setMsg(form.id ? "Record updated" : "Record created");
-      resetForm();
+      await api.updateDisciplinaryRecord(editForm.id, {
+        date: editForm.date,
+        description: editForm.description,
+      });
+      setMsg("Record updated");
+      resetEditForm();
       await load({ preserveMsg: true, skipLoading: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
@@ -99,10 +150,16 @@ export default function DisciplinaryPage() {
 
   const pick = (r: Rec) => {
     if (role !== "DRO") return;
-    setForm({ id: r.id, studentId: r.student_id || "", date: r.date, description: r.descriptions });
+    setEditForm({ id: r.id, date: r.date, description: r.descriptions || "" });
+    const studentDisplay = r.student_name && r.student_id ? `${r.student_name} (${r.student_id})` : r.student_name || r.student_id;
+    const staffDisplay = r.staff_name && r.staff_id ? `${r.staff_name} (${r.staff_id})` : r.staff_name || r.staff_id;
+    setEditInfo({
+      student: studentDisplay,
+      staff: staffDisplay,
+    });
     setMsg(null);
     setError(null);
-    setErrors({});
+    setEditErrors({});
   };
 
   const remove = async (recordId: string) => {
@@ -114,8 +171,8 @@ export default function DisciplinaryPage() {
     setMsg(null);
     try {
       await api.deleteDisciplinaryRecord(recordId);
-      if (form.id === recordId) {
-        resetForm();
+      if (editForm.id === recordId) {
+        resetEditForm();
       }
       setMsg("Record deleted");
       await load({ preserveMsg: true, skipLoading: true });
@@ -130,55 +187,101 @@ export default function DisciplinaryPage() {
     <div>
       <h1 className="mb-4 text-2xl font-semibold">Disciplinary Records</h1>
       <p className="text-sm text-zinc-600">Only DRO staff can view or manage disciplinary actions.</p>
-      <div className="mt-6 grid gap-6 sm:grid-cols-2">
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {role === "DRO" && (
-          <div className="rounded border p-4">
-            <h2 className="mb-2 font-medium">Create / Edit</h2>
-            <div className="mb-1 text-xs text-zinc-500">
-              {form.id ? `Editing record ${form.id}` : "Creating new record"}
-            </div>
-            <div className="grid gap-2">
-              <input
-                className="rounded border px-3 py-2"
-                placeholder="Student ID"
-                value={form.studentId}
-                onChange={(e) => setForm({ ...form, studentId: e.target.value })}
-              />
-              {errors.studentId && <p className="text-xs text-red-600">{errors.studentId}</p>}
-              <input
-                className="rounded border px-3 py-2"
-                placeholder="Date"
-                value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-              />
-              {errors.date && <p className="text-xs text-red-600">{errors.date}</p>}
-              <textarea
-                className="rounded border px-3 py-2"
-                placeholder="Description"
-                rows={3}
-                value={form.description || ""}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-              {errors.description && <p className="text-xs text-red-600">{errors.description}</p>}
-              <div className="flex gap-2">
-                <button
-                  className="flex-1 rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
-                  disabled={loading}
-                  onClick={save}
-                >
-                  {form.id ? "Update" : "Create"}
-                </button>
-                <button
-                  type="button"
-                  className="rounded border px-3 py-2 text-sm"
-                  disabled={loading}
-                  onClick={resetForm}
-                >
-                  Clear
-                </button>
+          <>
+            <div className="rounded border p-4">
+              <h2 className="mb-2 font-medium">Create Record</h2>
+              <div className="grid gap-2">
+                <input
+                  className="rounded border px-3 py-2"
+                  placeholder="Student ID"
+                  value={createForm.studentId}
+                  onChange={(e) => setCreateForm({ ...createForm, studentId: e.target.value })}
+                />
+                {createErrors.studentId && <p className="text-xs text-red-600">{createErrors.studentId}</p>}
+                <input
+                  className="rounded border px-3 py-2"
+                  placeholder="Date (YYYY-MM-DD)"
+                  value={createForm.date}
+                  onChange={(e) => setCreateForm({ ...createForm, date: e.target.value })}
+                />
+                {createErrors.date && <p className="text-xs text-red-600">{createErrors.date}</p>}
+                <textarea
+                  className="rounded border px-3 py-2"
+                  placeholder="Description"
+                  rows={3}
+                  value={createForm.description || ""}
+                  onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+                />
+                {createErrors.description && <p className="text-xs text-red-600">{createErrors.description}</p>}
+                <div className="flex gap-2">
+                  <button
+                    className="flex-1 rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
+                    disabled={loading}
+                    onClick={createRecord}
+                  >
+                    Create
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded border px-3 py-2 text-sm"
+                    disabled={loading}
+                    onClick={resetCreateForm}
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+            <div className="rounded border p-4">
+              <h2 className="mb-2 font-medium">Edit Record</h2>
+              <div className="mb-1 text-xs text-zinc-500">
+                {editForm.id ? `Editing record ${editForm.id}` : "Select a record below to edit"}
+              </div>
+              {editInfo.student && (
+                <div className="mb-2 text-xs text-zinc-600">
+                  {editInfo.student} · {editInfo.staff ? `Staff: ${editInfo.staff}` : ""}
+                </div>
+              )}
+              <div className="grid gap-2">
+                <input
+                  className="rounded border px-3 py-2"
+                  placeholder="Date (YYYY-MM-DD)"
+                  value={editForm.date}
+                  onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                  disabled={!editForm.id}
+                />
+                {editErrors.date && <p className="text-xs text-red-600">{editErrors.date}</p>}
+                <textarea
+                  className="rounded border px-3 py-2"
+                  placeholder="Description"
+                  rows={3}
+                  value={editForm.description || ""}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  disabled={!editForm.id}
+                />
+                {editErrors.description && <p className="text-xs text-red-600">{editErrors.description}</p>}
+                <div className="flex gap-2">
+                  <button
+                    className="flex-1 rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
+                    disabled={loading || !editForm.id}
+                    onClick={updateRecord}
+                  >
+                    Update
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded border px-3 py-2 text-sm"
+                    disabled={loading || !editForm.id}
+                    onClick={resetEditForm}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
         <div className="rounded border p-4">
           <h2 className="mb-2 font-medium">Search</h2>
@@ -210,8 +313,8 @@ export default function DisciplinaryPage() {
             <p className="text-sm text-zinc-600">No records</p>
           ) : (
             items.map((it) => {
-              const studentLabel = it.student_name || it.student_id || "Student";
-              const staffLabel = it.staff_name || it.staff_id || "Staff";
+              const studentLabel = it.student_name && it.student_id ? `${it.student_name} (${it.student_id})` : it.student_name || it.student_id || "Student";
+              const staffLabel = it.staff_name && it.staff_id ? `${it.staff_name} (${it.staff_id})` : it.staff_name || it.staff_id || "Staff";
               return (
                 <div key={it.id} className="rounded border p-2 text-left">
                   <div className="text-sm">
