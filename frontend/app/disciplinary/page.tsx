@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, type ProfileResponse } from "@/lib/api";
 
 type Role = "student" | "ARO" | "guardian" | "DRO";
 type Rec = { id: string; student_id?: string; student_name?: string; date: string; staff_id?: string; staff_name?: string; descriptions?: string };
@@ -10,7 +10,10 @@ export default function DisciplinaryPage() {
   const [filters, setFilters] = useState<{ studentId?: string; date?: string }>({});
   const [items, setItems] = useState<Rec[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [recordsError, setRecordsError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [createActionError, setCreateActionError] = useState<string | null>(null);
+  const [editActionError, setEditActionError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [createForm, setCreateForm] = useState<{ studentId: string; date: string; description?: string }>({
     studentId: "",
@@ -29,7 +32,7 @@ export default function DisciplinaryPage() {
   useEffect(() => {
     api
       .getProfile()
-      .then((res: any) => {
+      .then((res: ProfileResponse) => {
         const r = (res?.user?.role as Role | undefined) || null;
         setRole(r);
       })
@@ -78,16 +81,23 @@ export default function DisciplinaryPage() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const load = async (options?: { preserveMsg?: boolean; skipLoading?: boolean }) => {
+  const load = async (options?: { preserveMsg?: boolean; skipLoading?: boolean; context?: "search" | "refresh" | "init" }) => {
     if (!options?.skipLoading) setLoading(true);
-    setError(null);
+    setRecordsError(null);
+    if (options?.context === "search") {
+      setSearchError(null);
+    }
     if (!options?.preserveMsg) setMsg(null);
     try {
       if (role !== "DRO") throw new Error("Only DRO staff can view or manage disciplinary records.");
       const list = await api.listDisciplinaryRecords(filters);
       setItems(list || []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed");
+      const message = e instanceof Error ? e.message : "Failed";
+      setRecordsError(message);
+      if (options?.context === "search") {
+        setSearchError(message);
+      }
     } finally {
       if (!options?.skipLoading) setLoading(false);
     }
@@ -95,14 +105,15 @@ export default function DisciplinaryPage() {
 
   useEffect(() => {
     if (role === "DRO") {
-      load();
+      load({ context: "init" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role]);
 
   const createRecord = async () => {
     setLoading(true);
-    setError(null);
+    setCreateActionError(null);
+    setRecordsError(null);
     setMsg(null);
     try {
       if (role !== "DRO") throw new Error("Only DRO staff can create records.");
@@ -116,9 +127,9 @@ export default function DisciplinaryPage() {
       });
       setMsg("Record created");
       resetCreateForm();
-      await load({ preserveMsg: true, skipLoading: true });
+      await load({ preserveMsg: true, skipLoading: true, context: "refresh" });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed");
+      setCreateActionError(e instanceof Error ? e.message : "Failed");
     } finally {
       setLoading(false);
     }
@@ -126,7 +137,8 @@ export default function DisciplinaryPage() {
 
   const updateRecord = async () => {
     setLoading(true);
-    setError(null);
+    setEditActionError(null);
+    setRecordsError(null);
     setMsg(null);
     try {
       if (role !== "DRO") throw new Error("Only DRO staff can edit records.");
@@ -140,9 +152,9 @@ export default function DisciplinaryPage() {
       });
       setMsg("Record updated");
       resetEditForm();
-      await load({ preserveMsg: true, skipLoading: true });
+      await load({ preserveMsg: true, skipLoading: true, context: "refresh" });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed");
+      setEditActionError(e instanceof Error ? e.message : "Failed");
     } finally {
       setLoading(false);
     }
@@ -158,7 +170,7 @@ export default function DisciplinaryPage() {
       staff: staffDisplay,
     });
     setMsg(null);
-    setError(null);
+    setEditActionError(null);
     setEditErrors({});
   };
 
@@ -167,7 +179,8 @@ export default function DisciplinaryPage() {
     const confirmed = window.confirm("Are you sure you want to delete this record?");
     if (!confirmed) return;
     setLoading(true);
-    setError(null);
+    setRecordsError(null);
+    setSearchError(null);
     setMsg(null);
     try {
       await api.deleteDisciplinaryRecord(recordId);
@@ -175,9 +188,10 @@ export default function DisciplinaryPage() {
         resetEditForm();
       }
       setMsg("Record deleted");
-      await load({ preserveMsg: true, skipLoading: true });
+      await load({ preserveMsg: true, skipLoading: true, context: "refresh" });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to delete record");
+      const message = e instanceof Error ? e.message : "Failed to delete record";
+      setRecordsError(message);
     } finally {
       setLoading(false);
     }
@@ -232,6 +246,7 @@ export default function DisciplinaryPage() {
                     Clear
                   </button>
                 </div>
+                {createActionError && <p className="text-xs text-red-600">{createActionError}</p>}
               </div>
             </div>
             <div className="rounded border p-4">
@@ -279,6 +294,7 @@ export default function DisciplinaryPage() {
                     Cancel
                   </button>
                 </div>
+                {editActionError && <p className="text-xs text-red-600">{editActionError}</p>}
               </div>
             </div>
           </>
@@ -298,16 +314,21 @@ export default function DisciplinaryPage() {
               value={filters.date || ""}
               onChange={(e) => setFilters({ ...filters, date: e.target.value || undefined })}
             />
-            <button className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60" disabled={loading} onClick={() => load()}>
+            <button
+              className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
+              disabled={loading}
+              onClick={() => load({ context: "search" })}
+            >
               Search
             </button>
           </div>
+          {searchError && <p className="mt-2 text-xs text-red-600">{searchError}</p>}
         </div>
       </div>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       {msg && <p className="mt-3 text-sm text-green-700">{msg}</p>}
       <div className="mt-6 rounded border p-4">
         <h2 className="mb-2 font-medium">Records</h2>
+        {recordsError && <p className="mb-2 text-xs text-red-600">{recordsError}</p>}
         <div className="grid gap-2">
           {items.length === 0 ? (
             <p className="text-sm text-zinc-600">No records</p>
