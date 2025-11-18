@@ -97,6 +97,8 @@ npm run dev
 - **Backend fails to connect to DB**: Confirm `comp3335-db` is `Running`, port `3306` is reachable, and credentials in `src/main/resources/application.properties` match `root/!testCOMP3335` (or whichever values you changed).
 - **Frontend cannot reach API**: Ensure `.env.local` points to a reachable backend URL and both `GATEWAY_SHARED_SECRET` values (frontend and backend) match; restart `npm run dev` after edits.
 - **Need to relocate Docker data**: Use `-DockerDir D:\COMP3335Data` on either script. The helper will create `D:\COMP3335Data\docker\data` and `keyring` so large database files do not live inside the repo.
+- **rsa routines::data too large for modulus**: Frontend has Hot-reload. The rsa key for OAEP has reset.
+Restar the frontend will solve this problem.
 
 Run `stop-all.ps1`or stop all the process manully and then the relevant start script again after resolving any of the issues above to ensure all processes reload cleanly.
 
