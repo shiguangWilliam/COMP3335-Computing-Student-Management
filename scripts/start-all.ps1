@@ -6,13 +6,91 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Wait-DockerReady {
+    param(
+        [int]$TimeoutSeconds = 300,
+        [int]$IntervalSeconds = 5
+    )
+
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($stopwatch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
+        if (docker info 2>$null) {
+            return $true
+        }
+
+        $elapsed = [int]$stopwatch.Elapsed.TotalSeconds
+        Write-Host "    Waiting for Docker... (${elapsed}s/${TimeoutSeconds}s)" -ForegroundColor Gray
+        Start-Sleep -Seconds $IntervalSeconds
+    }
+
+    return $false
+}
+
+function Test-PortAvailability {
+    param(
+        [int[]]$Ports
+    )
+
+    foreach ($port in $Ports) {
+        try {
+            $connections = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
+        } catch {
+            Write-Host "    Unable to inspect port $port automatically. Please ensure it is free." -ForegroundColor Yellow
+            continue
+        }
+
+        if ($connections) {
+            $processIds = ($connections | Select-Object -ExpandProperty OwningProcess -Unique) -join ", "
+            Write-Host "    Port $port is occupied (process ID: $processIds)." -ForegroundColor Red
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function Wait-ContainerRunning {
+    param(
+        [string]$ContainerName,
+        [int]$TimeoutSeconds = 180,
+        [int]$IntervalSeconds = 5
+    )
+
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($stopwatch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
+        $containerId = docker ps -a -q -f "name=$ContainerName"
+        if ($containerId) {
+            $state = docker inspect --format '{{.State.Status}}' $ContainerName 2>$null
+            if ($state -eq "running") {
+                return $true
+            }
+            Write-Host "    Container $ContainerName state: $state (waiting)..." -ForegroundColor Gray
+        } else {
+            Write-Host "    Waiting for container $ContainerName to be created..." -ForegroundColor Gray
+        }
+
+        Start-Sleep -Seconds $IntervalSeconds
+    }
+
+    return $false
+}
+
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $scriptsDir = Join-Path $projectRoot "scripts"
 $frontendDir = Join-Path $projectRoot "frontend"
+$dbContainerName = "comp3335-db"
+$requiredPorts = @(3000, 3335, 3306)
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  COMP3335 Launch Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
+
+# 预检查：关键端口占用情况
+Write-Host "`n[预检查] Checking required ports (${($requiredPorts -join ', ')})..." -ForegroundColor Yellow
+if (-not (Test-PortAvailability -Ports $requiredPorts)) {
+    Write-Host "    Detected port conflicts. Please free the ports and rerun the script." -ForegroundColor Red
+    exit 1
+}
 
 # 步骤 0: 检查并启动 Docker Desktop
 Write-Host "`n[0/4] Checking Docker Desktop..." -ForegroundColor Yellow
@@ -20,22 +98,8 @@ $dockerRunning = docker info 2>$null
 if (-not $dockerRunning) {
     Write-Host "    Docker Desktop is not running, starting..." -ForegroundColor Yellow
     Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
-    Write-Host "    Waiting for Docker Desktop to start (30 seconds)..." -ForegroundColor Cyan
-    Start-Sleep -Seconds 30
-    
-    # 验证 Docker 是否启动成功
-    $retries = 6
-    $dockerReady = $false
-    for ($i = 1; $i -le $retries; $i++) {
-        $dockerRunning = docker info 2>$null
-        if ($dockerRunning) {
-            $dockerReady = $true
-            break
-        }
-        Write-Host "    Waiting for Docker... ($i/$retries)" -ForegroundColor Gray
-        Start-Sleep -Seconds 10
-    }
-    
+    Write-Host "    Waiting for Docker Desktop to become ready..." -ForegroundColor Cyan
+    $dockerReady = Wait-DockerReady
     if (-not $dockerReady) {
         throw "Docker Desktop failed to start. Please start it manually and try again."
     }
@@ -52,8 +116,12 @@ $setupArgsStr = $setupArgs -join " "
 Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$scriptsDir'; Write-Host '[Database] Starting Percona...' -ForegroundColor Cyan; .\setup-percona.ps1 $setupArgsStr"
 Write-Host "    Database will start in a new PowerShell window" -ForegroundColor Green
 
-Write-Host "`n[Waiting] Database Initialization (60 seconds)..." -ForegroundColor Yellow
-Start-Sleep -Seconds 60
+Write-Host "`n[Waiting] Ensuring Percona container is running..." -ForegroundColor Yellow
+$perconaReady = Wait-ContainerRunning -ContainerName $dbContainerName -TimeoutSeconds 300
+if (-not $perconaReady) {
+    throw "Percona container '$dbContainerName' did not reach running state in time. Please investigate its startup window."
+}
+Write-Host "    Percona container is running" -ForegroundColor Green
 
 if (-not $SkipSeed) {
     Write-Host "`n[2/4] Generating Test Account Data (New Window)..." -ForegroundColor Yellow
