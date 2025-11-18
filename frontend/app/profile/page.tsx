@@ -183,6 +183,7 @@ export default function ProfilePage() {
               <label className="text-sm text-zinc-600">New Password</label>
               <div className="col-span-2">
                 <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                <p className="mt-1 text-xs text-zinc-500">Use 8-72 characters containing only letters, numbers, underscore, * or @. Length must be between 8 and 72 characters.</p>
               </div>
             </div>
             <div className="flex justify-end">

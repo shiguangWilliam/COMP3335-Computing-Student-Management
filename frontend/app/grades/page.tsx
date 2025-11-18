@@ -135,7 +135,7 @@ export default function GradesPage() {
               />
               <input
                 className="rounded border px-3 py-2"
-                placeholder="Term (e.g. 2024-S1)"
+                placeholder="Term (e.g. 20xxSem1)"
                 value={assign.term}
                 onChange={(e) => setAssign({ ...assign, term: e.target.value })}
               />
