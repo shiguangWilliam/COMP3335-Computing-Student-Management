@@ -66,15 +66,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
         }
 
-        const msg = (errJson as Record<string, unknown>)?.message as string | undefined;
+        const msg =
+          ((errJson as Record<string, unknown>)?.message as string | undefined) ||
+          ((errJson as Record<string, unknown>)?.error as string | undefined);
 
-        throw new Error(msg || `HTTP ${res.status}`);
+        throw new Error(msg || "Request failed");
 
       } catch {
 
         // JSON 解析失败则退回到通用处理
 
-        throw new Error(`HTTP ${res.status}`);
+        throw new Error("Request failed");
 
       }
 
@@ -88,7 +90,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
     }
 
-    throw new Error(`HTTP ${res.status}`);
+    throw new Error("Request failed");
 
   }
 
@@ -472,8 +474,16 @@ export async function getProfile(): Promise<ProfileResponse> {
   const isJson = ct.includes("application/json");
   const payload = isJson ? await res.json() : await res.text();
   if (!res.ok) {
-    const msg = isJson ? (payload as Record<string, unknown>)?.message || `HTTP ${res.status}` : `HTTP ${res.status}`;
-    throw new Error(msg as string);
+    if (isJson) {
+      const obj = payload as Record<string, unknown>;
+      const msg =
+        (obj?.message as string | undefined) ||
+        (obj?.error as string | undefined) ||
+        "Request failed";
+      throw new Error(msg);
+    }
+    const textPayload = typeof payload === "string" ? payload.trim() : "";
+    throw new Error(textPayload || "Request failed");
   }
   return (isJson ? (payload as ProfileResponse) : ({} as ProfileResponse));
 }

@@ -47,7 +47,20 @@ async function importServerPublicKey(pubPem: string): Promise<CryptoKey> {
 
 export async function fetchServerPublicKeyPem(): Promise<string> {
   const res = await fetch("/API/public-key", { method: "GET" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const ct = res.headers.get("content-type") || "";
+  const isJson = ct.includes("application/json");
+  if (!res.ok) {
+    if (isJson) {
+      const payload = (await res.json()) as Record<string, unknown>;
+      const msg =
+        (payload?.message as string | undefined) ||
+        (payload?.error as string | undefined) ||
+        "Request failed";
+      throw new Error(msg);
+    }
+    const text = (await res.text()).trim();
+    throw new Error(text || "Request failed");
+  }
   const data = (await res.json()) as { publicKeyPem: string };
   if (!data.publicKeyPem) throw new Error("No public key");
   return data.publicKeyPem;
@@ -182,14 +195,26 @@ export async function loginSecure(payload: { email: string; password: string }):
   if (isJson && isEncryptedEnvelope(payloadRes)) {
     const dec = await decryptHybridResponse(payloadRes as EncryptedEnvelope, privateKey);
     if (!res.ok) {
-      const msg = (dec as Record<string, unknown>)?.message || `HTTP ${res.status}`;
-      throw new Error(msg as string);
+      const obj = dec as Record<string, unknown>;
+      const msg =
+        (obj?.message as string | undefined) ||
+        (obj?.error as string | undefined) ||
+        "Request failed";
+      throw new Error(msg);
     }
     return dec;
   }
   if (!res.ok) {
-    const msg = isJson ? (payloadRes as Record<string, unknown>)?.message || `HTTP ${res.status}` : `HTTP ${res.status}`;
-    throw new Error(msg as string);
+    if (isJson) {
+      const obj = payloadRes as Record<string, unknown>;
+      const msg =
+        (obj?.message as string | undefined) ||
+        (obj?.error as string | undefined) ||
+        "Request failed";
+      throw new Error(msg);
+    }
+    const text = typeof payloadRes === "string" ? payloadRes.trim() : "";
+    throw new Error(text || "Request failed");
   }
   return isJson ? (payloadRes as Json) : ((payloadRes as string) as unknown as Json);
 }
@@ -228,14 +253,26 @@ export async function secureRequest<T>(path: string, options?: { method?: string
   if (isJson && isEncryptedEnvelope(payloadRes)) {
     const dec = await decryptHybridResponse(payloadRes as EncryptedEnvelope, privateKey);
     if (!res.ok) {
-      const msg = (dec as Record<string, unknown>)?.message || `HTTP ${res.status}`;
-      throw new Error(msg as string);
+      const obj = dec as Record<string, unknown>;
+      const msg =
+        (obj?.message as string | undefined) ||
+        (obj?.error as string | undefined) ||
+        "Request failed";
+      throw new Error(msg);
     }
     return dec as unknown as T;
   }
   if (!res.ok) {
-    const msg = isJson ? (payloadRes as Record<string, unknown>)?.message || `HTTP ${res.status}` : `HTTP ${res.status}`;
-    throw new Error(msg as string);
+    if (isJson) {
+      const obj = payloadRes as Record<string, unknown>;
+      const msg =
+        (obj?.message as string | undefined) ||
+        (obj?.error as string | undefined) ||
+        "Request failed";
+      throw new Error(msg);
+    }
+    const text = typeof payloadRes === "string" ? payloadRes.trim() : "";
+    throw new Error(text || "Request failed");
   }
   return (isJson ? (payloadRes as unknown as T) : ((payloadRes as string) as unknown as T));
 }

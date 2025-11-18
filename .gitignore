@@ -48,3 +48,4 @@ Dockerfile.Backend
 docker/data/
 docker/keyring/
 docker/my.cnf
+Project.txt
