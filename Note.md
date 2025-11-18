@@ -297,3 +297,223 @@ mvnw --% -q compile exec:java -Dexec.mainClass=scripts.TestAccountSeeder
 ---
 
 以上约定同步反映了当前 `frontend` 与 `src` 代码库的实际行为，后续若新增路由或放开被 `URIRouteTable` 禁止的接口，需要相应更新本说明以及 `frontend/api.md`。 
+
+
+
+## 安全架构说明
+
+### 三层防护体系
+
+#### 1. 浏览器 ↔ Next.js（混合加密）
+
+- **RSA-OAEP**：使用服务器公钥加密 AES 密钥
+- **AES-256-GCM**：加密业务 JSON（method/query/body/timestamp/nonce）
+- **HMAC-SHA256**：可选完整性校验（防篡改）
+
+**流程：**
+1. 客户端调用 `GET /API/public-key` 获取服务器 RSA 公钥
+2. 生成随机 AES 密钥 + IV
+3. 用 AES 加密请求数据
+4. 用 RSA 加密 AES 密钥
+5. 发送加密信封到 Next.js `/API/*` 路由
+
+#### 2. Next.js ↔ Spring Boot（HMAC 签名）
+
+**位置：**`frontend/lib/secureProxy.ts`
+
+- **共享密钥**：前后端通过 `GATEWAY_SHARED_SECRET` 环境变量配置
+- **规范化字符串**：`METHOD|PATH|BODY|TIMESTAMP|NONCE`
+- **时间窗口**：±5 分钟有效期（防重放）
+- **Nonce 缓存**：5 分钟内去重（Caffeine Cache）
+
+**请求头：**
+```
+X-Gateway-Signature-Alg: HMAC-SHA256
+X-Gateway-Signature: <Base64签名>
+X-Gateway-Timestamp: <毫秒时间戳>
+X-Gateway-Nonce: <随机字符串>
+```
+
+**内网通信保障：**
+```typescript
+const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3335";
+const url = `${base}/API${targetTail}${qs ? `?${qs}` : ""}`;
+```
+
+#### 3. 后端内部（RBAC + 防 SQL 注入）
+
+- **SessionFilter**：验证 `sid` Cookie 的有效性
+- **RoleAuthFilter**：基于 `URIRouteTable` 的路由级权限控制
+- **参数化 SQL**：所有数据库操作使用 `PreparedStatement`
+
+**角色权限示例：**
+| 路由 | 允许角色 |
+|------|---------|
+| `GET /API/profile` | student, guardian, ARO, DRO |
+| `POST /API/grades` | ARO |
+| `GET /API/disciplinary-records` | DRO |
+
+---
+
+## 常见问题排查
+
+### 数据库相关
+
+| 问题 | 排查步骤 |
+|------|---------|
+| 容器无法启动 | `docker logs comp3335-db` 查看错误日志 |
+| 端口 3306 被占用 | 修改 `-p` 参数为 `-p 3307:3306` |
+| `Encryption can't find master key` | 确认 `docker\keyring` 目录已挂载且配置正确 |
+| 数据丢失 | 检查 `docker\data` 目录权限（Windows：允许完全控制） |
+
+### 后端相关
+
+| 问题 | 解决方案 |
+|------|----------|
+| Maven 依赖下载失败 | 配置阿里云镜像（`%USERPROFILE%\.m2\settings.xml`） |
+| 编译错误 | 检查 JDK 版本：`java -version` |
+| 接口返回 500 | 查看终端日志，检查数据库表名是否正确 |
+| HMAC 验证失败 | 确认前后端 `GATEWAY_SHARED_SECRET` 一致 |
+| 后端无法连接数据库 | 确认 Docker 容器运行：`docker ps` |
+
+### 前端相关
+
+| 问题 | 解决方案 |
+|------|----------|
+| `npm install` 失败 | 切换淘宝镜像：`npm config set registry https://registry.npmmirror.com` |
+| 端口冲突 | 使用 `-p` 指定端口：`npm run dev -- -p 3001` |
+| Cookie 无法写入 | 本地开发设置 `COOKIE_SECURE=0` |
+| 登录失败 | 启用调试模式：`.env.local` 设置 `AUTH_DEBUG=1` |
+| 无法连接后端 | 检查 `.env.local` 中 `NEXT_PUBLIC_API_URL` 是否正确 |
+
+### 内网通信验证
+
+```powershell
+# 验证后端可访问
+curl http://127.0.0.1:3335/API/public-key
+
+# 验证前端可访问
+curl http://localhost:3000
+
+# 验证 Next.js 网关转发
+# 在浏览器打开开发者工具 -> Network，登录时查看请求
+# 应该看到：POST http://localhost:3000/API/login (200 OK)
+```
+
+### 集成测试流程
+
+```powershell
+# 1. 启动数据库
+.\scripts\setup-percona.ps1
+
+# 2. 写入测试数据
+.\mvnw --% -q compile exec:java -Dexec.mainClass=scripts.TestAccountSeeder
+
+# 3. 启动后端（新建终端）
+.\mvnw spring-boot:run
+
+# 4. 启动前端（新建终端）
+cd frontend
+npm run dev
+
+# 5. 浏览器访问
+# http://localhost:3000/login
+# 使用测试账号登录（见下方测试账号列表）
+```
+
+---
+
+## 测试账号
+
+### 数据库测试账号（TestAccountSeeder 写入）
+
+运行 `.\mvnw --% -q compile exec:java -Dexec.mainClass=scripts.TestAccountSeeder` 后自动创建：
+
+| 邮箱 | 密码 | 角色 | 说明 |
+|------|------|------|------|
+| `student@test.local` | `Test@12345` | student | 学生账号（带成绩和纪律记录） |
+| `guardian@test.local` | `Guardian@12345` | guardian | 监护人账号（关联学生账号） |
+| `aro@test.local` | `ARO@1245` | ARO | 学术注册官（管理成绩） |
+| `dro@test.local` | `DRO@12345` | DRO | 纪律注册官（管理纪律记录） |
+
+
+---
+
+## 部署检查清单
+
+部署完成后，请确认以下事项：
+
+### ✅ 数据库
+- [ ] Docker 容器运行正常：`docker ps`
+- [ ] 可连接到数据库：`docker exec -it comp3335-db mysql -uroot -p!testCOMP3335`
+- [ ] 数据库表已创建：`SHOW TABLES FROM COMP3335;`
+
+### ✅ 后端
+- [ ] JDK 21+ 已安装：`java -version`
+- [ ] 后端服务启动成功：看到 `Started Application` 日志
+- [ ] 公钥接口可访问：`curl http://localhost:3335/API/public-key`
+- [ ] `application.yml` 中 `shared-secret` 已配置
+
+### ✅ 前端
+- [ ] Node.js 18+ 已安装：`node -v`
+- [ ] 依赖安装成功：`npm install` 无错误
+- [ ] `.env.local` 已正确配置（包含 `NEXT_PUBLIC_API_URL` 和 `GATEWAY_SHARED_SECRET`）
+- [ ] 前端服务启动成功：看到 `Ready on http://localhost:3000`
+- [ ] 可访问登录页面：`http://localhost:3000/login`
+
+### ✅ 内网通信
+- [ ] Next.js 可访问后端：查看终端日志无 `ECONNREFUSED` 错误
+- [ ] HMAC 签名验证通过：后端日志无 `HMAC validation failed` 错误
+- [ ] 登录功能正常：可使用测试账号成功登录
+
+### ✅ 安全配置
+- [ ] 后端 3335 端口**未对外开放**（仅 Next.js 内网访问）
+- [ ] 前端 3000 端口已开放（用户访问入口）
+- [ ] 生产环境设置 `COOKIE_SECURE=1`
+- [ ] 生产环境禁用 `AUTH_DEBUG`
+
+---
+
+## 项目文档索引
+
+| 文档 | 路径 | 内容 |
+|------|------|------|
+| **后端指南** | `README.md` | Spring Boot 启动、数据库配置、Maven 使用 |
+| **前端指南** | `frontend/README.md` | Next.js 开发、环境变量配置 |
+| **API 规范** | `API.md` | 所有 HTTP 接口的请求/响应格式 |
+| **安全设计** | `frontend/api.md` | 加密方案、HMAC 签名、RBAC 详解 |
+| **本文档** | `FINAL_README.md` | **Windows 单机部署流程** |
+
+---
+
+## 技术栈总结
+
+| 层级 | 技术 | 版本 |
+|------|------|------|
+| **前端** | Next.js | 15+ |
+| | React | 19+ |
+| | TypeScript | 5+ |
+| | Tailwind CSS | 3+ |
+| **后端** | Spring Boot | 3.x |
+| | Java | 21 |
+| | Maven Wrapper | 内置 |
+| **数据库** | Percona Server | 最新版（MySQL 兼容） |
+| | Docker | 最新版 |
+| **安全** | RSA-OAEP, AES-256-GCM | WebCrypto API |
+| | HMAC-SHA256 | Java Crypto |
+| | Session RBAC | 自定义实现 |
+
+---
+
+## 联系与支持
+
+- **课程代码**：COMP3335
+- **项目名称**：Computing Student Management System
+- **部署方式**：Windows 单主机，前后端内网 HTTP 通信
+
+如有问题，请优先参考各子文档的"常见问题"章节。
+
+---
+
+**最后更新时间**：2025-01-17  
+**文档版本**：v2.0 (Windows Only)
