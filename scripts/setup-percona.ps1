@@ -1,11 +1,14 @@
 param(
-    [switch]$ResetData
+    [switch]$ResetData,
+    [string]$DockerDir = ""
 )
 
 $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
-$dockerDir = Join-Path $projectRoot "docker"
+
+# 使用自定义 Docker 根目录或默认路径
+$dockerDir = if ($DockerDir) { $DockerDir } else { Join-Path $projectRoot "docker" }
 $dataDir = Join-Path $dockerDir "data"
 $keyringDir = Join-Path $dockerDir "keyring"
 $configPath = Join-Path $dockerDir "my.cnf"
@@ -62,6 +65,11 @@ $dockerCmd = @(
 )
 
 Write-Host "==> Starting Percona container..." -ForegroundColor Cyan
+Write-Host "    Docker 目录: $dockerDir" -ForegroundColor Gray
+Write-Host "    数据目录: $dataDir" -ForegroundColor Gray
+Write-Host "    Keyring 目录: $keyringDir" -ForegroundColor Gray
+Write-Host "    配置文件: $configPath" -ForegroundColor Gray
+Write-Host "    初始化脚本: $initSql" -ForegroundColor Gray
 docker @dockerCmd
 
 Write-Host "`nCompleted. You can verify with:" -ForegroundColor Green

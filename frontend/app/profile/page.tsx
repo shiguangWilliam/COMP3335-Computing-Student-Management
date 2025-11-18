@@ -105,6 +105,9 @@ export default function ProfilePage() {
     try {
       const res = await api.updatePassword({ oldPassword, newPassword });
       setMessage(String((res as any)?.message || "Password updated"));
+      await api.logout();
+      router.refresh();
+      router.push("/login");
     } catch (err) {
       setPasswordError((err as Error).message);
     } finally {

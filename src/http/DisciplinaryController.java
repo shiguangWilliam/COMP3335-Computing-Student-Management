@@ -46,6 +46,7 @@ public class DisciplinaryController {
         if (session == null) {
             err.put("error", "unauthorized");
             err.put("code", 401);
+            response.setStatus(401);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "unauthorized"));
             return err;
         }
@@ -54,6 +55,7 @@ public class DisciplinaryController {
         if(!"DRO".equalsIgnoreCase(role)){
             err.put("error", "forbidden");
             err.put("code", 403);
+            response.setStatus(403);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "forbidden", "userID", session.getUserId()));
             return err;
         }
@@ -64,6 +66,7 @@ public class DisciplinaryController {
         if (dateFilter != null && !ParamValid.isValidDate(dateFilter)) {
             err.put("error", "bad request - invalid date format");
             err.put("code", 400);
+            response.setStatus(400);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request - invalid date format", "userID", session.getUserId()));
             return err;
         }
@@ -80,6 +83,7 @@ public class DisciplinaryController {
         catch(SQLException e){
             err.put("error", "internal server error");
             err.put("code", 500);
+            response.setStatus(500);
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "internal server error", "userID", session.getUserId(), "error", e.getMessage()));
             return err;
         }
@@ -100,6 +104,7 @@ public class DisciplinaryController {
         if (session == null) {
             err.put("error", "unauthorized");
             err.put("code", 401);
+            response.setStatus(401);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "unauthorized"));
             return err;
         }
@@ -108,6 +113,7 @@ public class DisciplinaryController {
         if(!"DRO".equalsIgnoreCase(role)){
             err.put("error", "forbidden");
             err.put("code", 403);
+            response.setStatus(403);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "forbidden", "userID", session.getUserId()));
             return err;
         }
@@ -121,18 +127,21 @@ public class DisciplinaryController {
         if(studentId == null || studentId.isBlank() || date == null || date.isBlank() || description == null || description.isBlank()){
             err.put("error", "bad request");
             err.put("code", 400);
+            response.setStatus(400);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request", "userID", session.getUserId()));
             return err;
         }
         if(ParamValid.isValidDate(date) == false){
             err.put("error", "bad request - invalid date format");
             err.put("code", 400);
+            response.setStatus(400);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request - invalid date format", "userID", session.getUserId()));
             return err;
         }
         if(ParamValid.isValidString(description) == false){
             err.put("error", "bad request - invalid descriptions format");
             err.put("code", 400);
+            response.setStatus(400);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request - invalid descriptions format", "userID", session.getUserId()));
             return err;
         }
@@ -142,6 +151,7 @@ public class DisciplinaryController {
             if (studentRs.next() && studentRs.getInt("count") == 0) {
                 err.put("error", "invalid student");
                 err.put("code", 400);
+                response.setStatus(400);
                 err.put("message", "invalid student id");
                 log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "invalid student id", "studentID", studentId));
                 return err;
@@ -149,6 +159,7 @@ public class DisciplinaryController {
         } catch (SQLException e) {
             err.put("error", "internal server error");
             err.put("code", 500);
+            response.setStatus(500);
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "student check failed", "error", e.getMessage()));
             return err;
         }
@@ -166,6 +177,7 @@ public class DisciplinaryController {
         catch(SQLException e){
             err.put("error", "internal server error");
             err.put("code", 500);
+            response.setStatus(500);
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "internal server error", "userID", session.getUserId(), "studentID", studentId, "error", e.getMessage()));
             return err;
         }
@@ -184,6 +196,7 @@ public class DisciplinaryController {
         if (session == null) {
             err.put("error", "unauthorized");
             err.put("code", 401);
+            response.setStatus(401);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "unauthorized"));
             return err;
         }
@@ -192,6 +205,7 @@ public class DisciplinaryController {
         if(!"DRO".equalsIgnoreCase(role)){
             err.put("error", "forbidden");
             err.put("code", 403);
+            response.setStatus(403);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "forbidden", "userID", session.getUserId()));
             return err;
         }
@@ -204,6 +218,7 @@ public class DisciplinaryController {
         if(dicId == null || dicId.isBlank()){
             err.put("error", "bad request");
             err.put("code", 400);
+            response.setStatus(400);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request", "userID", session.getUserId()));
             return err;
         }
@@ -212,6 +227,7 @@ public class DisciplinaryController {
             if(ParamValid.isValidDate(date) == false){
                 err.put("error", "bad request - invalid date format");
                 err.put("code", 400);
+                response.setStatus(400);
                 log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request - invalid date format", "userID", session.getUserId()));
                 return err;
             }
@@ -221,6 +237,7 @@ public class DisciplinaryController {
             if(ParamValid.isValidString(descriptions) == false){
                 err.put("error", "bad request - invalid descriptions format");
                 err.put("code", 400);
+                response.setStatus(400);
                 log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "bad request - invalid descriptions format", "userID", session.getUserId()));
                 return err;
             }
@@ -229,6 +246,7 @@ public class DisciplinaryController {
         if(updateMap.isEmpty()){
             err.put("error", "bad request");
             err.put("code", 400);
+            response.setStatus(400);
             err.put("message", "no valid fields to update");
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "no valid fields to update", "userID", session.getUserId()));
             return err;
@@ -239,6 +257,7 @@ public class DisciplinaryController {
             if(rs.next() && rs.getInt("count")==0){
                 err.put("error", "not found");
                 err.put("code", 404);
+                response.setStatus(404);
                 err.put("message", "record not found");
                 log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "record not found", "userID", session.getUserId(), "dicID", dicId));
                 return err;
@@ -246,6 +265,7 @@ public class DisciplinaryController {
         } catch (SQLException e){
             err.put("error", "internal server error");
             err.put("code", 500);
+            response.setStatus(500);
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "internal server error", "userID", session.getUserId(), "dicID", dicId, "error", e.getMessage()));
             return err;
         }
@@ -258,6 +278,7 @@ public class DisciplinaryController {
         catch(SQLException e){
             err.put("error", "internal server error");
             err.put("code", 500);
+            response.setStatus(500);
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "internal server error", "userID", session.getUserId(), "dicID", dicId, "error", e.getMessage()));
             return err;
         }
@@ -276,6 +297,7 @@ public class DisciplinaryController {
         if (session == null) {
             err.put("error", "unauthorized");
             err.put("code", 401);
+            response.setStatus(401);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "unauthorized"));
             return err;
         }
@@ -284,6 +306,7 @@ public class DisciplinaryController {
         if(!"DRO".equalsIgnoreCase(role)){
             err.put("error", "forbidden");
             err.put("code", 403);
+            response.setStatus(403);
             log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "forbidden", "userID", session.getUserId()));
             return err;
         }
@@ -297,6 +320,7 @@ public class DisciplinaryController {
         catch(SQLException e){
             err.put("error", "internal server error");
             err.put("code", 500);
+            response.setStatus(500);
             log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "internal server error", "userID", session.getUserId(), "dicID", dicId, "error", e.getMessage()));
             return err;
         }

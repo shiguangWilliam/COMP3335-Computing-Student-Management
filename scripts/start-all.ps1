@@ -1,6 +1,7 @@
 param(
     [switch]$ResetData,
-    [switch]$SkipSeed
+    [switch]$SkipSeed,
+    [string]$DockerDir = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,9 +14,42 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  COMP3335 Launch Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
+# 步骤 0: 检查并启动 Docker Desktop
+Write-Host "`n[0/4] Checking Docker Desktop..." -ForegroundColor Yellow
+$dockerRunning = docker info 2>$null
+if (-not $dockerRunning) {
+    Write-Host "    Docker Desktop is not running, starting..." -ForegroundColor Yellow
+    Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    Write-Host "    Waiting for Docker Desktop to start (30 seconds)..." -ForegroundColor Cyan
+    Start-Sleep -Seconds 30
+    
+    # 验证 Docker 是否启动成功
+    $retries = 6
+    $dockerReady = $false
+    for ($i = 1; $i -le $retries; $i++) {
+        $dockerRunning = docker info 2>$null
+        if ($dockerRunning) {
+            $dockerReady = $true
+            break
+        }
+        Write-Host "    Waiting for Docker... ($i/$retries)" -ForegroundColor Gray
+        Start-Sleep -Seconds 10
+    }
+    
+    if (-not $dockerReady) {
+        throw "Docker Desktop failed to start. Please start it manually and try again."
+    }
+    Write-Host "    Docker Desktop is ready" -ForegroundColor Green
+} else {
+    Write-Host "    Docker Desktop is already running" -ForegroundColor Green
+}
+
 Write-Host "`n[1/4] Starting Percona Database (New Window)..." -ForegroundColor Yellow
-$resetArg = if ($ResetData) { "-ResetData" } else { "" }
-Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$scriptsDir'; Write-Host '[Database] Starting Percona...' -ForegroundColor Cyan; .\setup-percona.ps1 $resetArg"
+$setupArgs = @()
+if ($ResetData) { $setupArgs += "-ResetData" }
+if ($DockerDir) { $setupArgs += "-DockerDir '$DockerDir'" }
+$setupArgsStr = $setupArgs -join " "
+Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$scriptsDir'; Write-Host '[Database] Starting Percona...' -ForegroundColor Cyan; .\setup-percona.ps1 $setupArgsStr"
 Write-Host "    Database will start in a new PowerShell window" -ForegroundColor Green
 
 Write-Host "`n[Waiting] Database Initialization (60 seconds)..." -ForegroundColor Yellow
