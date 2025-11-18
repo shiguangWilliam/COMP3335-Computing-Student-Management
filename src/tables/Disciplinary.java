@@ -11,8 +11,12 @@ public class Disciplinary {
     public static ArrayList<HashMap<String, String>> getStudentDisciplinary(String studentID, String date, String staff_id) throws SQLException {
         ArrayList<HashMap<String, String>> disciplinaryMap = new ArrayList<>();
         try {
-            StringBuilder sql = new StringBuilder("SELECT dr.id, dr.student_id, dr.date, dr.staff_id, dre.descriptions " +
-                    "FROM disciplinary_records dr JOIN disciplinary_records_encrypted dre ON dr.id = dre.id WHERE 1=1");
+                StringBuilder sql = new StringBuilder("SELECT dr.id, dr.student_id, dr.date, dr.staff_id, dre.descriptions, " +
+                    "COALESCE(CONCAT_WS(' ', s.first_name, s.last_name), '') AS student_name, " +
+                    "COALESCE(CONCAT_WS(' ', st.first_name, st.last_name), '') AS staff_name " +
+                    "FROM disciplinary_records dr JOIN disciplinary_records_encrypted dre ON dr.id = dre.id " +
+                    "LEFT JOIN students s ON dr.student_id = s.id " +
+                    "LEFT JOIN staffs st ON dr.staff_id = st.id WHERE 1=1");
             ArrayList<String> params = new ArrayList<>();
             if (studentID != null && !studentID.isBlank()) {
                 sql.append(" AND dr.student_id = ?");
@@ -35,6 +39,14 @@ public class Disciplinary {
                 map.put("date", rs.getString("date"));
                 map.put("staff_id", rs.getString("staff_id"));
                 map.put("descriptions", rs.getString("descriptions"));
+                String studentName = rs.getString("student_name");
+                if (studentName != null && !studentName.isBlank()) {
+                    map.put("student_name", studentName);
+                }
+                String staffName = rs.getString("staff_name");
+                if (staffName != null && !staffName.isBlank()) {
+                    map.put("staff_name", staffName);
+                }
                 disciplinaryMap.add(map);
             }
         } catch (Exception e) {
@@ -44,30 +56,6 @@ public class Disciplinary {
         return disciplinaryMap;
     }
     public static ArrayList<HashMap<String, String>> getStudentDisciplinary(String studentID) throws SQLException {
-        ArrayList<HashMap<String, String>> disciplinaryMap = new ArrayList<>();
-        try {
-            String sql = "SELECT * FROM disciplinary_records WHERE student_id = ?";
-            String[] params = {studentID};
-            ResultSet rs = DBConnect.dbConnector.executeQuery(sql, params);
-            while (rs.next()) {
-                HashMap<String, String> map = new HashMap<>();
-                String ID = rs.getString("id");
-                String date = rs.getString("date");
-                String staff_id = rs.getString("staff_id");
-                ResultSet trs = DBConnect.dbConnector.executeQuery("SELECT descriptions FROM disciplinary_records_encrypted WHERE id = ?", new String[]{ID});
-                trs.next();
-                String descriptions = trs.getString("descriptions");
-                map.put("id", ID);
-                map.put("student_id", studentID);
-                map.put("date", date);
-                map.put("staff_id", staff_id);
-                map.put("descriptions", descriptions);
-                disciplinaryMap.add(map);
-            }
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            throw e;
-        }
-        return disciplinaryMap;
+        return getStudentDisciplinary(studentID, null, null);
     }
 }

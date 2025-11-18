@@ -22,6 +22,10 @@ public class Grades {
                 trs.next();
                 String grade = trs.getString("grade");
                 String comments = trs.getString("comments");
+                String studentName = getStudentNameById(studentID);
+                if(studentName != null && !studentName.isBlank()){
+                    map.put("student_name", studentName);
+                }
                 map.put("id", ID);
                 map.put("student_id", studentID);
                 map.put("course_id", courseID);
@@ -38,6 +42,22 @@ public class Grades {
         }
         return gradesMap;
     }
-
-
+    public static String getStudentNameById(String studentID) throws SQLException {
+        if (studentID == null || studentID.isBlank()) {
+            return null;
+        }
+        try {
+            String sql = "SELECT COALESCE(CONCAT_WS(' ', first_name, last_name), '') AS student_name FROM students WHERE id = ?";
+            ResultSet rs = DBConnect.dbConnector.executeQuery(sql, new String[]{studentID});
+            if (rs.next()) {
+                String name = rs.getString("student_name");
+                return name == null || name.isBlank() ? null : name;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
+            throw e;
+        }
+        return null;
+    }
 }

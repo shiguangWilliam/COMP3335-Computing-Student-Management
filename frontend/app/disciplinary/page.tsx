@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
 type Role = "student" | "ARO" | "guardian" | "DRO";
-type Rec = { id: string; student_id: string; date: string; staff_id: string; descriptions?: string };
+type Rec = { id: string; student_id?: string; student_name?: string; date: string; staff_id?: string; staff_name?: string; descriptions?: string };
 
 export default function DisciplinaryPage() {
   const [role, setRole] = useState<Role | null>(null);
@@ -85,7 +85,7 @@ export default function DisciplinaryPage() {
       if (form.id) {
         await api.updateDisciplinaryRecord(form.id, { date: form.date, description: form.description });
       } else {
-        await api.createDisciplinaryRecord({ studentId: form.studentId, date: form.date, description: form.description });
+        await api.createDisciplinaryRecord({ studentId: form.studentId, date: form.date, description: form.description || "" });
       }
       setMsg(form.id ? "Record updated" : "Record created");
       resetForm();
@@ -99,7 +99,7 @@ export default function DisciplinaryPage() {
 
   const pick = (r: Rec) => {
     if (role !== "DRO") return;
-    setForm({ id: r.id, studentId: r.student_id, date: r.date, description: r.descriptions });
+    setForm({ id: r.id, studentId: r.student_id || "", date: r.date, description: r.descriptions });
     setMsg(null);
     setError(null);
     setErrors({});
@@ -195,7 +195,7 @@ export default function DisciplinaryPage() {
               value={filters.date || ""}
               onChange={(e) => setFilters({ ...filters, date: e.target.value || undefined })}
             />
-            <button className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60" disabled={loading} onClick={load}>
+            <button className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60" disabled={loading} onClick={() => load()}>
               Search
             </button>
           </div>
@@ -209,32 +209,36 @@ export default function DisciplinaryPage() {
           {items.length === 0 ? (
             <p className="text-sm text-zinc-600">No records</p>
           ) : (
-            items.map((it) => (
-              <div key={it.id} className="rounded border p-2 text-left">
-                <div className="text-sm">
-                  {it.student_id} · {it.date} · {it.staff_id}
+            items.map((it) => {
+              const studentLabel = it.student_name || it.student_id || "Student";
+              const staffLabel = it.staff_name || it.staff_id || "Staff";
+              return (
+                <div key={it.id} className="rounded border p-2 text-left">
+                  <div className="text-sm">
+                    {studentLabel} · {it.date} · {staffLabel}
+                  </div>
+                  {it.descriptions && <div className="text-xs text-zinc-700">{it.descriptions}</div>}
+                  <div className="mt-2 flex gap-2 text-xs">
+                    <button
+                      type="button"
+                      className="rounded border px-2 py-1 text-blue-600"
+                      disabled={loading}
+                      onClick={() => pick(it)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded border px-2 py-1 text-red-600"
+                      disabled={loading}
+                      onClick={() => remove(it.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                {it.descriptions && <div className="text-xs text-zinc-700">{it.descriptions}</div>}
-                <div className="mt-2 flex gap-2 text-xs">
-                  <button
-                    type="button"
-                    className="rounded border px-2 py-1 text-blue-600"
-                    disabled={loading}
-                    onClick={() => pick(it)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded border px-2 py-1 text-red-600"
-                    disabled={loading}
-                    onClick={() => remove(it.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

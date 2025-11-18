@@ -13,16 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import service.DBConnect;
-import tables.Grades;
 import tables.Courses;
-import users.ARO;
-import users.User;
 import utils.AuditUtils;
 import utils.ParamValid;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -55,11 +53,7 @@ public class GradeController {
 
 
         String role = session.getRole();
-        ARO user;
-        if("ARO".equalsIgnoreCase(role)){
-            user = new ARO(session.getUserId());
-        }
-        else{
+        if(!"ARO".equalsIgnoreCase(role)){
             err.put("code",403);
             response.setStatus(403);
             err.put("message","Forbidden");
@@ -68,8 +62,11 @@ public class GradeController {
         }
         //确认用户身份
         ArrayList<String> params = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT g.id, g.encrypted_id, g.student_id, g.course_id, g.term, ge.grade, ge.comments, c.name " +
-                "FROM grades g JOIN grades_encrypted ge ON g.encrypted_id = ge.id LEFT JOIN courses c ON g.course_id = c.id WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT g.id, g.encrypted_id, g.student_id, g.course_id, g.term, ge.grade, ge.comments, c.name, " +
+            "COALESCE(CONCAT_WS(' ', s.first_name, s.last_name), '') AS student_name " +
+            "FROM grades g JOIN grades_encrypted ge ON g.encrypted_id = ge.id " +
+            "LEFT JOIN courses c ON g.course_id = c.id " +
+            "LEFT JOIN students s ON g.student_id = s.id WHERE 1=1");
         if(studentid != null && !studentid.isBlank()){
             sql.append(" AND g.student_id = ?");
             params.add(studentid);
@@ -84,12 +81,23 @@ public class GradeController {
         }
         try(ResultSet rs = DBConnect.dbConnector.executeQuery(sql.toString(), params.toArray(new String[0]))){
             ArrayList<Map<String, Object>> gradeList = new ArrayList<>();
+            System.out.println(sql.toString());
             while(rs.next()){
+                for(int i = 0; i<rs.getMetaData().getColumnCount(); i++){
+                    System.out.println(rs.getMetaData().getColumnLabel(i+1));
+                    System.out.println(rs.getString(rs.getMetaData().getColumnLabel(i+1)));
+                }
                 Map<String, Object> grade = new HashMap<>();
                 grade.put("id", rs.getString("id"));
+                String studentName = rs.getString("student_name");
+                if (studentName != null && !studentName.isBlank()) {
+                    grade.put("student_name", studentName);
+                }
                 grade.put("student_id", rs.getString("student_id"));
                 grade.put("course_id", rs.getString("course_id"));
+                System.err.println("???");
                 String cname = rs.getString("name");
+                System.err.println("!!!");
                 if (cname != null && !cname.isBlank()) {
                     grade.put("course_name", cname);
                 }
@@ -132,11 +140,7 @@ public class GradeController {
         }
 
         String role = session.getRole();
-        ARO user;
-        if("ARO".equalsIgnoreCase(role)){
-            user = new ARO(session.getUserId());
-        }
-        else{
+        if(!"ARO".equalsIgnoreCase(role)){
             err.put("code",403);
             response.setStatus(403);
             err.put("message","Forbidden");
@@ -332,11 +336,7 @@ public class GradeController {
         }
 
         String role = session.getRole();
-        ARO user;
-        if("ARO".equalsIgnoreCase(role)){
-            user = new ARO(session.getUserId());
-        }
-        else{
+        if(!"ARO".equalsIgnoreCase(role)){
             err.put("code",403);
             err.put("message","Forbidden");
             response.setStatus(403);

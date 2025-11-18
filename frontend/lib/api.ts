@@ -359,6 +359,7 @@ export async function unenrollStudent(id: string): Promise<Json> {
 export type GradeRecord = {
   id: string;
   studentId: string;
+  studentName?: string;
   courseName?: string;
   courseId?: string;
   grade: string;
@@ -385,6 +386,7 @@ export async function listGrades(params?: { studentId?: string; courseId?: strin
   return list.map((g) => ({
     id: String(g.id ?? ""),
     studentId: String(g.studentId ?? g.student_id ?? ""),
+    studentName: g.studentName || g.student_name ? String(g.studentName ?? g.student_name) : undefined,
     courseId: g.courseId || g.course_id ? String(g.courseId ?? g.course_id) : undefined,
     courseName: g.courseName || g.course_name ? String(g.courseName ?? g.course_name) : undefined,
     grade: String(g.grade ?? ""),
@@ -414,7 +416,17 @@ export async function deleteGrade(data: { gradeId: string }): Promise<Json> {
 
 // Disciplinary records
 
-export type DisciplinaryRecord = { id: string; student_id: string; date: string; staff_id: string; descriptions?: string };
+export type DisciplinaryRecord = {
+  id: string;
+  student_id?: string;
+  studentName?: string;
+  student_name?: string;
+  date: string;
+  staff_id?: string;
+  staffName?: string;
+  staff_name?: string;
+  descriptions?: string;
+};
 
 
 
@@ -424,9 +436,20 @@ export async function listDisciplinaryRecords(params?: { studentId?: string; dat
   ) as Array<[string, string]>;
   const qs = entries.length ? `?${new URLSearchParams(Object.fromEntries(entries)).toString()}` : "";
 
-  const res = await request<{ data?: DisciplinaryRecord[] }>(`/API/disciplinary-records${qs}`);
+  const res = await request<{ data?: Array<Record<string, unknown>> }>(`/API/disciplinary-records${qs}`);
 
-  return res?.data ?? [];
+  const list = res?.data ?? [];
+  return list.map((d) => ({
+    id: String(d.id ?? ""),
+    student_id: d.studentId || d.student_id ? String(d.studentId ?? d.student_id) : undefined,
+    studentName: d.studentName || d.student_name ? String(d.studentName ?? d.student_name) : undefined,
+    student_name: d.studentName || d.student_name ? String(d.studentName ?? d.student_name) : undefined,
+    date: String(d.date ?? ""),
+    staff_id: d.staffId || d.staff_id ? String(d.staffId ?? d.staff_id) : undefined,
+    staffName: d.staffName || d.staff_name ? String(d.staffName ?? d.staff_name) : undefined,
+    staff_name: d.staffName || d.staff_name ? String(d.staffName ?? d.staff_name) : undefined,
+    descriptions: d.descriptions ? String(d.descriptions) : d.description ? String(d.description) : undefined,
+  }));
 
 }
 
@@ -533,7 +556,11 @@ export async function fetchSelfReports(): Promise<ReportBundle[]> {
 
       studentId: String(g.studentId ?? g.student_id ?? ""),
 
+      studentName: g.studentName || g.student_name ? String(g.studentName ?? g.student_name) : undefined,
+
       courseId: String(g.courseId ?? g.course_id ?? ""),
+
+      courseName: g.courseName || g.course_name ? String(g.courseName ?? g.course_name) : undefined,
 
       grade: String(g.grade ?? ""),
 
@@ -549,9 +576,13 @@ export async function fetchSelfReports(): Promise<ReportBundle[]> {
 
       student_id: String(d.student_id ?? d.studentId ?? ""),
 
+      studentName: d.studentName || d.student_name ? String(d.studentName ?? d.student_name) : undefined,
+
       date: String(d.date ?? ""),
 
       staff_id: String(d.staff_id ?? d.staffId ?? ""),
+
+      staffName: d.staffName || d.staff_name ? String(d.staffName ?? d.staff_name) : undefined,
 
       descriptions: d.descriptions ? String(d.descriptions) : d.description ? String(d.description) : undefined,
 

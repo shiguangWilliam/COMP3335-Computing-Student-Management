@@ -179,7 +179,7 @@ export default function GradesPage() {
             <button
               className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
               disabled={loading}
-              onClick={load}
+              onClick={() => load()}
             >
               Search
             </button>
@@ -194,17 +194,20 @@ export default function GradesPage() {
           {items.length === 0 ? (
             <p className="text-sm text-zinc-600">No records</p>
           ) : (
-            items.map((it) => (
-              <div key={it.id} className="rounded border p-2 text-left transition hover:border-blue-500">
-                <div className="flex flex-col gap-1">
-                  <div className="text-sm">
-                    {it.studentId} · {it.courseName || "Unknown Course"}
-                    {it.term ? ` · ${it.term}` : ""}
-                    {" · "}
-                    {it.grade}
+            items.map((it) => {
+              const studentLabel = it.studentName || it.studentId || "Student";
+              const courseLabel = it.courseName || "Unknown Course";
+              return (
+                <div key={it.id} className="rounded border p-2 text-left transition hover:border-blue-500">
+                  <div className="flex flex-col gap-1">
+                    <div className="text-sm">
+                      {studentLabel} · {courseLabel}
+                      {it.term ? ` · ${it.term}` : ""}
+                      {" · "}
+                      {it.grade}
+                    </div>
+                    {it.comments && <div className="text-xs text-zinc-600">Comments: {it.comments}</div>}
                   </div>
-                  {it.comments && <div className="text-xs text-zinc-600">Comments: {it.comments}</div>}
-                </div>
                 <div className="mt-2 flex gap-2 text-xs">
                   <button
                     type="button"
@@ -224,7 +227,8 @@ export default function GradesPage() {
                   </button>
                 </div>
               </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

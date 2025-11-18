@@ -64,15 +64,21 @@ export default function ReportsPage() {
                       <p className="text-sm text-zinc-600">No grade records.</p>
                     ) : (
                       <ul className="space-y-2 text-sm">
-                        {bundle.grade.map((g) => (
-                          <li key={g.id} className="rounded border px-3 py-2">
-                            <div>
-                              {g.courseId}{g.term ? ` · Term ${g.term}` : ""}
-                            </div>
-                            <div className="text-zinc-600">Grade: {g.grade}</div>
-                            {g.comments && <div className="text-xs text-zinc-500">Comments: {g.comments}</div>}
-                          </li>
-                        ))}
+                        {bundle.grade.map((g) => {
+                          const courseLabel = g.courseName || g.courseId || "Course";
+                          const studentLabel = g.studentName || g.studentId || "Student";
+                          return (
+                            <li key={g.id} className="rounded border px-3 py-2">
+                              <div>
+                                {courseLabel}
+                                {g.term ? ` · Term ${g.term}` : ""}
+                              </div>
+                              {studentLabel && <div className="text-xs text-zinc-500">Student: {studentLabel}</div>}
+                              <div className="text-zinc-600">Grade: {g.grade}</div>
+                              {g.comments && <div className="text-xs text-zinc-500">Comments: {g.comments}</div>}
+                            </li>
+                          );
+                        })}
                       </ul>
                     )}
                   </section>
@@ -82,14 +88,18 @@ export default function ReportsPage() {
                       <p className="text-sm text-zinc-600">No disciplinary records.</p>
                     ) : (
                       <ul className="space-y-2 text-sm">
-                        {bundle.disciplinary.map((d) => (
-                          <li key={d.id} className="rounded border px-3 py-2">
-                            <div>
-                              {d.date} · Staff: {d.staff_id}
-                            </div>
-                            {d.descriptions && <div className="text-xs text-zinc-500">{d.descriptions}</div>}
-                          </li>
-                        ))}
+                        {bundle.disciplinary.map((d) => {
+                          const studentLabel = d.studentName || d.student_id || "Student";
+                          const staffLabel = d.staffName || d.staff_id || "Staff";
+                          return (
+                            <li key={d.id} className="rounded border px-3 py-2">
+                              <div>
+                                {studentLabel} · {d.date} · Staff: {staffLabel}
+                              </div>
+                              {d.descriptions && <div className="text-xs text-zinc-500">{d.descriptions}</div>}
+                            </li>
+                          );
+                        })}
                       </ul>
                     )}
                   </section>
