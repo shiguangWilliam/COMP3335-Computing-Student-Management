@@ -75,6 +75,32 @@ function Wait-ContainerRunning {
     return $false
 }
 
+function Wait-DatabaseHealthy {
+    param(
+        [string]$ContainerName,
+        [int]$TimeoutSeconds = 120,
+        [int]$IntervalSeconds = 5
+    )
+
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($stopwatch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
+        try {
+            $ping = docker exec $ContainerName mysqladmin ping -uroot -p!testCOMP3335 2>$null
+            if ($LASTEXITCODE -eq 0 -and $ping -match "mysqld is alive") {
+                return $true
+            }
+        } catch {
+            # ignore and retry
+        }
+
+        $elapsed = [int]$stopwatch.Elapsed.TotalSeconds
+        Write-Host "    Waiting for database service... (${elapsed}s/${TimeoutSeconds}s)" -ForegroundColor Gray
+        Start-Sleep -Seconds $IntervalSeconds
+    }
+
+    return $false
+}
+
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $scriptsDir = Join-Path $projectRoot "scripts"
 $frontendDir = Join-Path $projectRoot "frontend"
@@ -137,6 +163,13 @@ if (-not $perconaReady) {
     throw "Percona container '$dbContainerName' did not reach running state in time. Please investigate its startup window."
 }
 Write-Host "    Percona container is running" -ForegroundColor Green
+
+Write-Host "    Checking database readiness..." -ForegroundColor Yellow
+$dbHealthy = Wait-DatabaseHealthy -ContainerName $dbContainerName -TimeoutSeconds 180
+if (-not $dbHealthy) {
+    throw "Percona container '$dbContainerName' failed to become ready for connections in time."
+}
+Write-Host "    Database is ready to accept connections" -ForegroundColor Green
 
 if (-not $SkipSeed) {
     Write-Host "`n[2/4] Generating Test Account Data (New Window)..." -ForegroundColor Yellow
