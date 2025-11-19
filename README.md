@@ -63,6 +63,20 @@ cd <project-root>
 - Optional seed rerun: `.\mvnw --% -q compile exec:java -Dexec.mainClass=scripts.TestAccountSeeder`.
 - If you hope to restrict listening to localhost, add `server.address = 127.0.0.1` to application.properties or release the comment.
 
+#### BackEnd GATEWAY_SHARED_SECRET Configuration Instructions
+
+- Spring Boot will use `GATEWAY_SHARED_SECRET` environment variable or `app.gateway.shared-secret` inject the same HMAC key to `GateWayConfig`。
+- Temporarily set environment variables and start the backend:
+
+```powershell
+$env:GATEWAY_SHARED_SECRET = "<your-secret>"
+.\mvnw spring-boot:run
+```
+
+- or you can set launch parameters in  `src/resources/application.properties` 
+
+- The HMAC key must keep consitent with the key in frontend.
+
 ### 3. Frontend (Next.js)
 
 ```powershell
@@ -75,6 +89,19 @@ copy .env.local.example .env.local  # if you keep a template
 
 npm run dev
 ```
+
+  
+#### FrontEnd GATEWAY_SHARED_SECRET Configuration Instructions
+
+- Next.js Server will load HMAC key by `process.env.GATEWAY_SHARED_SECRET`
+-We defualtly stored the key in `.env.local` which is easy for loacl debug.
+- If you hope to use environment variable, you can use the powershell as fellow:
+
+```powershell
+$env:GATEWAY_SHARED_SECRET = "<your-secret>"
+npm run dev
+```
+- Please ensure the key is consistent with the backend.
 
 - The frontend proxy forwards `/API/*` calls to the backend at `127.0.0.1:3335`. Adjust `NEXT_PUBLIC_API_URL` only if the backend is on another host.
 

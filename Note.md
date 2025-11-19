@@ -517,3 +517,544 @@ npm run dev
 
 **最后更新时间**：2025-01-17  
 **文档版本**：v2.0 (Windows Only)
+
+# 安全设计与内部 API 通道说明（api.md）
+
+本文只描述本项目的安全策略和 `/API/*` 内部通道设计，不再逐条列业务接口。核心目标：
+
+- 浏览器到 Next.js 前端之间：机密数据始终通过混合加密通道传输，防止窃听与篡改。
+- Next.js 前端到 Java 后端之间：通过 HMAC + nonce + time window 防止伪造与重放。
+- 后端内部：基于 session 的 RBAC、URI 路由表控制访问，再结合全程参数化 SQL 防止 SQL 注入。
+
+---
+
+## 一、前端混合加密通道（浏览器 ⇄ Next.js）
+
+### 1.1 RSA + AES + HMAC 信封
+
+浏览器端不会直接把明文业务 JSON 发送到 `/API/*`，而是经过以下步骤：
+
+1. 浏览器调用 `GET /API/public-key`（Next 路由 `frontend/app/API/public-key/route.ts`），获取前端服务器的 RSA 公钥 `publicKeyPem`。  
+2. 前端 JS（`frontend/lib/secureApi.ts`）：
+   - 使用 WebCrypto 生成随机 `AES-256-GCM` 密钥和 12 字节 IV；
+   - 用 AES‑GCM 加密业务 JSON（包括 `method` / `query` / `body` / `timestamp` / `nonce` 等）；
+   - 用服务器的 RSA 公钥（RSA‑OAEP + SHA‑256）加密 AES 密钥；
+   - 追加一个 `HMAC‑SHA256` 签名（key = AES 密钥，data = 明文 JSON）作为可选完整性校验；
+   - 构造加密信封：
+     ```json
+     {
+       "encryptedKeyBase64": "...",   // RSA(OAEP, AES-Key)
+       "ivBase64": "...",             // AES-GCM IV
+       "ciphertextBase64": "...",     // 密文 (不含 tag)
+       "tagBase64": "...",            // GCM tag
+       "sigBase64": "..."             // 可选 HMAC(AES-Key, 明文)
+     }
+     ```
+3. 浏览器将此信封作为 JSON `POST` 到对应的 Next.js API 路由，例如：
+   - `POST /API/login`
+   - `POST /API/grades`
+   - `POST /API/disciplinary-records`
+   - 等等。
+
+Next 端对应处理逻辑在：
+
+- `frontend/lib/cryptoServer.ts:decryptHybridJson`：  
+  - 使用服务器 RSA 私钥解密 AES 密钥；  
+  - 使用 AES‑GCM 解密业务 JSON；  
+  - 若提供 `sigBase64`，使用 AES 密钥进行 HMAC 验证，防止中间人篡改信封内容。
+
+### 1.2 加密响应（可选）
+
+如有需要，前端还支持“前端回包再加密”的模式：
+
+- 浏览器在发起请求时可附带 `clientPublicKeyPem`（包含在被 AES 加密的明文 JSON 内）。  
+- Next 的中继层（`frontend/lib/secureProxy.ts:relaySecure`）在拿到后端 JSON 响应后：
+  - 生成一把新的 AES 密钥和 IV；
+  - 使用客户端公钥 RSA‑OAEP 加密该 AES 密钥；
+  - 使用 AES‑GCM 加密响应 JSON，并生成 GCM tag；
+  - 按同样格式构造一个响应信封 `{ encryptedKeyBase64, ivBase64, ciphertextBase64, tagBase64, sigBase64 }` 返回浏览器。  
+- 浏览器使用本地保存的 RSA 私钥解密响应信封，拿到 JSON 数据。
+
+在你当前实现中，普通 API（成绩、纪律等）可以只使用“请求加密 + 响应明文 JSON”的模式，而对特别敏感的接口可以启用“请求 + 响应都加密”的模式。
+
+---
+
+## 二、Session 设计与 sid 信息隐藏
+
+### 2.1 会话标识：sid Cookie
+
+登录时（`AuthController.login`）：
+
+- 后端根据账号密码校验通过后，创建 `Session` 对象（`SessionStore.create(claims)`），内含：
+  - `userId`
+  - `email`
+  - `role`（student / guardian / ARO / DRO / DBA）
+  - `expiresAt` 等信息
+- 为该会话生成一个不可预测的随机会话 ID（sid），并写入 Cookie：
+
+  ```http
+  Set-Cookie: sid=<随机SID>; Path=/; HttpOnly; SameSite=Lax; Max-Age=<ttl>
+  ```
+
+安全性质：
+
+- `sid` 本身不包含任何明文用户信息或角色信息，仅是一个随机标识；  
+- 用户的角色、邮箱等只存储在服务端 SessionStore / 数据库中，通过 `sid` 查表获取；  
+- 浏览器或攻击者即使拿到 sid 值，也无法单独从该值分析出用户身份或权限信息（防止会话信息泄露）。
+
+### 2.2 会话检查：SessionFilter
+
+后端的 `SessionFilter`（`src/app/SessionFilter.java`）在 HMAC 层之后执行：
+
+- 使用 `URIRouteTable.isPublic(method, uri)` 判断是否公共路由：
+  - `/API/login`, `/API/logout`, `/API/public-key` 等公共路由跳过 session 检查。
+- 非公共路由：
+  - 从 Cookie 中读取 `sid`，如果缺失或为空 → `401 unauthorized: missing sid`；
+  - 使用 `SessionStore.get(sid)` 查找会话，如果不存在或已过期 → `401 unauthorized`；
+  - 检查 `session.isExpired()`，过期则拒绝；
+  - 验证通过后，将 `Session` 对象通过 `request.setAttribute("session", session)` 注入，后续 Controller 通过 `request.getAttribute("session")` 拿到当前用户信息。
+
+这样可以保证：业务代码只信任服务端 Session 中的信息，而不是任何来自客户端的“角色字段”。
+
+---
+
+## 三、后端三层网关：HMAC + Cookie + 路由控制
+
+Java 后端入口处按顺序叠加了三层安全网关：
+
+1. **HMAC 签名校验层（HmacAuthFilter）**  
+2. **Session / Cookie 校验层（SessionFilter）**  
+3. **基于 URI 的角色路由控制（URIRouteTable）**
+
+### 3.1 HMAC 层：请求完整性 + Anti-Replay
+
+HMAC 签名由 Next.js 中继层计算（`frontend/lib/secureProxy.ts:relaySecure`）：
+
+- 共享密钥：`GATEWAY_SHARED_SECRET`（存放在前后端的环境变量中）。
+- 规范化字符串（canonical string）格式：
+
+  ```text
+  canonical = [
+    HTTP_METHOD,              // GET / POST / PUT / DELETE
+    PATH_WITH_QUERY,          // e.g. /API/grades?studentId=...
+    BODY_JSON_STRING_OR_EMPTY,// 请求体 JSON 字符串，GET 时为空字符串
+    TIMESTAMP_MS,             // 发送时的毫秒时间戳
+    NONCE                     // 随机字符串
+  ].join("|")
+  ```
+
+- HMAC 计算：
+
+  ```text
+  signature = Base64( HMAC-SHA256( canonical, GATEWAY_SHARED_SECRET ) )
+  ```
+
+- 中继请求时附带头：
+  - `X-Gateway-Signature-Alg: HMAC-SHA256`
+  - `X-Gateway-Signature: <Base64(signature)>`
+  - `X-Gateway-Timestamp: <timestamp>`
+  - `X-Gateway-Nonce: <nonce>`
+
+后端 `HmacAuthFilter`（`src/app/HmacAuthFilter.java`）的核心校验逻辑：
+
+- 跳过 `GET /API/public-key`（无需 HMAC）。  
+- 检查上述 4 个头是否齐全，算法是否为 `HMAC-SHA256`。  
+- 时间窗口校验：
+  - 将 `X-Gateway-Timestamp` 转为 long，与当前时间对比；
+  - 超出允许窗口（例如 ±5 分钟）则拒绝，防止长时间重放。  
+- Nonce 去重防重放：
+  - 使用 Caffeine Cache 维护一个短期的 nonce 集合（TTL 5 分钟）；
+  - 若同一个 nonce 再次出现，则视为重放攻击，直接拒绝。  
+- 重构 canonical 字符串，重新计算 HMAC，并与传入签名做常数时间比较：
+  - 若不同，返回 HTTP 401 并记录审计日志。
+
+这样可以保证：
+
+- 只有由受信任的 Next 前端、且使用正确共享密钥与时间窗口的请求才会被后端接受；
+- 即使攻击者窃听到加密后的请求包，也无法在有效窗口外重放成功。
+
+### 3.2 Session / Cookie 校验层：身份与会话
+
+如上文第二节，`SessionFilter` 确保所有非公共接口都必须带有有效 sid Cookie，并对应一个未过期的 Session 对象：
+
+- 防止绕过登录直接访问内部 API；
+- 防止使用过期 / 伪造 sid。
+
+### 3.3 路由控制层：基于 URI + HTTP 方法的 RBAC
+
+`URIRouteTable`（`src/app/URIRouteTable.java`）维护了一张简单的访问控制表：
+
+- key：`METHOD|/API/path`，例如：
+  - `"GET|/API/profile"`
+  - `"POST|/API/grades"`
+  - `"GET|/API/disciplinary-records"`
+- 值：允许访问该路由的角色数组，例如：
+  - `GET /API/profile` → `student, guardian, ARO, DRO`
+  - `POST /API/grades` → `ARO`
+  - `GET /API/disciplinary-records` → `DRO`
+
+同时还维护了 `publicRoutes` 集合，用于标记无需登录的路由：
+
+- `POST /API/login`
+- `POST /API/logout`
+- `GET /API/public-key`
+  等。
+
+网关使用流程（逻辑层面）：
+
+1. HMAC 验证通过后，SessionFilter 注入 `session`。  
+2. 业务代码（或专门的授权过滤器）调用 `URIRouteTable.rolesFor(method, path)` 获取允许的角色列表。  
+3. 如果当前会话角色不在该列表中，则拒绝访问（403），并记录审计日志。
+
+这样形成一个简单但清晰的“按路由 + 方法 + 角色”的 RBAC 网关。
+
+---
+
+## 四、防重放机制：timestamp + nonce + 短期缓存
+
+防重放逻辑主要集中在 HMAC 层：
+
+- **时间窗口**：`X-Gateway-Timestamp` 与当前时间差超出设定窗口时（例如 5 分钟）请求无效。  
+- **Nonce 缓存**：使用 Caffeine Cache 存储最近使用过的 nonce（TTL 与时间窗口一致），任何重复的 nonce 都会立即被拒绝。
+
+结合混合加密通道的 `timestamp` / `nonce` 字段，前后端在逻辑上都保持了请求的时效性与唯一性，防止录播重放攻击。
+
+---
+
+## 五、防 SQL 注入：参数化 SQL
+
+所有数据库访问都通过 `src/service/DBConnect.java` 进行：
+
+- `executeQuery(String sql, String[] params)` 与 `executeUpdate(String sql, String[] params)` 均使用 `PreparedStatement`：
+
+  ```java
+  try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+      for (int i = 0; i < params.length; i++) {
+          pstmt.setString(i + 1, params[i]);
+      }
+      // 执行查询或更新
+  }
+  ```
+
+特征：
+
+- SQL 模板与参数严格分离：`sql` 中只包含 `?` 占位符，实际值通过 `setString` 绑定；  
+- 即使攻击者在前端输入中注入 `' OR 1=1 --` 这类 payload，也只会被当作普通字符串插入字段，不会改变 SQL 结构；  
+- 所有控制器（登录、profile 更新、成绩管理、纪律记录等）都复用了这一套参数化访问模式。
+
+---
+
+## 六、小结：整体安全链路
+
+从浏览器到数据库的一条成功请求链路，必须同时通过：
+
+1. **浏览器 → Next**：混合加密信封（RSA + AES‑GCM + HMAC）。  
+2. **Next → Java**：HMAC + timestamp + nonce 防伪造、防重放。  
+3. **Java 会话层**：sid Cookie + SessionStore 验证身份与会话有效性。  
+4. **Java 路由层**：URIRouteTable 按 URI + 方法 + 角色做访问控制。  
+5. **数据库访问层**：统一参数化 SQL，抵御 SQL 注入。
+
+在此基础上，再结合审计日志（多数敏感操作都会写 `AuditUtils.pack(...)` 日志行），可以比较完整地满足 Project.pdf 中关于“数据加密、安全访问控制、防 SQL 注入、日志记录”的安全要求。 
+
+---
+
+## TODO / 后续改进计划
+
+为进一步对齐 Project.pdf 的细节要求，并在报告中有更强的说服力，建议在后续开发 / 部署中完成以下 TODO：
+
+1. **URI 路由表与角色映射确认**  
+   - 系统性梳理 `URIRouteTable` 中每个 `METHOD|/API/path` 的角色列表，与实际 Controller 中的 `session.getRole()` 检查逻辑逐条对照，确保不存在“表放开但代码未检查”或反之的情况。  
+   - 再次核对 Next 中间件 `frontend/proxy.ts` 的页面访问限制，保证前端页面层的角色限制与后端路由控制一致。
+
+2. **部署层启用 HTTPS / 反向代理**  
+   - 在实际部署时，通过 Nginx / Apache / Cloud 代理为 Next 和 Java 服务提供 HTTPS 入口，防止中间人窃听与篡改（即便有应用层加密，也建议 TLS 作为基础防护）。  
+   - 文档中说明：浏览器只通过 HTTPS 访问前端域名，反向代理只将 HTTPS 请求转发给 Next / Java 内部端口，并限制直接 HTTP 暴露。
+
+3. **数据库中敏感列的加密（TDE 或 AES\_ENCRYPT）**  
+   - 针对 `*_encrypted` 表中的敏感列（如 `password_hash`、`identification_number`、`address`、`grade`、`comments` 等），在数据库层开启实际加密方案：  
+     - 方案 A：使用 Percona TDE 对这些表所在的 tablespace 进行透明加密，密钥由 Percona/OS 层管理；  
+     - 方案 B：在插入/更新时使用 MySQL 的 AES\_ENCRYPT 等函数对字段加密，AES 密钥放在配置文件或安全硬盘，而不是数据库内。  
+   - 在 SQL 脚本和报告中明确：哪些字段被加密、选用的方案、密钥存放位置及其备份/轮换策略。
+
+4. **密码哈希加盐与 KDF 强化**  
+   - 在已有 SHA3‑256 Hash 的基础上进一步增强：  
+     - 为每个用户生成高熵随机 salt（例如 16–32 字节），与 `password_hash` 一起存放在 `*_encrypted` 表中；  
+     - 使用 `hash = SHA3-256(salt || password)` 或更好的方案（如 PBKDF2+SHA3、bcrypt、Argon2 等）替换单轮哈希，使暴力破解成本显著提高。  
+   - salt 本身不是秘密，但将其放在启用 TDE 或行级加密的表中，可以减少泄露风险；在报告中说明这一点。
+
+5. **安全配置与实现的一致性自检**  
+   - 对每条关键安全链路（登录、成绩管理、纪律管理、报表等）做一次端到端自测，确认：  
+     - HMAC 头在 Next → Java 全路径上始终存在且校验通过；  
+     - 非 public 的 `/API/*` 没有 sid 时必然被拒绝；  
+     - URIRouteTable 中未授权的角色无法通过任何路径调用对应接口。  
+   - 若未来新增 API，需要同步更新：Next 前端（路由 + 中间件）、URIRouteTable、SessionFilter/Controller 内的角色判断。
+
+6. **报告中的安全架构说明与示意图**  
+   - 在报告中补充一小节《Security Design》，配一张简单的时序图或架构图，展示：  
+     - Browser → Next（混合加密信封）；  
+     - Next → Java（HMAC + sid）；  
+     - Java → DB（PreparedStatement + 数据库存储加密）。  
+   - 用简短文字对照 Project.pdf 的“敏感数据加密 / 访问控制 / SQL 注入防护 / 日志”四个维度，说明当前实现与 TODO 的覆盖情况。
+
+# 使用说明（中文）
+
+## 快速上手
+- 在 `frontend/` 目录执行：`npm install`
+- 开发启动：`npm run dev`（如端口占用可用 `npm run dev -- -p 3001`）
+- 打开浏览器访问：`http://localhost:3000`（或你指定的端口）
+- 可选外部后端配置：在 `frontend/.env.local` 写入：
+  ```
+  NEXT_PUBLIC_USE_TEST_API=1
+  NEXT_PUBLIC_API_URL=http://localhost:3335
+  AUTH_DEBUG=1
+  ```
+  - `NEXT_PUBLIC_USE_TEST_API=1`：强制前端请求外部后端地址
+  - `NEXT_PUBLIC_API_URL`：外部后端基础 URL
+  - `AUTH_DEBUG=1`：登录启用本地测试账号（读取 `frontend/test_acount`）
+- 生产构建与启动：`npm run build` → `npm run start -- -p 3002`
+- 入口页面参考：`/login`、`/register`、`/students`、`/courses`、`/enrollments`、`/grades`、`/reports`、`/profile`
+- 避免提交敏感文件：`*.env*`（含 `.env.local`）已在 `.gitignore` 中忽略
+
+## 环境要求
+- 安装 `Node.js >= 20` 与 `npm`（或 `yarn/pnpm/bun`）。
+
+## 在 Linux 下安装 Node.js 并初始化项目前端（傻瓜式教程）
+
+下面步骤尽量面向零基础，复制粘贴即可运行。如使用 Ubuntu/Debian、CentOS/RHEL/AlmaLinux 等主流发行版均可。
+
+1) 安装基础工具（根据你的发行版选择一条）
+- Ubuntu/Debian：
+  - `sudo apt update && sudo apt install -y curl build-essential`
+- CentOS/RHEL/AlmaLinux：
+  - `sudo yum install -y curl gcc-c++ make`
+- Fedora：
+  - `sudo dnf install -y curl gcc-c++ make`
+
+2) 安装 nvm（Node 版本管理器）
+- `curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash`
+- 让当前终端生效（任选其一，若第一个失败就执行第二个）：
+  - `source ~/.bashrc`
+  - `source ~/.profile`
+- 验证：
+  - `command -v nvm`（能输出 `nvm` 表示安装成功）
+
+3) 安装 Node.js 18（项目要求）
+- `nvm install 18`
+- `nvm use 18`
+- `nvm alias default 18`
+- 验证版本：
+  - `node -v`（期望 >= 18.x）
+  - `npm -v`
+
+4) 获取并进入项目目录
+- 若你已把项目放到服务器上：
+  - `cd /path/to/COMP3335-Computing-Student-Management/frontend`
+- 若需要从仓库拉取（替换为你的仓库地址）：
+  - `git clone <你的仓库地址>`
+  - `cd COMP3335-Computing-Student-Management/frontend`
+
+5) 初始化依赖并启动开发模式
+- 安装依赖：
+  - `npm install`
+- 可选：创建环境变量文件（本地开发用，不提交到 Git）：
+  - ```
+    cat > .env.local << 'EOF'
+    NEXT_PUBLIC_API_URL=http://127.0.0.1:3335
+    # 开发可选：启用本地测试账号
+    AUTH_DEBUG=1
+    # 非 HTTPS 环境下关闭 Secure，避免浏览器拒收 Cookie（生产请开启）
+    COOKIE_SECURE=0
+    EOF
+    ```
+- 启动开发服务：
+  - `npm run dev`
+- 在浏览器访问：
+  - `http://<你的服务器IP或域名>:3000`
+
+6) 生产模式（简单托管）
+- 构建与启动：
+  - `npm ci`（或 `npm install`）
+  - `npm run build`
+  - `npm run start -- -p 3000`
+- 建议放在 Nginx/Apache 反向代理后面并启用 HTTPS 与 HSTS；确保后端 `Set-Cookie` 的 `domain` 与前端域匹配，否则浏览器可能拒收 Cookie。
+
+7) 可选：使用 systemd 托管前端服务（开机自启）
+- 创建文件 `/etc/systemd/system/next-frontend.service`（需要 root 权限），内容示例：
+  - ```
+    [Unit]
+    Description=Next.js Frontend Service
+    After=network.target
+
+    [Service]
+    Type=simple
+    WorkingDirectory=/path/to/COMP3335-Computing-Student-Management/frontend
+    ExecStart=/usr/bin/npm run start -- -p 3000
+    Restart=always
+    Environment=NEXT_PUBLIC_API_URL=http://127.0.0.1:3335
+    # 生产环境可注入 RSA 密钥（PEM），否则前端会生成临时密钥对：
+    # Environment=SERVER_RSA_PUBLIC_PEM=-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----
+    # Environment=SERVER_RSA_PRIVATE_PEM=-----BEGIN PRIVATE KEY-----...-----END PRIVATE KEY-----
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+- 生效并启动：
+  - `sudo systemctl daemon-reload`
+  - `sudo systemctl enable --now next-frontend`
+- 查看状态与日志：
+  - `systemctl status next-frontend`
+  - `journalctl -u next-frontend -f`
+
+8) 常见问题（快速自检）
+- 端口占用：使用 `npm run dev -- -p 3001` 或 `npm run start -- -p 3002` 更换端口。
+- Node 未找到：重新执行 `source ~/.bashrc` 或 `source ~/.profile` 后再试；确保 `nvm use 18` 生效。
+- 浏览器无法登录：在非 HTTPS 场景下将 `.env.local` 中 `COOKIE_SECURE=0`；生产务必开启 HTTPS 并设置合适的 `domain`。
+- 后端不通或报 `NOT_IMPLEMENTED`：检查 `NEXT_PUBLIC_API_URL` 是否正确，或确认后端已实现 `/API/*` 接口。
+
+## 安装依赖
+- 在 `frontend/` 目录下执行：
+  - `npm install`
+
+## 开发模式启动
+- 执行：`npm run dev`
+- 默认端口为 `http://localhost:3000`；若端口占用，可指定端口：
+  - `npm run dev -- -p 3001`
+
+## 生产模式构建与启动
+- 构建：`npm run build`
+- 启动：`npm run start`
+- 自定义端口示例：`npm run start -- -p 3002`
+
+## 后端 API 配置
+- 默认使用内部 API 路由前缀：`/API/*`。
+- 若需接入外部后端，请在 `frontend/.env.local` 设置：
+  - `NEXT_PUBLIC_USE_TEST_API=1`
+  - `NEXT_PUBLIC_API_URL=http://localhost:3335`（替换为你的后端地址）
+- 登录本地调试（可选）：在 `.env.local` 设置 `AUTH_DEBUG=1`，即可使用 `frontend/test_acount` 中的本地账号文件；也可通过在登录接口 URL 上添加 `?debug=1` 开启调试。
+- Cookie 配置见 `lib/config.ts`：生产环境建议开启 `secure: true`，并按需设置 `domain`。
+
+## 本地开发 .env.local 模板（推荐）
+- 文件路径：`frontend/.env.local`（不会提交到 Git）。
+- 复制以下模板并按需调整：
+  ```
+  # 本地开发推荐模板（复制到 frontend/.env.local）
+
+  # 启用本地调试账号（读取 frontend/test_acount）
+  AUTH_DEBUG=1
+
+  # 在非 HTTPS 的本地开发环境关闭 Secure；生产请开启或保留默认
+  COOKIE_SECURE=0
+
+  # 可选：强制使用外部后端（本地开发建议注释掉，避免跨域 Cookie 问题）
+  # NEXT_PUBLIC_USE_TEST_API=1
+  # NEXT_PUBLIC_API_URL=http://127.0.0.1:3335
+
+  # 可选：Cookie 跨子域设置（默认不设置）
+  # COOKIE_DOMAIN=example.com
+
+  # 可选：提供服务器 RSA 密钥对（PEM）。不设置时使用内置/临时密钥
+  # SERVER_RSA_PUBLIC_PEM=-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----
+  # SERVER_RSA_PRIVATE_PEM=-----BEGIN PRIVATE KEY-----...-----END PRIVATE KEY-----
+  
+  # 网关到后端的 HMAC 共享密钥（必填，前端转发时用于签名）
+  # GATEWAY_SHARED_SECRET=please-change-this-secret
+  ```
+- 变量说明：
+  - `AUTH_DEBUG`：开启本地调试账号；也可在接口上加 `?debug=1`。
+  - `COOKIE_SECURE`：本地 HTTP 环境下设为 `0`，生产需开启（或留默认）。
+  - `NEXT_PUBLIC_USE_TEST_API`/`NEXT_PUBLIC_API_URL`：连接外部后端。若设置为外部域，`Set-Cookie` 可能写到外域导致会话失效；本地建议注释掉，让中继回落到当前站点。
+  - `COOKIE_DOMAIN`：生产跨子域场景使用；本地通常不要设置。
+  - `SERVER_RSA_PUBLIC_PEM`/`SERVER_RSA_PRIVATE_PEM`：可注入固定密钥，便于生产部署与密钥轮换。
+  - `GATEWAY_SHARED_SECRET`：网关 HMAC 共享密钥；前端在转发到后端时会按 `method|path|body|timestamp|nonce` 计算 `HMAC-SHA256` 并加到请求头中，后端需用同一密钥进行校验。
+
+### 本地测试账号文件格式（配合 AUTH_DEBUG）
+- 文件：`frontend/test_acount`
+- 每行：`email,password,role,name`
+- 示例：
+  ```
+  student@example.com,pass123,student,Alice
+  aro@example.com,pass123,ARO,Bob
+  guardian@example.com,pass123,guardian,Grace
+  dro@example.com,pass123,DRO,David
+  ```
+
+## 页面与模块
+- `/login` 登录：邮箱校验、眼睛图标切换密码显示。
+- `/register` 注册：实时校验与红框高亮，密码默认明文显示，可复选框切换。
+- `/students` 学生管理：搜索、创建、编辑、删除（实时校验与红框高亮）。
+- `/courses`、`/enrollments`、`/grades`、`/reports`、`/profile`：目前为骨架 UI，需接入后端完善数据交互。
+- 当后端接口未实现时，页面会显示占位提示（`NotImplemented`）。
+
+## .gitignore 注意事项
+- 已忽略目录：`node_modules/`、`.next/`、`out/`、`build/`、`coverage/`、`.vercel/`。
+- 已忽略文件：`*.tsbuildinfo`、`next-env.d.ts`、`*.pem`、各类调试日志（`npm-debug.log*` 等）。
+- 环境变量：`*.env*` 已被忽略，请勿将 `.env.local`（含敏感配置）提交到 Git。
+- `frontend/test_acount` 仅用于本地账号调试，生产环境建议移除或加入忽略。
+- 若需取消忽略某类文件，请谨慎评估安全风险（Cookie、证书、密钥等不应提交）。
+
+## 常见问题
+- 端口占用：使用 `-p` 指定端口，例如 `npm run dev -- -p 3001` 或 `npm run start -- -p 3002`。
+- 接口未实现：出现 `NOT_IMPLEMENTED` 提示表示后端尚未提供该接口；可切换到外部后端或补齐内部 API 路由。
+
+---
+
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Learn More
+
+lib/config.ts 包含了项目的配置信息，例如 Cookie 名称、过期时间、Cookie 选项等。
+.env.local 包含了项目的环境变量配置，调试模式开关
+
+## TODO（可选QAQ）
+
+应用CSRF token保护
+应用https+HTTPS Strict Transport Security (HSTS),TLS 1.2及以上
+应用CORS策略
+
+## Test Account
+```
+{
+  "accounts": [
+    { "email": "student@test.local", "role": "student", "password": "Test@12345", "name": "Student Test" },
+    { "email": "aro@test.local", "role": "ARO", "password": "Aro@12345", "name": "ARO Admin" },
+    { "email": "guardian@test.local", "role": "guardian", "password": "Guardian@12345", "name": "Guardian User" },
+    { "email": "dro@test.local", "role": "DRO", "password": "Dro@12345", "name": "DRO Officer" },
+    { "email": "dba@test.local", "role": "DBA", "password": "Dba@12345", "name": "DBA Admin" }
+    ]
+}
+```
