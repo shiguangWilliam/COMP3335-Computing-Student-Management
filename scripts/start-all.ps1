@@ -84,14 +84,15 @@ function Wait-DatabaseHealthy {
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     while ($stopwatch.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
-        try {
-            $ping = docker exec $ContainerName mysqladmin ping -uroot -p!testCOMP3335 2>$null
-            if ($LASTEXITCODE -eq 0 -and $ping -match "mysqld is alive") {
-                return $true
-            }
-        } catch {
-            # ignore and retry
-        }
+        $ErrorActionPreference = "Continue"
+        $ping = docker exec $ContainerName mysqladmin ping -h localhost -uroot '-p!testCOMP3335' 2>$null
+        $exitCode = $LASTEXITCODE
+        $ErrorActionPreference = "Stop"
+        if ($exitCode -eq 0 -and $ping -match "mysqld is alive") {
+            Write-Host "    Database is alive." -ForegroundColor Green
+            return $true
+        }    
+        
 
         $elapsed = [int]$stopwatch.Elapsed.TotalSeconds
         Write-Host "    Waiting for database service... (${elapsed}s/${TimeoutSeconds}s)" -ForegroundColor Gray
