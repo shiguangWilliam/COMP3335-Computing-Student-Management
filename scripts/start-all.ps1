@@ -128,7 +128,7 @@ $setupArgs = @()
 if ($ResetData) { $setupArgs += "-ResetData" }
 if ($DockerDir) { $setupArgs += "-DockerDir '$DockerDir'" }
 $setupArgsStr = $setupArgs -join " "
-Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$scriptsDir'; Write-Host '[Database] Starting Percona...' -ForegroundColor Cyan; .\setup-percona.ps1 $setupArgsStr"
+Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd '$scriptsDir'; Write-Host '[Database] Starting Percona...' -ForegroundColor Cyan; .\setup-percona.ps1 $setupArgsStr"
 Write-Host "    Database will start in a new PowerShell window" -ForegroundColor Green
 
 Write-Host "`n[Waiting] Ensuring Percona container is running..." -ForegroundColor Yellow
@@ -140,20 +140,20 @@ Write-Host "    Percona container is running" -ForegroundColor Green
 
 if (-not $SkipSeed) {
     Write-Host "`n[2/4] Generating Test Account Data (New Window)..." -ForegroundColor Yellow
-    Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$projectRoot'; Write-Host '[Data Generation] Generating test data...' -ForegroundColor Cyan; .\mvnw -q compile exec:java '-Dexec.mainClass=scripts.TestAccountSeeder'; Write-Host '`nData generation complete, press any key to close...' -ForegroundColor Green; Read-Host"
-    Write-Host "    Test data will be generated in a new PowerShell window" -ForegroundColor Green
-    Write-Host "    (Wait for data generation to complete before accessing the system)" -ForegroundColor Gray
+    Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd '$projectRoot'; Write-Host '[Data Generation] Generating test data...' -ForegroundColor Cyan; .\mvnw -q compile exec:java '-Dexec.mainClass=scripts.TestAccountSeeder'; Write-Host '`nData generation complete. Launching backend...' -ForegroundColor Green; Write-Host '[Backend Server] Starting Spring Boot...' -ForegroundColor Cyan; .\mvnw spring-boot:run"
+    Write-Host "    Test data and backend will run sequentially in the same PowerShell window" -ForegroundColor Green
+    Write-Host "    (Wait for backend logs in that window before accessing the system)" -ForegroundColor Gray
 } else {
     Write-Host "`n[2/4] Skipping Test Data Generation (-SkipSeed)" -ForegroundColor Gray
-}
 
-Write-Host "`n[3/4] Starting Spring Boot Backend (New Window)..." -ForegroundColor Yellow
-Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$projectRoot'; Write-Host '[Backend Server] Starting Spring Boot...' -ForegroundColor Cyan; .\mvnw spring-boot:run"
-Write-Host "    Backend will start in a new PowerShell window" -ForegroundColor Green
+    Write-Host "`n[3/4] Starting Spring Boot Backend (New Window)..." -ForegroundColor Yellow
+    Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd '$projectRoot'; Write-Host '[Backend Server] Starting Spring Boot...' -ForegroundColor Cyan; .\mvnw spring-boot:run"
+    Write-Host "    Backend will start in a new PowerShell window" -ForegroundColor Green
+}
 
 Write-Host "`n[4/4] Starting Next.js Frontend (New Window)..." -ForegroundColor Yellow
 $npmInstallCmd = if (Test-Path "$frontendDir\node_modules") { "" } else { "Write-Host 'Installing dependencies...' -ForegroundColor Yellow; npm install; " }
-Start-Process pwsh -ArgumentList "-NoExit", "-Command", "cd '$frontendDir'; Write-Host '[Frontend Server] Starting Next.js...' -ForegroundColor Cyan; $npmInstallCmd npm run dev"
+Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd '$frontendDir'; Write-Host '[Frontend Server] Starting Next.js...' -ForegroundColor Cyan; $npmInstallCmd npm run dev"
 Write-Host "    Frontend will start in a new PowerShell window" -ForegroundColor Green
 Write-Host "`n========================================" -ForegroundColor Green
 Write-Host "  All services are up and running!" -ForegroundColor Green
