@@ -65,11 +65,11 @@ $dockerCmd = @(
 )
 
 Write-Host "==> Starting Percona container..." -ForegroundColor Cyan
-Write-Host "    Docker 目录: $dockerDir" -ForegroundColor Gray
-Write-Host "    数据目录: $dataDir" -ForegroundColor Gray
-Write-Host "    Keyring 目录: $keyringDir" -ForegroundColor Gray
-Write-Host "    配置文件: $configPath" -ForegroundColor Gray
-Write-Host "    初始化脚本: $initSql" -ForegroundColor Gray
+Write-Host "    Docker directory: $dockerDir" -ForegroundColor Gray
+Write-Host "    Data directory: $dataDir" -ForegroundColor Gray
+Write-Host "    Keyring directory: $keyringDir" -ForegroundColor Gray
+Write-Host "    Configuration file: $configPath" -ForegroundColor Gray
+Write-Host "    Initialization script: $initSql" -ForegroundColor Gray
 docker @dockerCmd
 
 Write-Host "`nCompleted. You can verify with:" -ForegroundColor Green
