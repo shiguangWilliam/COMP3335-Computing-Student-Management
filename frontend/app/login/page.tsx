@@ -51,7 +51,7 @@ export default function LoginPage() {
       )}
       <Card>
         <form onSubmit={onSubmit} className="space-y-4">
-          {/* 移除角色选择，服务端依据邮箱/本地账户决定角色 */}
+          {}
           <div>
             <label className="mb-1 block text-sm">Email</label>
           <Input
@@ -84,7 +84,7 @@ export default function LoginPage() {
               />
               <button
                 type="button"
-                aria-label={showPassword ? "隐藏密码" : "显示密码"}
+                aria-label={showPassword ? "Hide Password" : "Show Password"}
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 z-10 text-zinc-600 hover:text-zinc-800"
               >

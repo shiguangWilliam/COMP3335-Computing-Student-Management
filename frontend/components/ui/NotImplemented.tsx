@@ -8,8 +8,8 @@ type Props = {
 };
 
 export default function NotImplemented({
-  title = "功能未实现",
-  message = "该功能的后端接口尚未实现，当前显示占位内容。",
+  title = "No implementation yet",
+  message = "This feature's backend API is not yet implemented. Currently displaying placeholder content.",
   endpoint,
 }: Props) {
   return (
@@ -17,11 +17,11 @@ export default function NotImplemented({
       <h2 className="text-lg font-medium text-amber-800">{title}</h2>
       <p className="mt-1 text-sm text-amber-800">{message}</p>
       {endpoint && (
-        <p className="mt-1 text-xs text-amber-700">接口：{endpoint}</p>
+        <p className="mt-1 text-xs text-amber-700">API Endpoint: {endpoint}</p>
       )}
       <div className="mt-3">
         <Link href="/" className="text-sm text-blue-700 hover:underline">
-          返回首页
+          Return to Home
         </Link>
       </div>
     </div>
