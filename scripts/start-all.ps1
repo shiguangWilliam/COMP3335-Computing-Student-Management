@@ -86,7 +86,7 @@ Write-Host "  COMP3335 Launch Script" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
 # 预检查：关键端口占用情况
-Write-Host "`n[预检查] Checking required ports (${($requiredPorts -join ', ')})..." -ForegroundColor Yellow
+Write-Host "`n[Pre-Checking] Checking required ports (${($requiredPorts -join ', ')})..." -ForegroundColor Yellow
 if (-not (Test-PortAvailability -Ports $requiredPorts)) {
     Write-Host "    Detected port conflicts. Please free the ports and rerun the script." -ForegroundColor Red
     exit 1
@@ -94,6 +94,21 @@ if (-not (Test-PortAvailability -Ports $requiredPorts)) {
 
 # 步骤 0: 检查并启动 Docker Desktop
 Write-Host "`n[0/4] Checking Docker Desktop..." -ForegroundColor Yellow
+$DataBasePort = 3306
+if (-not (Test-PortAvailability -Ports @($DataBasePort))) {
+    Write-Host "    DataBase requires port $DataBasePort but it is currently in use. Please free the port and rerun the script." -ForegroundColor Red
+    exit 1
+}
+$FrontEndPort = 3000
+if (-not (Test-PortAvailability -Ports @($FrontEndPort))) {
+    Write-Host "    FrontEnd requires port $FrontEndPort but it is currently in use. Please free the port and rerun the script." -ForegroundColor Red
+    exit 1
+}
+$BackendPort = 3335
+if (-not (Test-PortAvailability -Ports @($BackendPort))) {
+    Write-Host "    Backend requires port $BackendPort but it is currently in use. Please free the port and rerun the script." -ForegroundColor Red
+    exit 1
+}
 $dockerRunning = docker info 2>$null
 if (-not $dockerRunning) {
     Write-Host "    Docker Desktop is not running, starting..." -ForegroundColor Yellow
