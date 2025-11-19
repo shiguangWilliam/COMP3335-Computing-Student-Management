@@ -61,6 +61,7 @@ cd <project-root>
 
 - Exposes port `3335` locally. Confirm startup once `Started Application` appears.
 - Optional seed rerun: `.\mvnw --% -q compile exec:java -Dexec.mainClass=scripts.TestAccountSeeder`.
+- If you hope to restrict listening to localhost, add `server.address = 127.0.0.1` to application.properties or release the comment.
 
 ### 3. Frontend (Next.js)
 
