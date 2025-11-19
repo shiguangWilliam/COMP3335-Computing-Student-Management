@@ -60,7 +60,7 @@ public class ReportController {
                     err.put("error", "NotFound");
                     err.put("code", 404);
                     err.put("message", "No student found");
-                    log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "NoStudentForGuardian", "guardianId", session.getUserId()));
+                    log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "NoStudentForGuardian", "guardianId", session.getUserId(), "userID", session.getUserId()));
                     response.setStatus(404);
                     return err;
                 }
@@ -82,7 +82,7 @@ public class ReportController {
             err.put("error", "Invalid role");
             err.put("code",401);
             response.setStatus(401);
-            log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "InvalidRole"));
+            log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "InvalidRole", "userID", session.getUserId()));
             return err;
         }
         //获取到了学生ID，查询成绩和纪律
@@ -104,7 +104,7 @@ public class ReportController {
                 err.put("code",500);
                 response.setStatus(500);
                 err.put("message","Query failed");
-                log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "ReportQueryError", "studentId", id));
+                log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "ReportQueryError", "studentId", id, "userID", session.getUserId()));
                 return err;
             }
         }

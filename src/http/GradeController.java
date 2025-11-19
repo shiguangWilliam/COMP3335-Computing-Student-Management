@@ -57,7 +57,7 @@ public class GradeController {
             err.put("code",403);
             response.setStatus(403);
             err.put("message","Forbidden");
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Role Forbidden"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Role Forbidden", "userID", session.getUserId()));
             return err;
         }
         //确认用户身份
@@ -108,13 +108,13 @@ public class GradeController {
             }
             resp.put("data", gradeList);
             resp.put("ok", true);
-            log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grades Retrieved Successfully"));
+            log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grades Retrieved Successfully", "userID", session.getUserId()));
             return resp;
         } catch (SQLException e) {
             err.put("code",500);
             response.setStatus(500);
             err.put("message","Internal Server Error");
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage(), "userID", session.getUserId()));
             return err;
         }
 
@@ -144,7 +144,7 @@ public class GradeController {
             err.put("code",403);
             response.setStatus(403);
             err.put("message","Forbidden");
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Role Forbidden"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Role Forbidden", "userID", session.getUserId()));
             return err;
         }
         //安全读取
@@ -158,21 +158,21 @@ public class GradeController {
             err.put("code",400);
             err.put("message","Bad Request: Missing Parameters");
             response.setStatus(400);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Parameters"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Parameters", "userID", session.getUserId()));
             return err;
         }
         if((courseID==null || courseID.isBlank()) && (courseNameParam==null || courseNameParam.isBlank())){
             err.put("code",400);
             err.put("message","Bad Request: Missing Course");
             response.setStatus(400);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Course"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Course", "userID", session.getUserId()));
             return err;
         }
         if(ParamValid.isValidGrade(grade) == false){
             err.put("code",400);
             err.put("message","Bad Request: Invalid Grade");
             response.setStatus(400);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Grade"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Grade", "userID", session.getUserId()));
             return err;
         }
         term = term.trim();
@@ -180,7 +180,7 @@ public class GradeController {
             err.put("code",400);
             err.put("message","Bad Request: Invalid Term");
             response.setStatus(400);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Term"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Term", "userID", session.getUserId()));
             return err;
         }
         String normalizedCourseName = courseNameParam == null ? null : courseNameParam.trim();
@@ -191,7 +191,7 @@ public class GradeController {
                 err.put("code",500);
                 err.put("message","Internal Server Error");
                 response.setStatus(500);
-                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
+                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage(), "userID", session.getUserId()));
                 return err;
             }
         }
@@ -199,7 +199,7 @@ public class GradeController {
             err.put("code",400);
             err.put("message","Bad Request: Invalid Course");
             response.setStatus(400);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Course"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Course", "userID", session.getUserId()));
             return err;
         }
         try{
@@ -207,7 +207,7 @@ public class GradeController {
                 err.put("code",400);
                 err.put("message","Bad Request: Invalid Course ID");
                 response.setStatus(400);
-                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Course ID"));
+                    log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Course ID", "userID", session.getUserId()));
                 return err;
             }
         }
@@ -215,7 +215,7 @@ public class GradeController {
             err.put("code",500);
             err.put("message","Internal Server Error");
             response.setStatus(500);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Exception: " + e.getMessage()));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Exception: " + e.getMessage(), "userID", session.getUserId()));
             return err;
         }
         
@@ -226,7 +226,7 @@ public class GradeController {
                 err.put("code",400);
                 err.put("message","Bad Request: Invalid Student ID");
                 response.setStatus(400);
-                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Student ID"));
+                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Student ID", "userID", session.getUserId()));
                 return err;
             }
         }
@@ -234,7 +234,7 @@ public class GradeController {
             err.put("code",500);
             err.put("message","Internal Server Error");
             response.setStatus(500);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Exception: " + e.getMessage()));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Exception: " + e.getMessage(), "userID", session.getUserId()));
             return err;
 
         }
@@ -249,7 +249,7 @@ public class GradeController {
             err.put("code",400);
             err.put("message","Bad Request: Invalid Comments");
             response.setStatus(400);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Comments"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Invalid Comments", "userID", session.getUserId()));
             return err;
         }
         try(ResultSet rs = DBConnect.dbConnector.executeQuery(querySql, queryParam)){
@@ -267,19 +267,19 @@ public class GradeController {
                     resp.put("ok", true);
                     resp.put("message", "Grade Record Created Successfully");
                     resp.put("id",gid);
-                    log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grade Record Created Successfully"));
+                    log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grade Record Created Successfully", "userID", session.getUserId()));
                 }
                 catch (SQLException e){
                     // 如果第二步失败,rollback
                     try {
                         DBConnect.dbConnector.executeUpdate("DELETE FROM grades_encrypted WHERE id = ?", new String[]{enc_gid});
                     } catch (SQLException rollbackIgnored) {
-                        log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "rollback failed", "error", rollbackIgnored.getMessage()));
+                        log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "rollback failed", "userID", session.getUserId(), "error", rollbackIgnored.getMessage()));
                     }
                     err.put("code",500);
                     response.setStatus(500);
                     err.put("message","Internal Server Error");
-                    log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
+                    log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage(), "userID", session.getUserId()));
                     return err;
                 }
             }
@@ -292,13 +292,13 @@ public class GradeController {
                     resp.put("ok", true);
                     resp.put("message", "Grade Record Updated Successfully");
                     resp.put("id",gid);
-                    log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grade Record Updated Successfully"));
+                    log.info("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grade Record Updated Successfully", "userID", session.getUserId()));
                 }
                 catch (SQLException e){
                     err.put("code",500);
                     err.put("message","Internal Server Error");
                     response.setStatus(500);
-                    log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
+                    log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage(), "userID", session.getUserId()));
                     return err;
                 }
 
@@ -308,7 +308,7 @@ public class GradeController {
             err.put("code",500);
             err.put("message","Internal Server Error");
             response.setStatus(500);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage(), "userID", session.getUserId()));
             return err;
         }
 
@@ -340,7 +340,7 @@ public class GradeController {
             err.put("code",403);
             err.put("message","Forbidden");
             response.setStatus(403);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Role Forbidden"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Role Forbidden", "userID", session.getUserId()));
             return err;
         }
         //安全读取
@@ -350,7 +350,7 @@ public class GradeController {
             err.put("code",400);
             response.setStatus(400);
             err.put("message","Bad Request: Missing Parameters");
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Parameters"));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Missing Parameters", "userID", session.getUserId()));
             return err;
         }
 
@@ -368,20 +368,20 @@ public class GradeController {
                     }
                     resp.put("ok", true);
                     resp.put("message", "Grade Record Deleted Successfully");
-                    log.warn("audit={}", AuditUtils.pack("requestId", requestId,"User",session.getUserId(), "message", "Grade Record Deleted Successfully"));//敏感操作
+                    log.warn("audit={}", AuditUtils.pack("requestId", requestId, "userID", session.getUserId(), "message", "Grade Record Deleted Successfully"));//敏感操作
                     return resp;
                 } catch (SQLException e){
                     err.put("code",500);
                     response.setStatus(500);
                     err.put("message","Internal Server Error");
-                    log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
+                    log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage(), "userID", session.getUserId()));
                     return err;
                 }
             } else {
                 err.put("code",404);
                 response.setStatus(404);
                 err.put("message","Grade Record Not Found");
-                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grade Record Not Found"));
+                log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "Grade Record Not Found", "userID", session.getUserId()));
                 return err;
             }
         }
@@ -389,7 +389,7 @@ public class GradeController {
             err.put("code",500);
             response.setStatus(500);
             err.put("message","Internal Server Error");
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage()));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "SQL Exception: " + e.getMessage(), "userID", session.getUserId()));
             return err;
         }
 

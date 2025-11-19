@@ -153,14 +153,14 @@ public class DisciplinaryController {
                 err.put("code", 400);
                 response.setStatus(400);
                 err.put("message", "invalid student id");
-                log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "invalid student id", "studentID", studentId));
+                log.warn("audit={}", AuditUtils.pack("requestId", requestId, "message", "invalid student id", "userID", session.getUserId(), "studentID", studentId));
                 return err;
             }
         } catch (SQLException e) {
             err.put("error", "internal server error");
             err.put("code", 500);
             response.setStatus(500);
-            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "student check failed", "error", e.getMessage()));
+            log.error("audit={}", AuditUtils.pack("requestId", requestId, "message", "student check failed", "userID", session.getUserId(), "error", e.getMessage()));
             return err;
         }
 

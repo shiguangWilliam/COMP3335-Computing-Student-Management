@@ -21,7 +21,7 @@ This README focuses on how to get the Computing Student Management System runnin
 
 1. Ensure the prerequire environment is complete
 2. Open PowerShell in the project root and run:
-
+   - We highly recommand you to launch the docker desktop manully before running this command
    ```powershell
    .\scripts\start-all.ps1 [-ResetData] [-SkipSeed] [-DockerDir C:\CustomPath]
    ```
@@ -29,16 +29,12 @@ This README focuses on how to get the Computing Student Management System runnin
    - `-ResetData` wipes existing database files before starting Percona.
    - `-SkipSeed` skips running `TestAccountSeeder` if you already have data.
    - `-DockerDir` stores the MySQL data/keyring in a custom parent directory (the script creates `<DockerDir>\docker`).
+   
 
 3. The script launches database, backend, and frontend in dedicated PowerShell windows, installs missing Node dependencies, generates seed data (unless skipped), and waits for the Percona container to be healthy.
 4. When the final window reports success, browse to `http://localhost:3000`. Default test accounts are printed in the launcher window.
-5. To stop everything, run:
+5. To stop everything, you have to stop the terminals manully.
 
-   ```powershell
-   .\scripts\stop-all.ps1
-   ```
-
-That’s it—no manual steps are needed unless you prefer finer control.
 
 ---
 
@@ -84,7 +80,7 @@ npm run dev
 ### 4. Access & Shutdown
 
 - Access the UI at `http://localhost:3000` (or `http://<host-ip>:3000` after opening the port in Windows Firewall).
-- Stop individual services manually (Ctrl+C) or run `.\scripts\stop-all.ps1` to close the container and release ports `3000`, `3335`, and `3306`.
+- Stop individual services manually (Ctrl+C).
 
 ---
 
@@ -100,5 +96,5 @@ npm run dev
 - **rsa routines::data too large for modulus**: Frontend has Hot-reload. The rsa key for OAEP has reset.
 Restar the frontend will solve this problem.
 
-Run `stop-all.ps1`or stop all the process manully and then the relevant start script again after resolving any of the issues above to ensure all processes reload cleanly.
+Stop all the process manully and then the relevant start script again after resolving any of the issues above to ensure all processes reload cleanly.
 
