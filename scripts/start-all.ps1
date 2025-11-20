@@ -136,7 +136,7 @@ if (-not (Test-PortAvailability -Ports @($BackendPort))) {
     Write-Host "    Backend requires port $BackendPort but it is currently in use. Please free the port and rerun the script." -ForegroundColor Red
     exit 1
 }
-$dockerRunning = docker info 2>$null
+$dockerRunning = docker info
 if (-not $dockerRunning) {
     Write-Host "    Docker Desktop is not running, starting..." -ForegroundColor Yellow
     Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"

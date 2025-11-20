@@ -13,17 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * 将默认测试账号写入数据库：
- * - Guardian（guardian@test.local）
- * - Student（student@test.local，关联 guardian）
- * - ARO / DRO / DBA 员工账号
- * - 样例课程 / 成绩 / 纪律记录
- *
- * 使用方法（项目根目录）：
- *   mvnw --% -q compile exec:java -Dexec.mainClass=scripts.TestAccountSeeder
- * 或者在 IDE 中运行本类的 main。
- */
+
 public class TestAccountSeeder {
 
     private record Account(String email, String password, String role, String firstName, String lastName) {}
@@ -33,7 +23,7 @@ public class TestAccountSeeder {
         builder.web(WebApplicationType.NONE);
         ConfigurableApplicationContext context = builder.run();
         try {
-            System.out.println("==> 开始写入默认账号");
+            System.out.println("==> Start writing test accounts to database...");
             String guardianId = seedGuardian(new Account("guardian@test.local", "Guardian@12345", "guardian", "Guardian", "User"));
             String studentId = seedStudent(new Account("student@test.local", "Test@12345", "student", "Student", "Test"), guardianId);
             String aroId = seedStaff(new Account("aro@test.local", "Aro@12345", "ARO", "ARO", "Admin"), "Academic Registry");
@@ -42,7 +32,7 @@ public class TestAccountSeeder {
             Map<String, String> courseIds = seedCourses();
             seedGrades(studentId, courseIds);
             seedDisciplinary(studentId, droId != null ? droId : aroId);
-            System.out.println("==> 完成");
+            System.out.println("==> Completed");
         } finally {
             context.close();
         }
@@ -50,15 +40,15 @@ public class TestAccountSeeder {
 
     private static String seedStudent(Account account, String guardianId) throws SQLException {
         if (exists("students_encrypted", account.email)) {
-            System.out.println("student 已存在，跳过：" + account.email);
+            System.out.println("student already exists, skipping: " + account.email);
             return lookupId("students_encrypted", account.email);
         }
         if (guardianId == null) {
-            throw new IllegalStateException("缺少 guardian 账号，无法创建 student");
+            throw new IllegalStateException("Missing guardian account, cannot create student");
         }
         String id = randomId();
         String salt = SecurityUtils.generateSalt();
-        System.out.println("  - 创建学生 " + account.email);
+        System.out.println("  - Creating student " + account.email);
         DBConnect.dbConnector.executeUpdate(
                 "INSERT INTO students (id, last_name, first_name, enrollment_year) VALUES (?, ?, ?, ?)",
                 new String[]{id, account.lastName, account.firstName, "2024"}
@@ -84,12 +74,12 @@ public class TestAccountSeeder {
 
     private static String seedGuardian(Account account) throws SQLException {
         if (exists("guardians_encrypted", account.email)) {
-            System.out.println("guardian 已存在，跳过：" + account.email);
+            System.out.println("guardian already exists, skipping: " + account.email);
             return lookupId("guardians_encrypted", account.email);
         }
         String id = randomId();
         String salt = SecurityUtils.generateSalt();
-        System.out.println("  - 创建监护人 " + account.email);
+        System.out.println("  - Creating guardian " + account.email);
         DBConnect.dbConnector.executeUpdate(
                 "INSERT INTO guardians (id, last_name, first_name) VALUES (?, ?, ?)",
                 new String[]{id, account.lastName, account.firstName}
@@ -109,12 +99,12 @@ public class TestAccountSeeder {
 
     private static String seedStaff(Account account, String department) throws SQLException {
         if (exists("staffs_encrypted", account.email)) {
-            System.out.println(account.role + " 已存在，跳过：" + account.email);
+            System.out.println(account.role + " already exists, skipping: " + account.email);
             return lookupId("staffs_encrypted", account.email);
         }
         String id = randomId();
         String salt = SecurityUtils.generateSalt();
-        System.out.println("  - 创建员工 " + account.role + " " + account.email);
+        System.out.println("  - Creating staff " + account.role + " " + account.email);
         DBConnect.dbConnector.executeUpdate(
                 "INSERT INTO staffs (id, last_name, first_name, department, role) VALUES (?, ?, ?, ?, ?)",
                 new String[]{id, account.lastName, account.firstName, department, account.role}
@@ -145,13 +135,13 @@ public class TestAccountSeeder {
         Map<String, String> map = new HashMap<>();
         for (Course course : courses) {
             if (existsById("courses", course.id())) {
-                System.out.println("course 已存在，跳过：" + course.id());
+                System.out.println("course already exists, skipping: " + course.id());
             } else {
                 DBConnect.dbConnector.executeUpdate(
                         "INSERT INTO courses (id, name) VALUES (?, ?)",
                         new String[]{course.id(), course.name()}
                 );
-                System.out.println("  - 创建课程 " + course.id() + " / " + course.name());
+                System.out.println("  - Creating course " + course.id() + " / " + course.name());
             }
             map.put(course.id(), course.name());
         }
@@ -178,7 +168,7 @@ public class TestAccountSeeder {
                         "UPDATE grades_encrypted SET grade = ?, comments = ? WHERE id = ?",
                         new String[]{g.grade(), g.comments(), encryptedId}
                 );
-                System.out.println("  - 更新成绩 " + g.courseId());
+                System.out.println("  - Updating grade " + g.courseId());
             } else {
                 String gradeId = randomId();
                 String encryptedId = randomId();
@@ -190,7 +180,7 @@ public class TestAccountSeeder {
                         "INSERT INTO grades (id, encrypted_id, student_id, course_id, term) VALUES (?, ?, ?, ?, ?)",
                         new String[]{gradeId, encryptedId, studentId, g.courseId(), g.term()}
                 );
-                System.out.println("  - 创建成绩 " + g.courseId());
+                System.out.println("  - Create grade " + g.courseId());
             }
         }
     }
@@ -208,7 +198,7 @@ public class TestAccountSeeder {
                     new String[]{studentId, rec.date()}
             );
             if (rs.next()) {
-                System.out.println("  - 纪律记录已存在：" + rec.date());
+                System.out.println("  - Disciplinary record already exists: " + rec.date());
                 continue;
             }
             String rid = randomId();
@@ -220,7 +210,7 @@ public class TestAccountSeeder {
                     "INSERT INTO disciplinary_records_encrypted (id, descriptions) VALUES (?, ?)",
                     new String[]{rid, rec.description()}
             );
-            System.out.println("  - 创建纪律记录 " + rec.date());
+            System.out.println("  - Creating disciplinary record " + rec.date());
         }
     }
 
