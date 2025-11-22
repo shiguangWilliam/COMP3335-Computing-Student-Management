@@ -63,7 +63,7 @@ This README focuses on how to get the Computing Student Management System runnin
 ## Quickstart (recommended)
 
 1. Ensure the prerequire environment is complete
-2. Manully start the docker desktop
+2. Manully start the docker desktop and login.
 3. Prepare the `.env.local` for frontend(Refer to [Front end](#3-frontend-nextjs))
 4. Open PowerShell in the project root and run:
 
@@ -88,6 +88,7 @@ This README focuses on how to get the Computing Student Management System runnin
 Follow this path only if you want to operate each component yourself or there are something wrong with auto script.
 
 ### 1. Database (Percona MySQL)
+- Open the Docker Desktop manully and login an account.
 
 ```powershell
 cd <project-root>
@@ -170,8 +171,31 @@ npm run dev
 - **Need to relocate Docker data**: Use `-DockerDir D:\COMP3335Data` on either script. The helper will create `D:\COMP3335Data\docker\data` and `keyring` so large database files do not live inside the repo.
 - **rsa routines::data too large for modulus**: Frontend has Hot-reload. The rsa key for OAEP has reset.
 Restar the frontend will solve this problem.
+- **Attempted to load @next/swc-win32-x64-msvc, but an error occurred**: If you meet this error, this means that the swc compiler has broken or unmatched to your architecture. You can try to execute follow commands in PowerShell with admin permission.
+```powershell
+cd <project-root>/frontend
+Remove-Item -Recurse -Force node_modules
+Remove-Item -Force package-lock.json
+npm cache clean --force
+npm install
+npm install @next/swc-win32-x64-msvc@latest --force
+npm run dev
+```
 
 Stop all the process manully and then the relevant start script again after resolving any of the issues above to ensure all processes reload cleanly.
+
+## Test Account
+
+
+| Role     | Email                | Password     |
+|----------|----------------------|--------------|
+| Student  | student@test.local   | Test@12345   |
+| Guardian | guaridan@test.local  | Guardian@12345 |
+| ARO      | aro@test.local       | Aro@12345    |
+| DRO      | dro@test.local       | Dro@12345    |
+
+- If you use Quick start script, you can also find these data at the end of script output.
+
 
 
 ---

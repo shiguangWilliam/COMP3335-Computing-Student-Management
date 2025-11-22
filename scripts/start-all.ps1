@@ -202,7 +202,7 @@ Write-Host "Test Accounts:" -ForegroundColor Cyan
 Write-Host "  student@test.local   / Test@12345  (Student)" -ForegroundColor White
 Write-Host "  guardian@test.local  / Guardian@12345  (Guardian)" -ForegroundColor White
 Write-Host "  aro@test.local       / Aro@12345  (ARO)" -ForegroundColor White
-Write-Host "  dro@test.local       / Dro@12345Ea(DRO)" -ForegroundColor White
+Write-Host "  dro@test.local       / Dro@12345  (DRO)" -ForegroundColor White
 Write-Host ""
 Write-Host "Notes:" -ForegroundColor Cyan
 Write-Host "  - Backend and frontend run in separate windows for real-time logs" -ForegroundColor Gray

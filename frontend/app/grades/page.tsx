@@ -141,7 +141,7 @@ export default function GradesPage() {
               />
               <input
                 className="rounded border px-3 py-2"
-                placeholder="Grade (e.g. 85 or A-)"
+                placeholder="Grade (e.g. A-)"
                 value={assign.grade}
                 onChange={(e) => setAssign({ ...assign, grade: e.target.value })}
               />
