@@ -15,13 +15,58 @@ This README focuses on how to get the Computing Student Management System runnin
 
 > If PowerShell blocks script execution, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` once in the terminal. Administrators can permanently allow scripts via `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`.
 
+
+### How to Install the Required Dependencies
+
+#### 1. Install Docker Desktop
+
+1. Go to the official Docker Desktop download page: https://www.docker.com/products/docker-desktop/
+2. Download the Windows installer and run it.
+3. Follow the installation wizard. When prompted, enable the required Windows features (WSL 2 or Hyper-V).
+4. After installation, launch Docker Desktop and wait for it to start successfully (the Docker icon should appear in the system tray).
+5. Verify installation by opening PowerShell and running:
+   ```powershell
+   docker --version
+   ```
+   You should see the Docker version information.
+
+#### 2. Install JDK (Java Development Kit)
+
+1. Go to the official OpenJDK download page: https://adoptium.net/en-GB/temurin/releases?version=21&os=any&arch=any
+2. Download the latest LTS (e.g., JDK 21) Windows x64 MSI installer.
+3. Run the installer and follow the prompts to complete installation. If you need, you can allow to overwrite the `JAVA_HOME` variable.
+4. Any problems can refer to the installation guid on https://adoptium.net/en-GB/installation/windows
+4. After installation, open a new PowerShell window and run:
+   ```powershell
+   java -version
+   ```
+   You should see the installed Java version.
+
+#### 3. Install Node.js
+
+1. Go to the official Node.js download page: https://nodejs.org/en/download
+2. Download the Windows Installer (LTS version recommended).
+3. Run the installer and follow the prompts to complete installation.
+4. After installation, open a new PowerShell window and run:
+   ```powershell
+   node -v
+   npm -v
+   ```
+   You should see the installed Node.js and npm versions.
+#### 4.PowerShell Set
+1. To allow the powershell to execute `.ps1` scripts, run command `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` to temporary set current terminal allows to execute the `.ps1` scripts.
+2. If you hope to change forever, execute the command `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser` with admin permission.
+> **Note:** All installations require administrator privileges. If you encounter permission issues, right-click the installer and select "Run as administrator."
+
 ---
 
 ## Quickstart (recommended)
 
 1. Ensure the prerequire environment is complete
-2. Open PowerShell in the project root and run:
-   - We highly recommand you to launch the docker desktop manully before running this command
+2. Manully start the docker desktop
+3. Prepare the `.env.local` for frontend(Refer to [Front end](#3-frontend-nextjs))
+4. Open PowerShell in the project root and run:
+
    ```powershell
    .\scripts\start-all.ps1 [-ResetData] [-SkipSeed] [-DockerDir C:\CustomPath]
    ```
@@ -31,9 +76,9 @@ This README focuses on how to get the Computing Student Management System runnin
    - `-DockerDir` stores the MySQL data/keyring in a custom parent directory (the script creates `<DockerDir>\docker`).
    
 
-3. The script launches database, backend, and frontend in dedicated PowerShell windows, installs missing Node dependencies, generates seed data (unless skipped), and waits for the Percona container to be healthy.
-4. When the final window reports success, browse to `http://localhost:3000`. Default test accounts are printed in the launcher window.
-5. To stop everything, you have to stop the terminals manully.
+5. The script launches database, backend, and frontend in dedicated PowerShell windows, installs missing Node dependencies, generates seed data (unless skipped), and waits for the Percona container to be healthy.
+6. When the final window reports success, browse to `http://localhost:3000`. Default test accounts are printed in the launcher window.
+7. To stop everything, you have to stop the terminals manully.
 
 
 ---
@@ -87,6 +132,8 @@ copy .env.local.example .env.local  # if you keep a template
 # NEXT_PUBLIC_API_URL=http://127.0.0.1:3335
 # GATEWAY_SHARED_SECRET=<same as backend>
 
+#We provide the test GATEWAY_SHARED_KEY in src/resources/application.yml. Or you can replace the both key with your own one.
+
 npm run dev
 ```
 
@@ -125,4 +172,9 @@ npm run dev
 Restar the frontend will solve this problem.
 
 Stop all the process manully and then the relevant start script again after resolving any of the issues above to ensure all processes reload cleanly.
+
+
+---
+
+**If you encounter any unexpected errors that cannot be resolved by following the above steps, it is recommended to delete the project folder and extract (or clone) it again, then repeat the setup process from the beginning. This can help resolve issues caused by incomplete extraction, accidental file modification, or corrupted dependencies.**
 
